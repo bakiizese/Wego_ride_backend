@@ -23,6 +23,11 @@ mysql_db = 'wego_db'
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
 
+classes = {"Notification": Notification, "Driver": Driver, 
+           "Rider": Rider, "Payment": Payment, "Trip": Trip,
+           "Location": Location, "Availability": Availability,
+           "Vehicle": Vehicle, "Admin": Admin}
+
 class DBStorage:
     __engine = None
     __session = None
@@ -54,7 +59,7 @@ class DBStorage:
         self.__session = Session
 
     def get(self, cls, **kwargs):
-        return self.__session.query(cls).filter_by(**kwargs).first()
+        return self.__session.query(classes[cls]).filter_by(**kwargs).first()
         
 
     def get_all(self, cls, **kwargs):
@@ -86,6 +91,20 @@ class DBStorage:
             self.__session.delete(inst)
             self.save()
     
+    def update(self, cls, id, **kwargs):
+        cols = classes[cls].__table__.columns.keys()
+
+        for k in kwargs.keys():
+            if k not in cols:
+                print("** key not found **")
+                return False
+        for k, v in kwargs.items():
+            self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
+                {k: v},
+                synchronize_session=False,
+                )
+            self.save()
+
     def count(self, arg):
         """returns the number of instances in a given class"""
         data = self.get_all(arg)

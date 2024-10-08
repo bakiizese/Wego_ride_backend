@@ -17,35 +17,47 @@ class Auth:
         if user2:
             print("** phone number already exists **")
             return False
-        password_hash = _hash_password(kwargs['password'])
+        kwargs["password_hash"] = _hash_password(kwargs['password_hash'])
 
         user = classes[cls](**kwargs)
         user.save()
         print(user.id)
 
-    def update_password(self, reset_token, password):
-        pass
-    
+
+    def update_password(self, cls, reset_token, password):
+        user = storage.get(cls, reset_token=reset_token)
+        if user:
+            password_hash = _hash_password(password)
+            storage.update(cls, user.id, password_hash=password_hash)
+            storage.update(cls, user.id, reset_token=None)
+            return True
+        else:
+            return False
+        
+
     def verify_login(self, cls, email, password):
         user = storage.get(classes[cls], email=email)
         if user:
             if bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
-                print("verified")
+               return True
             else:
-                print("incorrect pasword")
+                return False
         else:
-            print("user not found")
+            return False
 
-    def create_reset_token(self, cls,  email, new_password):
+
+    def create_reset_token(self, cls,  email):
         user = storage.get(classes[cls], email=email)
         if user:
             reset_token = _generate_uuid()
-            
+        storage.update(cls, user.id, reset_token=reset_token)
+        return reset_token
 
-    
 
 def _hash_password(password):
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    
+
+
 def _generate_uuid():
-    return str(uuid.uuid4())
+    token = str(uuid.uuid4())
+    return token
