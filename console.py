@@ -11,6 +11,8 @@ from models.payment import Payment
 from models.trip import Trip
 from models.notification import Notification
 from models.vehicle import Vehicle
+from models.admin import Admin
+from auth.authentication import _hash_password
 import os
 import sys
 from models import storage
@@ -19,7 +21,7 @@ from sqlalchemy.exc import IntegrityError
 classes = {"Notification": Notification, "Driver": Driver, 
            "Rider": Rider, "Payment": Payment, "Trip": Trip,
            "Location": Location, "Availability": Availability,
-           "Vehicle": Vehicle}
+           "Vehicle": Vehicle, "Admin": Admin}
 
 class WegoCommand(cmd.Cmd):
     prompt = '(wego) '
@@ -74,16 +76,20 @@ class WegoCommand(cmd.Cmd):
             return False
         if args[0] in classes:
             cols = classes[args[0]].__table__.columns.keys()
+            
             parent_cols = ["id", "created_at", "updated_at"]
             if len(args) >= 1:
                 new_dict = self._key_value_parser(args[1:])
-                stop=False
-                for k in cols:
-                    if k not in new_dict.keys() and k not in parent_cols:
-                        print(f"{k}: is missing")
-                        stop = True
-                if stop:
-                    return False
+                # stop=False
+                # for k in cols:
+                #     if k not in new_dict.keys() and k not in parent_cols:
+                #         print(k)
+                #         nullable = classes[args[0]].__table__.c.k.nullable
+                #         if not nullable:
+                #             print(f"{k}: is missing")
+                #             stop = True
+                # if stop:
+                #     return False
                 
                 if args[0] in ["Rider", "Driver"]:
                     if type(new_dict["phone_number"]) is not int:
@@ -91,14 +97,16 @@ class WegoCommand(cmd.Cmd):
                         return False
                     email = new_dict["email"]
                     phone_number = new_dict["phone_number"]
-                    user_email = storage.get_all(classes[args[0]], "email={}".format(email))
+                    user_email = storage.get_all(classes[args[0]], email=email)
                     if user_email:
                         print("** email already exists **")
                         return False
-                    user_phone = storage.get_all(classes[args[0]], "phone_number={}".format(phone_number))
+                    user_phone = storage.get_all(classes[args[0]], phone_number=phone_number)
                     if user_phone:
                         print("** phone_number already exists **")
                         return False
+                new_dict["password_hash"] = _hash_password(new_dict["password_hash"])
+                
                 instance = classes[args[0]](**new_dict)
                 instance.save()  
                 print(instance.id)

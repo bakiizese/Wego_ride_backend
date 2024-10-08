@@ -8,23 +8,18 @@ classes = {"Driver": Driver,
            "Rider": Rider}
 
 class Auth:
-    def register_user(self, cls, username, first_name, last_name, email, phone_number, password):
-        user1 = storage.get_all(classes[cls], email=email)
-        user2 = storage.get_all(classes[cls], phone_number=phone_number)
+    def register_user(self, cls, **kwargs):
+        user1 = storage.get_all(classes[cls], email=kwargs['email'])
+        user2 = storage.get_all(classes[cls], phone_number=kwargs['phone_number'])
         if user1:
             print("** email already exists **")
             return False
         if user2:
             print("** phone number already exists **")
             return False
-        password_hash = _hash_password(password)
-        new_dict = {"username": username,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "email": email,
-                    "phone_number": phone_number,
-                    "password_hash": password_hash}
-        user = classes[cls](**new_dict)
+        password_hash = _hash_password(kwargs['password'])
+
+        user = classes[cls](**kwargs)
         user.save()
         print(user.id)
 
@@ -50,7 +45,7 @@ class Auth:
     
 
 def _hash_password(password):
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     
 def _generate_uuid():
     return str(uuid.uuid4())

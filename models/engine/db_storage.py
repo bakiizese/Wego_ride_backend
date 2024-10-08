@@ -10,6 +10,7 @@ from models.payment import Payment
 from models.trip import Trip
 from models.notification import Notification
 from models.vehicle import Vehicle
+from models.admin import Admin
 import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
