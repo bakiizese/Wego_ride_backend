@@ -1,16 +1,18 @@
 import models
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import String, Column, Integer
+from sqlalchemy import String, Column, Integer, BINARY
 
 class Driver(BaseModel, Base):
     __tablename__ = 'drivers'
     username = Column(String(128), nullable=False, unique=True)
     first_name = Column(String(128), nullable=False)
     last_name = Column(String(128), nullable=False)
-    email = Column(String(128), nullable=False, unique=True)
+    email = Column(String(250), nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
-    password_hash = Column(String(128), nullable=False)
+    password_hash = Column(String(250), nullable=False)
+    session_id = Column(String(250), nullable=True)
+    reset_token = Column(String(250), nullable=True)
     vehicle = relationship("Vehicle", 
                            backref="drivers",
                            cascade="all, delete, delete-orphan"
