@@ -54,7 +54,7 @@ class WegoCommand(cmd.Cmd):
                 kvp = arg.split('=', 1)
                 key = kvp[0]
                 value = kvp[1]
-                if value[0] == value[-1] == '"':
+                if len(value) > 0 and value[0] == value[-1] == '"':
                     value = shlex.split(value)[0].replace('_', ' ')
                 else:
                     try:
@@ -71,6 +71,7 @@ class WegoCommand(cmd.Cmd):
     def do_create(self, arg):
         """ creates an instance of a given class based on properies provided """
         args = arg.split()
+        # print(arg)
         if len(args) < 1:
             print("** class name missing **")
             return False
@@ -105,11 +106,12 @@ class WegoCommand(cmd.Cmd):
                     if user_phone:
                         print("** phone_number already exists **")
                         return False
-                new_dict["password_hash"] = _hash_password(new_dict["password_hash"])
+                    new_dict["password_hash"] = _hash_password(new_dict["password_hash"])
                 
                 instance = classes[args[0]](**new_dict)
                 instance.save()  
                 print(instance.id)
+                return instance.id
                 
         else:
             print("** class doesn't exist **")
@@ -220,6 +222,7 @@ class WegoCommand(cmd.Cmd):
         elif args[0] in classes:
             count = storage.count(classes[args[0]])
             print(f"{args[0]}: {count}")
+            return count
         else:
             print("** class doesn't exist **")
             return False
