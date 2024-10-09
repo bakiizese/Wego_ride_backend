@@ -80,6 +80,7 @@ class DBStorage:
     
     def delete(self, cls, arg=None):
         """deletes an instance based on the given class and id"""
+        
         if arg:
             if "=" in arg:
                 arg = arg.split("=")[1]
@@ -87,6 +88,7 @@ class DBStorage:
                     arg = arg.replace('"', "")
                 elif "'" in arg:
                     arg = arg.replace("'", "")
+            
             inst = self.__session.query(cls).get(arg)
             self.__session.delete(inst)
             self.save()

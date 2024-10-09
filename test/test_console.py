@@ -40,6 +40,7 @@ class TestConsole(unittest.TestCase):
         ('Driver username="beki" first_name="bereket" last_name="zesess" email="bereket@reket" phone_number="1236" password_hash="passcode"', '** phone_number must be a number **', False)
     ])
     def test_do_create(self, arg, expected_print, expected_return):
+        '''test the outputs and returns of do_create'''
         global user_id
 
         captured_output = io.StringIO()
@@ -60,6 +61,7 @@ class TestConsole(unittest.TestCase):
         ('Driver id=adad', '', None)
         ])
     def test_do_show(self, arg, expected_print, expected_return):
+        ''' test outputs and returns of do_show '''
         captured_output = io.StringIO()
         sys.stdout = captured_output
 
@@ -80,6 +82,7 @@ class TestConsole(unittest.TestCase):
         ('Driver id=asdsads username="jack"', '** instance id doesn\'t exist **', False),
         ])
     def test_do_update(self, arg, expected_print, expected_return):
+        ''' test the outputs and returns of do_update '''
         captured_output = io.StringIO()
         sys.stdout = captured_output
        
