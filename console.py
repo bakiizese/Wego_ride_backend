@@ -138,6 +138,7 @@ class WegoCommand(cmd.Cmd):
             for data in data_dict:
                 data_dict[data] = data_dict[data].to_dict()
             print(data_dict)
+            return data_dict
         
     
     def do_destroy(self, arg):
