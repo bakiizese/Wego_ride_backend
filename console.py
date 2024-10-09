@@ -71,7 +71,6 @@ class WegoCommand(cmd.Cmd):
     def do_create(self, arg):
         """ creates an instance of a given class based on properies provided """
         args = arg.split()
-        # print(arg)
         if len(args) < 1:
             print("** class name missing **")
             return False
@@ -81,16 +80,13 @@ class WegoCommand(cmd.Cmd):
             parent_cols = ["id", "created_at", "updated_at"]
             if len(args) >= 1:
                 new_dict = self._key_value_parser(args[1:])
-                # stop=False
-                # for k in cols:
-                #     if k not in new_dict.keys() and k not in parent_cols:
-                #         print(k)
-                #         nullable = classes[args[0]].__table__.c.k.nullable
-                #         if not nullable:
-                #             print(f"{k}: is missing")
-                #             stop = True
-                # if stop:
-                #     return False
+                stop=False
+                for k in cols:
+                    if k not in new_dict.keys() and k not in parent_cols:
+                        nullable = classes[args[0]].__table__.c[k].nullable
+                        if not nullable:
+                            print(f"{k}: is missing")
+                            return False
                 
                 if args[0] in ["Rider", "Driver"]:
                     if type(new_dict["phone_number"]) is not int:
@@ -98,6 +94,10 @@ class WegoCommand(cmd.Cmd):
                         return False
                     email = new_dict["email"]
                     phone_number = new_dict["phone_number"]
+                    user_name = storage.get_all(classes[args[0]], username=new_dict["username"])
+                    if user_name:
+                        print("** username already exists **")
+                        return False
                     user_email = storage.get_all(classes[args[0]], email=email)
                     if user_email:
                         print("** email already exists **")
@@ -112,7 +112,6 @@ class WegoCommand(cmd.Cmd):
                 instance.save()  
                 print(instance.id)
                 return instance.id
-                
         else:
             print("** class doesn't exist **")
             return False
@@ -184,7 +183,7 @@ class WegoCommand(cmd.Cmd):
                 if not dict_data or len(dict_data) != len(args) - 2:
                     print("** property or value incorrect **")
                     return False
-                data = storage.get_all(classes[args[0]], args[1])
+                data = storage.get_all(classes[args[0]], id=id_dict)
                 if not data:
                     print("** instance id doesn't exist **")
                     return False
@@ -207,6 +206,7 @@ class WegoCommand(cmd.Cmd):
                 return False
         else:
             print("** class doesn't exist **")
+            return False
 
 
     def do_count(self, arg):

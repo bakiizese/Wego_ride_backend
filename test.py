@@ -7,5 +7,5 @@ new = Auth()
 
 # user = new.create_reset_token("Driver", email="be@beki")
 # print(f"in return last check {user}")
-new.update_password("Driver", reset_token="a5e76468-2b07-49f1-80a1-2ab4fda52df2", password="hello")
+# new.update_password("Driver", reset_token="a5e76468-2b07-49f1-80a1-2ab4fda52df2", password="hello")
 
