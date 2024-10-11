@@ -2,10 +2,14 @@ import bcrypt
 from models import storage
 from models.driver import Driver
 from models.rider import Rider
+import datetime
 import uuid
+import jwt
 
 classes = {"Driver": Driver, 
            "Rider": Rider}
+
+SECRET_KEY = 'wego_rider_service_secret_key'
 
 class Auth:
     '''Authentication class to register, verify, change password'''
@@ -16,19 +20,19 @@ class Auth:
         user2 = storage.get_all(classes[cls], phone_number=kwargs['phone_number'])
         if user0:
             print("** username already exists **")
-            return False  
+            return '** username already exists **', False  
         if user1:
             print("** email already exists **")
-            return False
+            return '** email already exists **', False
         if user2:
             print("** phone number already exists **")
-            return False
+            return '** phone number already exists **', False
         kwargs["password_hash"] = _hash_password(kwargs['password_hash'])
 
         user = classes[cls](**kwargs)
         user.save()
         print(user.id)
-        return user.id
+        return user.id, True
 
 
     def update_password(self, cls, reset_token, password):
@@ -48,12 +52,12 @@ class Auth:
         user = storage.get(cls, email=email)
         if user:
             if bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
-               return True
+               jwt_token = _generate_jwt(user)
+               return '** verified **', jwt_token
             else:
-                return False
+                return '** incorrect password **', False
         else:
-            return False
-
+            return '** email doesn\'t exist **', False
 
     def create_reset_token(self, cls,  email):
         '''create a token for updateing password'''
@@ -74,3 +78,14 @@ def _generate_uuid():
     '''generate random string for token'''
     token = str(uuid.uuid4())
     return token
+
+def _generate_jwt(user):
+    '''generate jwt token using secret key and payload'''
+    token_payload = {
+        'sub': user.id,
+        'role': user.__class__.__name__,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(weeks=4)
+        }
+    jwt_token = jwt.encode(token_payload, SECRET_KEY,  algorithm='HS256')
+    return jwt_token
+    

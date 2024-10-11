@@ -71,7 +71,7 @@ class TestAuthentication(unittest.TestCase):
         
     def test_verify_login(self):
         '''verify login by the given passcode and email'''
-        login = Auth.verify_login('Driver', 'bereketzese@gmail.com', 'mypass')
+        login = Auth.verify_login('Driver', 'bereketzese@gmail.com', 'new_password')
         login2 = Auth.verify_login('Driver', 'bereketzese@gmail.com', 'ss')
         login3 = Auth.verify_login('Driver', 'bere@gmail.com', 'mypass')
         
