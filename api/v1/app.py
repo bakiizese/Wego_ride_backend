@@ -1,6 +1,6 @@
 from flask import Flask
 from api.v1.views import admin_bp, rider_bp, driver_bp
-from flask_cors import CORS
+# from flask_cors import CORS
 
 app = Flask(__name__)
 

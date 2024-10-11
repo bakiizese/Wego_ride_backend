@@ -53,7 +53,7 @@ class Auth:
         if user:
             if bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
                jwt_token = _generate_jwt(user)
-               return '** verified **', jwt_token
+               return '** login verified **', jwt_token
             else:
                 return '** incorrect password **', False
         else:
