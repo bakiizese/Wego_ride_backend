@@ -1,6 +1,7 @@
 from api.v1.views import rider_bp
 from flask import jsonify, request
 from auth import authentication
+from auth.authentication import _hash_password
 from models import storage
 from api.v1.middleware import token_required, admin_required
 
@@ -66,8 +67,36 @@ def get_profile():
 @rider_bp.route('/profile', methods=['PUT'], strict_slashes=False)
 @token_required
 def put_profile():
+    user_id = request.user_id
+    user_data = request.get_json()
 
-    return jsonify({'User': 'Update user profile'})
+    unmutables_by_user = ['email', 'phone_number', 'reset_token']
+    user = storage.get_in_dict(cls, id=user_id)
+    updates = {}
+    if user:
+        for k in user_data.keys():
+            if k not in unmutables_by_user:
+                updates[k] = user_data[k]
+
+        if 'password_hash' in updates:
+            if 'old_password' in updates:
+                user_password = storage.get(cls, id=user_id)
+                check_password = Auth.verify_password(updates['old_password'], user_password)
+                if check_password:
+                    updates['password_hash'] = _hash_password(updates['password_hash'])
+                    del updates['old_password']
+                else:
+                    return jsonify({'Error': 'password incorrect'})
+            else:
+                return jsonify({'Error': 'old_password missing'})       
+        try:
+            user_update = storage.update(cls, id=user_id, **updates)
+        except Exception:
+            return jsonify({'Error': 'Update Failed'})
+        if user_update == False:
+            return jsonify({'Error': 'username already exists or key not found'})
+
+    return jsonify({'User': 'Updated Successfuly'})
 
 #Ride Booking
 @rider_bp.route('/book-ride', methods=['POST'], strict_slashes=False)
