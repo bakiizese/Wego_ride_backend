@@ -1,6 +1,8 @@
 from api.v1.views import rider_bp
 from flask import jsonify, request
 from auth import authentication
+from models import storage
+from api.v1.middleware import token_required, admin_required
 
 Auth = authentication.Auth()
 
@@ -9,6 +11,8 @@ rider_key = ['username', 'first_name',
              'phone_number', 'password_hash']
 cls = 'Rider'
 
+
+#Registation And Authentication
 @rider_bp.route('/register', methods=['POST'], strict_slashes=False)
 def register():
     user_data = request.get_json()
@@ -44,11 +48,90 @@ def login():
 
 
 @rider_bp.route('/logout', methods=['POST'], strict_slashes=False)
+@token_required
 def logout():
     return jsonify({'User': 'Logged out'})
 
-@rider_bp.route('/profile', methods=['GET', 'PUT'], strict_slashes=False)
-def get_put_profile():
-    return jsonify({'User': 'Profile returned'})
 
+#Profile Management
+@rider_bp.route('/profile', methods=['GET'], strict_slashes=False)
+@token_required
+def get_profile():
+    user_id = request.user_id
+    user = storage.get_in_dict(cls, id=user_id)
+    if user:
+        return jsonify({'User': user})
+    return jsonify({'Error': 'User not found'})
 
+@rider_bp.route('/profile', methods=['PUT'], strict_slashes=False)
+@token_required
+def put_profile():
+
+    return jsonify({'User': 'Update user profile'})
+
+#Ride Booking
+@rider_bp.route('/book-ride', methods=['POST'], strict_slashes=False)
+@token_required
+def book_ride():
+    '''book a ride by provideing pickup and dropoff location'''
+    pass
+
+@rider_bp.route('/ride-estimate', methods=['GET'], strict_slashes=False)
+@token_required
+def ride_estimate():
+    '''estmated fare, time'''
+    pass
+
+@rider_bp.route('/current-ride', methods=['GET'], strict_slashes=False)
+@token_required
+def current_ride():
+    '''show current ride  details'''
+    pass
+
+@rider_bp.route('/available-rides', methods=['GET'], strict_slashes=False)
+@token_required
+def available_rides():
+    '''show all available rides includeing pickup, dropoff location and time and fare'''
+    pass
+
+@rider_bp.route('/ride-status', methods=['GET'], strict_slashes=False)
+@token_required
+def ride_status():
+    '''check details of ride request'''
+    pass
+
+#Ride History And Management
+@rider_bp.route('/ride-history', methods=['GET'], strict_slashes=False)
+@token_required
+def ride_history():
+    '''get past trips'''
+    pass
+
+@rider_bp.route('/cancel-ride', methods=['POST'], strict_slashes=False)
+@token_required
+def cancel_ride():
+    '''to cancel a ride'''
+    pass
+
+#Payment
+@rider_bp.route('/add-payment-method', methods=['POST'], strict_slashes=False)
+@token_required
+def add_payment_method():
+    pass
+
+@rider_bp.route('/pay-ride', methods=['POST'], strict_slashes=False)
+@token_required
+def pay_ride():
+    '''make payment for a completed trip'''
+    pass
+
+#Ratings And Feedback
+@rider_bp.route('/rate-driver', methods=['POST'], strict_slashes=False)
+@token_required
+def rate_driver():
+    pass
+
+@rider_bp.route('/report-issue', methods=['POST'], strict_slashes=False)
+@token_required
+def report_issue():
+    pass

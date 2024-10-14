@@ -60,7 +60,12 @@ class DBStorage:
 
     def get(self, cls, **kwargs):
         return self.__session.query(classes[cls]).filter_by(**kwargs).first()
-        
+    
+    def get_in_dict(self, cls, **kwargs):
+        data_dict = self.get_all(classes[cls], **kwargs)
+        for data in data_dict:
+            data_dict[data] = data_dict[data].to_dict()
+        return data_dict
 
     def get_all(self, cls, **kwargs):
         """returns all instance based on the class and id(optional)"""
