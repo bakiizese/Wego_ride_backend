@@ -66,7 +66,7 @@ def put_profile():
     return jsonify({'User': 'Update user profile'})
 
 #Availabilty
-@driver_bp('/availability', methods=['POST'], strict_slashes=False)
+@driver_bp.route('/availability', methods=['POST'], strict_slashes=False)
 @token_required
 def availability():
     '''driver's availability online/offline'''
