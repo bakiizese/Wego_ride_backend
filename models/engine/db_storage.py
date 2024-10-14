@@ -15,7 +15,6 @@ import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-
 mysql_user = 'wegoride_user'
 mysql_host = 'localhost'
 mysql_pwd = 'wegoride'
@@ -59,6 +58,7 @@ class DBStorage:
         self.__session = Session
 
     def get(self, cls, **kwargs):
+        '''returns class object that can be accessed by .'''
         return self.__session.query(classes[cls]).filter_by(**kwargs).first()
     
     def get_in_dict(self, cls, **kwargs):
@@ -85,7 +85,6 @@ class DBStorage:
     
     def delete(self, cls, arg=None):
         """deletes an instance based on the given class and id"""
-        
         if arg:
             if "=" in arg:
                 arg = arg.split("=")[1]
@@ -105,6 +104,12 @@ class DBStorage:
             if k not in cols:
                 print("** key not found **")
                 return False
+        if 'username' in kwargs:
+            user = self.get(cls, username=kwargs['username'])
+            if user:
+                print("** username already exist **")
+                return False
+
         for k, v in kwargs.items():
             self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
                 {k: v},
