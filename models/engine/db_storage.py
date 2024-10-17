@@ -11,6 +11,7 @@ from models.trip import Trip
 from models.notification import Notification
 from models.vehicle import Vehicle
 from models.admin import Admin
+from models.trip_rider import TripRider
 import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -25,7 +26,7 @@ time = "%Y-%m-%dT%H:%M:%S.%f"
 classes = {"Notification": Notification, "Driver": Driver, 
            "Rider": Rider, "Payment": Payment, "Trip": Trip,
            "Location": Location, "Availability": Availability,
-           "Vehicle": Vehicle, "Admin": Admin}
+           "Vehicle": Vehicle, "Admin": Admin, "TripRider": TripRider}
 
 class DBStorage:
     __engine = None
@@ -61,6 +62,10 @@ class DBStorage:
         '''returns class object that can be accessed by .'''
         return self.__session.query(classes[cls]).filter_by(**kwargs).first()
     
+    def get_objs(self, cls, **kwargs):
+        '''returns class object that can be accessed by .'''
+        return self.__session.query(classes[cls]).filter_by(**kwargs)
+
     def get_in_dict(self, cls, **kwargs):
         data_dict = self.get_all(classes[cls], **kwargs)
         for data in data_dict:
@@ -92,8 +97,8 @@ class DBStorage:
                     arg = arg.replace('"', "")
                 elif "'" in arg:
                     arg = arg.replace("'", "")
-            
-            inst = self.__session.query(cls).get(arg)
+            # inst = self.__session.query(cls).get(arg)
+            inst = self.__session.query(cls).filter_by(id=arg).first()
             self.__session.delete(inst)
             self.save()
     
