@@ -270,6 +270,7 @@ def cancel_ride():
 @rider_bp.route('/add-payment-method', methods=['POST'], strict_slashes=False)
 @token_required
 def add_payment_method():
+    '''add payment methods'''
     pass
 
 @rider_bp.route('/pay-ride', methods=['POST'], strict_slashes=False)
