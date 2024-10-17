@@ -8,9 +8,7 @@ class Location(BaseModel, Base):
     latitude = Column(Float)
     longitude = Column(Float)
     address = Column(VARCHAR(128))
-    availability = relationship("Availability",
-                                backref="locations",
-                                cascade="all, delete, delete-orphan")
+    
     pickup_location = relationship("Trip",
                                    foreign_keys="Trip.pickup_location_id",
                                    backref="pickup_locations",

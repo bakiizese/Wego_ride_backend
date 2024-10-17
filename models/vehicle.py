@@ -9,3 +9,5 @@ class Vehicle(BaseModel):
     type = Column(VARCHAR(60))
     model = Column(VARCHAR(60))
     color = Column(String(60), nullable=False)
+    seating_capacity = Column(Integer, nullable=False)
+    
