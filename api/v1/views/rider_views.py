@@ -42,8 +42,8 @@ def login():
         return jsonify({'Error': 'password missing'})
     
     user = Auth.verify_login(cls, user_data['email'], user_data['password_hash'])
-
     message, status = user
+    
     if status:
         return jsonify({'User': status})
 
@@ -57,23 +57,34 @@ def logout():
 
 
 #Profile Management
-@rider_bp.route('/forget-password', methods=['POST'], strict_slashes=False)
-def forget_password():
+@rider_bp.route('/reset-token', methods=['POST'], strict_slashes=False)
+def get_reset_token():
+    '''token is sent to phone number or email'''
     user_data = request.get_json()
     if 'email' in user_data:
         user = storage.get(cls, email=user_data['email'])
         if user:
             reset_token = Auth.create_reset_token(cls, user_data['email'])
-            update_password = Auth.update_password(cls, reset_token, 'password')
-            if update_password:
-                return jsonify({'Update': 'Successful'})
-            else:
-                return jsonify({'Update': 'Failed'})
+            return jsonify({'reset_token': reset_token})
         else:
             return jsonify({'User': 'Not found'})
     else:
         return jsonify({'Error': 'email not given'})
-    
+
+@rider_bp.route('/forget-password', methods=['POST'], strict_slashes=False)
+def forget_password():
+    '''update password using reset token'''
+    user_data = request.get_json()
+    if 'password_hash' not in user_data:
+        return jsonify({'Error': 'password not provided'})
+    if 'reset_token' in user_data:
+        update_password = Auth.update_password(cls, user_data['reset_token'], user_data['password_hash'])
+        if update_password:
+            return jsonify({'Update': 'Successful'})
+        else:
+            return jsonify({'Update': 'Failed'})
+    else:
+        return jsonify({'Error': 'reset token not provided'})
 
 @rider_bp.route('/profile', methods=['GET'], strict_slashes=False)
 @token_required
@@ -125,11 +136,19 @@ def put_profile():
 @rider_bp.route('/available-rides', methods=['GET'], strict_slashes=False)
 @token_required
 def available_rides():
-    trips = storage.get_all(Trip, is_available=True)
+    trips = storage.get_objs('Trip', is_available=True)
+    trips_dict = {}
     for trip in trips:
-        trips[trip] = trips[trip].to_dict()
+        vehicle = storage.get('Driver', id=trip.driver_id).vehicle
+        riders = [rider.rider for rider in storage.get_objs('TripRider', trip_id=trip.id, is_past=False)]
+        available_seats = vehicle.seating_capacity - len(riders)
+        trips_dict[trip.id] = trip.to_dict()
+        trips_dict[trip.id]['vehicle_holds'] = vehicle.seating_capacity
+        trips_dict[trip.id]['available_seats'] = available_seats
+        del trips_dict[trip.id]['status']
+
     if trips:
-        return jsonify({'Trips': trips})
+        return jsonify({'Trips': trips_dict})
     return jsonify({'Error': 'no trips found'})
 
 @rider_bp.route('/book-ride', methods=['POST'], strict_slashes=False)
@@ -141,12 +160,17 @@ def book_ride():
     trip_id = ride_data['trip_id']
     trip = storage.get("Trip", id=trip_id)
     
-    if rider_id in [rider.id for rider in trip.riders]:
+    riders = []
+    for rider in trip.riders:
+        if rider.is_past == False:
+            riders.append(rider.rider_id)
+    
+    if rider_id in riders:
         return jsonify({'Error': 'you have already booked a ride'})
-
-    vehicles = trip.drivers.vehicle
-    for vehicle in vehicles:
-        seating_capacity = vehicle.seating_capacity
+    
+    
+    vehicle = trip.drivers.vehicle
+    seating_capacity = vehicle.seating_capacity
     number_of_passengers = 0
     
     for _ in trip.riders:
@@ -178,12 +202,13 @@ def booked_ride():
     rider_id = request.user_id
     rides = storage.get_objs('TripRider', rider_id=rider_id)
     
-    trips = [ride.trip for ride in rides if not ride.is_past]
+    trips = [ride for ride in rides if not ride.is_past]
 
     rides_dict = {}
 
     for trip in trips:
-        rides_dict[trip.id] = trip.to_dict()
+        rides_dict[trip.trip.id] = trip.trip.to_dict()
+        rides_dict[trip.trip.id]['trip_ride_id'] = trip.id
 
     return jsonify({'Ride': rides_dict})
 
@@ -191,8 +216,8 @@ def booked_ride():
 @token_required
 def current_ride(tripride_id):
     '''show current ride details'''
-
     trip = storage.get('TripRider', id=tripride_id).trip.to_dict()
+
     trip['pickup_location_id'] = next(iter(storage.get_in_dict('Location', id=trip['pickup_location_id']).values()))
     trip['dropoff_location_id'] = next(iter(storage.get_in_dict('Location', id=trip['dropoff_location_id']).values()))
     trip['driver_id'] = storage.get_in_dict('Driver', id=trip['driver_id'])
@@ -206,10 +231,9 @@ def ride_status(tripride_id):
     '''check details of ride request'''
     rider_id = request.user_id
     trip = storage.get('TripRider', id=tripride_id).trip
-    vehicles = trip.drivers.vehicle
+    vehicle = trip.drivers.vehicle
     number_of_passengers = 0
-    for vehicle in vehicles:
-        seating_capacity = vehicle.seating_capacity
+    seating_capacity = vehicle.seating_capacity
 
     for _ in trip.riders:
         number_of_passengers += 1
@@ -260,7 +284,7 @@ def cancel_ride():
 
     if triprider.rider_id == request.user_id:
         update_triprider = storage.update('TripRider', id=triprider.id, is_past=True)
-        update_dict = {'status': 'Canceled'} # 'status_by': 'Canceled'}
+        update_dict = {'status': 'Canceled'} # 'status_by': request.user_id}
         update_trip = storage.update('Trip', id=trip_id, **update_dict)
 
         return jsonify({'Trip': 'Canceled'})

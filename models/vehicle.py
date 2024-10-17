@@ -10,4 +10,6 @@ class Vehicle(BaseModel):
     model = Column(VARCHAR(60))
     color = Column(String(60), nullable=False)
     seating_capacity = Column(Integer, nullable=False)
+
+    driver = relationship("Driver", back_populates="vehicle")
     

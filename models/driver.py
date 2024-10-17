@@ -13,10 +13,7 @@ class Driver(BaseModel, Base):
     password_hash = Column(String(250), nullable=False)
     reset_token = Column(String(250), nullable=True)
     payment_method = Column(VARCHAR(128), nullable=False)
-    vehicle = relationship("Vehicle", 
-                           backref="drivers",
-                           cascade="all, delete, delete-orphan"
-                           )
+    vehicle = relationship("Vehicle", uselist=False, back_populates="driver")
     notification = relationship("Notification",
                                 backref="drivers",
                                 cascade="all, delete, delete-orphan")

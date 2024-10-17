@@ -202,7 +202,10 @@ class WegoCommand(cmd.Cmd):
                         stop = True
                 if stop:
                     return False
-
+                
+                if 'password_hash' in dict_data:
+                    dict_data['password_hash'] = _hash_password(dict_data['password_hash'])
+                    
                 for k, v in dict_data.items():
                     setattr(data, k, v)
                 data.save()

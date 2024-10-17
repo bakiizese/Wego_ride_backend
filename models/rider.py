@@ -14,6 +14,7 @@ class Rider(BaseModel, Base):
     reset_token = Column(String(250), nullable=True)
     payment_method = Column(VARCHAR(128), nullable=False)
 
+    # 0e5dec68-f978-4c89-a32c-4478bed8efb0
     trips = relationship("TripRider", back_populates="rider")
     
     notification = relationship("Notification",
