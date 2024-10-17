@@ -1,11 +1,11 @@
 import models
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, VARCHAR, String, DateTime, Float, ForeignKey
+from sqlalchemy import Column, VARCHAR, String, DateTime, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from models.trip_rider import TripRider
 
 class Trip(BaseModel, Base):
     __tablename__ = 'trips'
-    rider_id = Column(String(128), ForeignKey('riders.id'))
     driver_id = Column(String(128), ForeignKey('drivers.id'))
     pickup_location_id = Column(String(128), ForeignKey('locations.id'))
     dropoff_location_id = Column(String(128), ForeignKey('locations.id'))
@@ -14,6 +14,14 @@ class Trip(BaseModel, Base):
     fare = Column(Float, nullable=False)
     distance = Column(Float)
     status = Column(VARCHAR(128), nullable=False)
-    payment = relationship("Payment",
+    # status_by = Column(VARCHAR(128))
+    is_available = Column(Boolean, default=True) #shouldn't be 
+
+
+
+    riders = relationship("TripRider", back_populates="trip")
+    
+    payment = relationship("Payment", 
                            backref="trips",
                            cascade="all, delete, delete-orphan")
+    

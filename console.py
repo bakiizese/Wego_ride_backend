@@ -12,6 +12,7 @@ from models.trip import Trip
 from models.notification import Notification
 from models.vehicle import Vehicle
 from models.admin import Admin
+from models.trip_rider import TripRider
 from auth.authentication import _hash_password
 import os
 import sys
@@ -21,7 +22,7 @@ from sqlalchemy.exc import IntegrityError
 classes = {"Notification": Notification, "Driver": Driver, 
            "Rider": Rider, "Payment": Payment, "Trip": Trip,
            "Location": Location, "Availability": Availability,
-           "Vehicle": Vehicle, "Admin": Admin}
+           "Vehicle": Vehicle, "Admin": Admin, "TripRider": TripRider}
 
 class WegoCommand(cmd.Cmd):
     prompt = '(wego) '
@@ -63,7 +64,13 @@ class WegoCommand(cmd.Cmd):
                         try:
                             value = float(value)
                         except:
-                            continue
+                            try:
+                                if 'True' == value:
+                                    value = True
+                                elif 'False' == value:
+                                    value = False
+                            except:
+                                continue
                 new_dict[key] = value
         return new_dict
    
@@ -80,7 +87,6 @@ class WegoCommand(cmd.Cmd):
             parent_cols = ["id", "created_at", "updated_at"]
             if len(args) >= 1:
                 new_dict = self._key_value_parser(args[1:])
-                stop=False
                 for k in cols:
                     if k not in new_dict.keys() and k not in parent_cols:
                         nullable = classes[args[0]].__table__.c[k].nullable
@@ -111,7 +117,7 @@ class WegoCommand(cmd.Cmd):
                 instance = classes[args[0]](**new_dict)
                 instance.save()  
                 print(instance.id)
-                return instance.id
+                # return instance.id
         else:
             print("** class doesn't exist **")
             return False
@@ -222,7 +228,7 @@ class WegoCommand(cmd.Cmd):
         elif args[0] in classes:
             count = storage.count(classes[args[0]])
             print(f"{args[0]}: {count}")
-            return count
+            # return count
         else:
             print("** class doesn't exist **")
             return False
