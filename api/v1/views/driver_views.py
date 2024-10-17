@@ -1,8 +1,10 @@
 from api.v1.views import driver_bp
 from flask import jsonify, request
 from auth import authentication
+from auth.authentication import _hash_password
 from api.v1.middleware import token_required, admin_required
 from models import storage
+
 
 Auth = authentication.Auth()
 
@@ -42,6 +44,7 @@ def login():
 
     if status:
         return jsonify({'User': status})
+    
     return jsonify({'Error': message}) 
 
 
@@ -51,6 +54,37 @@ def logout():
     return jsonify({'User': 'Logged out'})
 
 #Profile Management
+@driver_bp.route('/reset-token', methods=['POST'], strict_slashes=False)
+def get_reset_token():
+    '''token is sent to phone number or email'''
+    user_data = request.get_json()
+    if 'email' in user_data:
+        user = storage.get(cls, email=user_data['email'])
+        if user:
+            reset_token = Auth.create_reset_token(cls, user_data['email'])
+            return jsonify({'reset_token': reset_token})
+        else:
+            return jsonify({'User': 'Not found'})
+    else:
+        return jsonify({'Error': 'email not given'})
+
+@driver_bp.route('/forget-password', methods=['POST'], strict_slashes=False)
+def forget_password():
+    '''update password using reset token'''
+    user_data = request.get_json()
+    if 'password_hash' not in user_data:
+        return jsonify({'Error': 'password not provided'})
+    if 'reset_token' in user_data:
+        update_password = Auth.update_password(cls, user_data['reset_token'], user_data['password_hash'])
+        if update_password:
+            return jsonify({'Update': 'Successful'})
+        else:
+            return jsonify({'Update': 'Failed'})
+    else:
+        return jsonify({'Error': 'reset token not provided'})
+
+
+
 @driver_bp.route('/profile', methods=['GET'], strict_slashes=False)
 @token_required
 def get_profile():
@@ -63,14 +97,49 @@ def get_profile():
 @driver_bp.route('/profile', methods=['PUT'], strict_slashes=False)
 @token_required
 def put_profile():
-    return jsonify({'User': 'Update user profile'})
+    '''updates profile and password'''
+    user_id = request.user_id
+    user_data = request.get_json()
+
+    unmutables_by_user = ['email', 'phone_number', 'reset_token']
+    user = storage.get_in_dict(cls, id=user_id)
+    updates = {}
+    if user:
+        for k in user_data.keys():
+            if k not in unmutables_by_user:
+                updates[k] = user_data[k]
+
+        if 'password_hash' in updates:
+            if 'old_password' in updates:
+                user_password = storage.get(cls, id=user_id)
+                check_password = Auth.verify_password(updates['old_password'], user_password)
+                if check_password:
+                    updates['password_hash'] = _hash_password(updates['password_hash'])
+                    del updates['old_password']
+                else:
+                    return jsonify({'Error': 'password incorrect'})
+            else:
+                return jsonify({'Error': 'old_password missing'})       
+        try:
+            user_update = storage.update(cls, id=user_id, **updates)
+        except Exception:
+            return jsonify({'Error': 'Update Failed'})
+        if user_update == False:
+            return jsonify({'Error': 'username already exists or key not found'})
+
+    return jsonify({'User': 'Updated Successfuly'})
 
 #Availabilty
-@driver_bp.route('/availability', methods=['POST'], strict_slashes=False)
+@driver_bp.route('/availability', methods=['GET'], strict_slashes=False)
 @token_required
 def availability():
     '''driver's availability online/offline'''
-    pass
+    user_id = request.user_id
+    availability = storage.get_in_dict('Availability', driver_id=user_id)
+    
+    if availability:
+        return jsonify({'Availability': availability})
+    return jsonify({'Availability': 'availability not found'})
 
 @driver_bp.route('/current-status', methods=['GET'], strict_slashes=False)
 @token_required

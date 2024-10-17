@@ -1,6 +1,8 @@
 from functools import wraps
 from flask import jsonify, request
 import jwt
+from models import storage
+from datetime import datetime
 
 SECRET_KEY = 'wego_rider_service_secret_key'
 
@@ -20,6 +22,10 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'Error': 'Invalid token'}), 401
         
+        if data['role'] == 'Driver':
+            availability = storage.get('Availability', driver_id=data['sub']).id
+            storage.update('Availability', availability, last_active_time=datetime.utcnow())
+
         return f(*args, **kwargs)
     return decorated
 
