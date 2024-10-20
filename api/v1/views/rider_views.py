@@ -142,10 +142,15 @@ def available_rides():
         vehicle = storage.get('Driver', id=trip.driver_id).vehicle
         riders = [rider.rider for rider in storage.get_objs('TripRider', trip_id=trip.id, is_past=False)]
         available_seats = vehicle.seating_capacity - len(riders)
-        trips_dict[trip.id] = trip.to_dict()
-        trips_dict[trip.id]['vehicle_holds'] = vehicle.seating_capacity
-        trips_dict[trip.id]['available_seats'] = available_seats
-        del trips_dict[trip.id]['status']
+        trips_dict['Trip.' + trip.id] = trip.to_dict()
+        trips_dict['Trip.' + trip.id]['vehicle_holds'] = vehicle.seating_capacity
+        trips_dict['Trip.' + trip.id]['available_seats'] = available_seats
+
+        trips_dict['Trip.' + trip.id]['driver_id'] = storage.get('Driver', id=trips_dict['Trip.' + trip.id]['driver_id']).to_dict()
+        trips_dict['Trip.' + trip.id]['pickup_locaion_id'] = storage.get('Location', id=trips_dict['Trip.' + trip.id]['pickup_location_id']).to_dict()
+        trips_dict['Trip.' + trip.id]['dropoff_location_id'] = storage.get('Location', id=trips_dict['Trip.' + trip.id]['dropoff_location_id']).to_dict()
+
+        del trips_dict['Trip.' + trip.id]['status']
 
     if trips:
         return jsonify({'Trips': trips_dict})
@@ -216,7 +221,10 @@ def booked_ride():
 @token_required
 def current_ride(tripride_id):
     '''show current ride details'''
-    trip = storage.get('TripRider', id=tripride_id).trip.to_dict()
+    trip = storage.get('TripRider', id=tripride_id, is_past=False).trip.to_dict()
+
+    if not trip:
+        return jsonify({'Error': "no trip found"})
 
     trip['pickup_location_id'] = next(iter(storage.get_in_dict('Location', id=trip['pickup_location_id']).values()))
     trip['dropoff_location_id'] = next(iter(storage.get_in_dict('Location', id=trip['dropoff_location_id']).values()))
@@ -230,7 +238,7 @@ def current_ride(tripride_id):
 def ride_status(tripride_id):
     '''check details of ride request'''
     rider_id = request.user_id
-    trip = storage.get('TripRider', id=tripride_id).trip
+    trip = storage.get('TripRider', id=tripride_id, is_past=False).trip
     vehicle = trip.drivers.vehicle
     number_of_passengers = 0
     seating_capacity = vehicle.seating_capacity
@@ -264,7 +272,7 @@ def ride_status(tripride_id):
 def ride_history():
     '''get past trips'''
     rider_id = request.user_id
-    rides = [ride.trip for ride in storage.get_objs('TripRider', rider_id=rider_id) if ride.trip.status in ['Completed', 'Canceled', 'Payment_Failed', 'Refunded', 'No Show']]
+    rides = [ride.trip for ride in storage.get_objs('TripRider', rider_id=rider_id, is_past=True) if ride.trip.status in ['Completed', 'Canceled', 'Payment_Failed', 'Refunded', 'No Show']]
     
     ride_dict = {}
 
@@ -279,16 +287,10 @@ def ride_history():
 def cancel_ride():
     '''to cancel a ride'''
     trip_id = request.get_json()['trip_id']
-    
-    triprider = storage.get('TripRider', trip_id=trip_id)
+    triprider = storage.get('TripRider', trip_id=trip_id, rider_id=request.user_id).id
+    update_triprider = storage.update('TripRider', id=triprider, is_past=True, status="Canceled", status_by="rider")
 
-    if triprider.rider_id == request.user_id:
-        update_triprider = storage.update('TripRider', id=triprider.id, is_past=True)
-        update_dict = {'status': 'Canceled'} # 'status_by': request.user_id}
-        update_trip = storage.update('Trip', id=trip_id, **update_dict)
-
-        return jsonify({'Trip': 'Canceled'})
-    return jsonify({'Error': 'not found'})
+    return jsonify({'Trip': 'Canceled'})
 
 #Payment
 @rider_bp.route('/add-payment-method', methods=['POST'], strict_slashes=False)
