@@ -4,6 +4,7 @@ from auth import authentication
 from auth.authentication import _hash_password
 from api.v1.middleware import token_required, admin_required
 from models import storage
+from collections import OrderedDict
 
 
 Auth = authentication.Auth()
@@ -84,7 +85,6 @@ def forget_password():
         return jsonify({'Error': 'reset token not provided'})
 
 
-
 @driver_bp.route('/profile', methods=['GET'], strict_slashes=False)
 @token_required
 def get_profile():
@@ -129,7 +129,7 @@ def put_profile():
 
     return jsonify({'User': 'Updated Successfuly'})
 
-#Availabilty
+#Ride Management
 @driver_bp.route('/availability', methods=['GET'], strict_slashes=False)
 @token_required
 def availability():
@@ -141,48 +141,133 @@ def availability():
         return jsonify({'Availability': availability})
     return jsonify({'Availability': 'availability not found'})
 
-@driver_bp.route('/current-status', methods=['GET'], strict_slashes=False)
+@driver_bp.route('/ride-plans', methods=['GET'], strict_slashes=False)
 @token_required
-def current_status():
+def ride_pans():
     '''current status of a driver usualy related to trips'''
-    pass
+    driver_id =request.user_id
+    driver_trips = []
 
-#Ride Management
+    trips = storage.get_objs('Trip', driver_id=driver_id, is_available=True)
+    
+    if not trips:
+        return jsonify({'Rides': 'no rides foung'})
+
+    sorted_trips = sorted(trips, key=lambda trip: trip.updated_at)
+    
+    for sorted_trip in sorted_trips:
+        driver_trips.append(sorted_trip.to_dict())
+
+    return jsonify({'Rides': driver_trips})
+
+
+@driver_bp.route('/current-ride/<trip_id>', methods=['GET'], strict_slashes=False)
+@token_required
+def current_ride(trip_id):
+    trip = storage.get('Trip', id=trip_id).to_dict()
+
+    if not trip or trip['driver_id'] != request.user_id:
+        return jsonify({'Error': "trip not found"})
+        
+    tripriders = storage.get_objs('TripRider', trip_id=trip['id'], is_past=False)
+    
+    count = 0
+    for triprider in tripriders:
+        count += 1
+
+    trip['pickup_location_id'] = storage.get('Location', id=trip['pickup_location_id']).to_dict()
+    trip['dropoff_location_id'] = storage.get('Location', id=trip['dropoff_location_id']).to_dict()
+    del trip['driver_id']
+    trip['number_of_passengers'] = count
+
+
+    return jsonify({'Ride': trip})
+
+
 @driver_bp.route('/ride-requests', methods=['GET'], strict_slashes=False)
 @token_required
 def ride_requests():
     '''view all incoming ride requests and currently onboard'''
-    pass
+    driver_id =request.user_id
+    riders = {}
+    trips = storage.get_objs('Trip', driver_id=driver_id, is_available=True)
+    trip_dict = {}
+
+    if not trips:
+        return jsonify({'Rider': 'no rider\'s request'})
+
+    for trip in trips:
+        tripriders = storage.get_objs('TripRider', trip_id=trip.id, is_past=False)
+        for triprider in tripriders:
+            riders['Rider.' + triprider.rider.id] = triprider.rider.to_dict()
+            trip_dict['Trip.' + trip.id] =  riders
+        riders = {}
+ 
+    return jsonify({'Riders': trip_dict})
+
 
 @driver_bp.route('/accept-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def accept_ride():
-    '''accept all ride request if space possible'''
+    '''accept all ride from admin'''
     pass
 
 @driver_bp.route('/start-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def start_ride():
     '''mark start ride after pickup'''
-    pass
+    trip_id = request.get_json()
+    if ['trip_id'] not in trip_id:
+        return jsonify({'Error': 'trip_id missing'})
+    trip_id = trip_id['trip_id']
+    storage.update('Trip', trip_id, status="Started")
+    
+    return jsonify({'Ride': 'Started'})
 
 @driver_bp.route('/end-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def end_ride():
     '''mark ride as complete'''
-    pass
+    trip_id = request.get_json()
+    if ['trip_id'] not in trip_id:
+        return jsonify({'Error': 'trip_id missing'})
+    trip_id = trip_id['trip_id']
+
+    tripriders = storage.get_objs('TripRider', trip_id=trip_id, is_past=False)
+    for triprider in tripriders:
+         storage.update('TripRider', triprider.id, status="Completed", status_by="Completed", is_past=True)
+    storage.update('Trip', trip_id, status="Completed", is_available=False)
+    
+    return jsonify({'Ride': 'Completed'})
 
 @driver_bp.route('/cancel-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def cancel_ride():
     '''if needed'''
-    pass
+    trip_id = request.get_json()
+    if ['trip_id'] not in trip_id:
+        return jsonify({'Error': 'trip_id missing'})
+    trip_id = trip_id['trip_id']
+
+    tripriders = storage.get_objs('TripRider', trip_id=trip_id, is_past=False)
+    for triprider in tripriders:
+         storage.update('TripRider', triprider.id, status="Canceled", status_by="Driver", is_past=True)
+    storage.update('Trip', trip_id, status="Canceled", is_available=False)
+    
+    return jsonify({'Ride': 'Canceled'})
+
 
 #Ride History And Earning
 @driver_bp.route('/ride-history', methods=['GET'], strict_slashes=False)
 @token_required
 def ride_history():
-    pass
+    trips = storage.get_objs('Trip', driver_id=request.user_id, is_available=False)
+    trips_dict = {}
+    
+    for trip in trips:
+        trips_dict['Trip.' + trip.id] = trip.to_dict()
+
+    return jsonify({'Rides': trips_dict})
 
 @driver_bp.route('/earnings', methods=['GET'], strict_slashes=False)
 @token_required
