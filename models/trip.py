@@ -14,7 +14,6 @@ class Trip(BaseModel, Base):
     fare = Column(Float, nullable=False)
     distance = Column(Float)
     status = Column(VARCHAR(128), nullable=False)
-    # status_by = Column(VARCHAR(128))
     is_available = Column(Boolean, default=True) #shouldn't be 
 
 
