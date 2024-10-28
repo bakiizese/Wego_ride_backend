@@ -1,0 +1,13 @@
+superadmin.id = 71782a92-f7d3-4ba4-9020-bf16f0a73509
+admin_level = superadmin
+email = andinetendale@gmail.com
+first_name = andinet
+last_name = endale
+password_hash = password
+jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MTc4MmE5Mi1mN2QzLTRiYTQtOTAyMC1iZjE2ZjBhNzM1MDkiLCJyb2xlIjoiQWRtaW4iLCJleHAiOjE3MzIxNzUwNzh9.TFrs78VMWWT2ojXFvNU56kjMu-F5z6_9XaZseSudXsg
+
+"admin": {
+    "exp": 1732175078,
+    "role": "Admin",
+    "sub": "71782a92-f7d3-4ba4-9020-bf16f0a73509"
+}

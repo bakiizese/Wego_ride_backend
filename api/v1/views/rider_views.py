@@ -6,6 +6,8 @@ from models import storage
 from api.v1.middleware import token_required, admin_required
 from models.trip import Trip
 from models.trip_rider import TripRider
+from models.payment import Payment
+from datetime import datetime
 
 Auth = authentication.Auth()
 
@@ -90,7 +92,7 @@ def forget_password():
 @token_required
 def get_profile():
     user_id = request.user_id
-    user = storage.get_in_dict(cls, id=user_id)
+    user = storage.get(cls, id=user_id).to_dict()
     if user:
         return jsonify({'User': user})
     return jsonify({'Error': 'User not found'})
@@ -303,7 +305,30 @@ def add_payment_method():
 @token_required
 def pay_ride():
     '''make payment for a completed trip'''
-    pass
+    user_id = request.user_id
+    if 'trip_id' not in request.get_json() or 'amount' not in request.get_json() or 'status' not in request.get_json():
+        return jsonify({'Error': 'info not given'})
+    
+    amount = request.get_json()['amount']
+    trip_id = request.get_json()['trip_id']
+
+    if amount != storage.get('Trip', id=trip_id).fare:
+        return jsonify({'Error': 'not the right amount'})
+
+    kwargs = {
+        "trip_id": trip_id,
+        "rider_id": user_id,
+        "payment_method": "Cash",
+        "payment_time": datetime.utcnow(),
+        "amount": amount,
+        "payment_status":  request.get_json()['status']
+    }
+
+    rider_payment = Payment(**kwargs)
+    rider_payment.save()
+    
+    return jsonify({'Payment': 'paid'})
+        
 
 #Ratings And Feedback
 @rider_bp.route('/rate-driver', methods=['POST'], strict_slashes=False)

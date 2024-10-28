@@ -11,7 +11,8 @@
       "driver": "MySQL",
       "name": "connection",
       "database": "wego_db",
-      "username": "wegoride_user"
+      "username": "wegoride_user",
+      "askForPassword": true
     }
   ]
 }
