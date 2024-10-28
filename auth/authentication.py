@@ -2,12 +2,14 @@ import bcrypt
 from models import storage
 from models.driver import Driver
 from models.rider import Rider
+from models.admin import Admin
 import datetime
 import uuid
 import jwt
 
 classes = {"Driver": Driver, 
-           "Rider": Rider}
+           "Rider": Rider,
+           "Admin": Admin}
 
 SECRET_KEY = 'wego_rider_service_secret_key'
 
@@ -15,9 +17,9 @@ class Auth:
     '''Authentication class to register, verify, change password'''
     def register_user(self, cls, **kwargs):
         '''register new user if phone_number and email dont exist in db'''
-        user0 = storage.get_all(classes[cls], username=kwargs['username'])
-        user1 = storage.get_all(classes[cls], email=kwargs['email'])
-        user2 = storage.get_all(classes[cls], phone_number=kwargs['phone_number'])
+        user0 = storage.get_all(cls, username=kwargs['username'])
+        user1 = storage.get_all(cls, email=kwargs['email'])
+        user2 = storage.get_all(cls, phone_number=kwargs['phone_number'])
         if user0:
             print("** username already exists **")
             return '** username already exists **', False  
@@ -71,7 +73,6 @@ class Auth:
             reset_token = _generate_uuid()
         storage.update(cls, user.id, reset_token=reset_token)
         return reset_token
-
 
 def _hash_password(password):
     '''encrypt string password to binary using bcrypt'''

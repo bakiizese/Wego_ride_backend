@@ -94,21 +94,21 @@ class WegoCommand(cmd.Cmd):
                             print(f"{k}: is missing")
                             return False
                 
-                if args[0] in ["Rider", "Driver"]:
+                if args[0] in ["Rider", "Admin", "Driver"]:
                     if type(new_dict["phone_number"]) is not int:
                         print("** phone_number must be a number **") 
                         return False
                     email = new_dict["email"]
                     phone_number = new_dict["phone_number"]
-                    user_name = storage.get_all(classes[args[0]], username=new_dict["username"])
+                    user_name = storage.get_all(args[0], username=new_dict["username"])
                     if user_name:
                         print("** username already exists **")
                         return False
-                    user_email = storage.get_all(classes[args[0]], email=email)
+                    user_email = storage.get_all(args[0], email=email)
                     if user_email:
                         print("** email already exists **")
                         return False
-                    user_phone = storage.get_all(classes[args[0]], phone_number=phone_number)
+                    user_phone = storage.get_all(args[0], phone_number=phone_number)
                     if user_phone:
                         print("** phone_number already exists **")
                         return False
@@ -134,9 +134,9 @@ class WegoCommand(cmd.Cmd):
         if args[0] in classes and len(args) >= 2:
             ar = args[1].split("=")
             kwargs = {ar[0]: ar[1]}
-            data_dict = storage.get_all(classes[args[0]], **kwargs)
+            data_dict = storage.get_all(args[0], **kwargs)
         elif args[0] in classes:
-            data_dict = storage.get_all(classes[args[0]])
+            data_dict = storage.get_all(args[0])
         else:
             print("** class doesn't exist **")
             return False
@@ -157,7 +157,7 @@ class WegoCommand(cmd.Cmd):
             return False
         elif args[0] in classes and len(args) == 2:
             try:
-                storage.delete(classes[args[0]], args[1])
+                storage.delete(args[0], args[1])
             except Exception:
                 print("** instance not found **")
                 return False
@@ -189,7 +189,7 @@ class WegoCommand(cmd.Cmd):
                 if not dict_data or len(dict_data) != len(args) - 2:
                     print("** property or value incorrect **")
                     return False
-                data = storage.get_all(classes[args[0]], id=id_dict)
+                data = storage.get_all(args[0], id=id_dict)
                 if not data:
                     print("** instance id doesn't exist **")
                     return False
@@ -226,10 +226,10 @@ class WegoCommand(cmd.Cmd):
             return False
         elif args[0] == "all":
             for cls in classes:
-                count = storage.count(classes[cls])
+                count = storage.count(cls)
                 print(f"{cls}: {count}")
         elif args[0] in classes:
-            count = storage.count(classes[args[0]])
+            count = storage.count(args[0])
             print(f"{args[0]}: {count}")
             # return count
         else:

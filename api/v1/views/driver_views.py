@@ -2,7 +2,7 @@ from api.v1.views import driver_bp
 from flask import jsonify, request
 from auth import authentication
 from auth.authentication import _hash_password
-from api.v1.middleware import token_required, admin_required
+from api.v1.middleware import token_required
 from models import storage
 from collections import OrderedDict
 
@@ -30,6 +30,7 @@ def register():
     if status:
         return jsonify({'User': message})
     return jsonify({'Error': message})
+
 
 @driver_bp.route('/login', methods=['POST'], strict_slashes=False)
 def login():
@@ -212,6 +213,7 @@ def accept_ride():
     '''accept all ride from admin'''
     pass
 
+
 @driver_bp.route('/start-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def start_ride():
@@ -223,6 +225,7 @@ def start_ride():
     storage.update('Trip', trip_id, status="Started")
     
     return jsonify({'Ride': 'Started'})
+
 
 @driver_bp.route('/end-ride', methods=['POST'], strict_slashes=False)
 @token_required
