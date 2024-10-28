@@ -64,8 +64,10 @@ class DBStorage:
     
     def get_objs(self, cls, **kwargs):
         '''returns class object that can be accessed by .'''
-        return self.__session.query(classes[cls]).filter_by(**kwargs)
-
+        if kwargs:
+            return self.__session.query(classes[cls]).filter_by(**kwargs)
+        return self.__session.query(classes[cls])
+    
     def get_in_dict(self, cls, **kwargs):
         data_dict = self.get_all(classes[cls], **kwargs)
         for data in data_dict:
@@ -77,12 +79,12 @@ class DBStorage:
         new_dict = {}
         if kwargs:
             try:
-                data = self.__session.query(cls).filter_by(**kwargs)
+                data = self.__session.query(classes[cls]).filter_by(**kwargs)
             except exc.InvalidRequestError:
-                print("** incorrect property in [{}] **".format(cls))
+                print("** incorrect property in [{}] **".format(classes[cls]))
                 return False
         else:
-            data = self.__session.query(cls)
+            data = self.__session.query(classes[cls])
         for i in data:
             key = i.__class__.__name__ + '.' + i.id
             new_dict[key] = i
@@ -97,8 +99,8 @@ class DBStorage:
                     arg = arg.replace('"', "")
                 elif "'" in arg:
                     arg = arg.replace("'", "")
-            # inst = self.__session.query(cls).get(arg)
-            inst = self.__session.query(cls).filter_by(id=arg).first()
+            # inst = self.__session.query(cls).get(arg) dont forget to make change to all on classes[cls]
+            inst = self.__session.query(classes[cls]).filter_by(id=arg).first()
             self.__session.delete(inst)
             self.save()
     
@@ -110,7 +112,7 @@ class DBStorage:
                 print("** key not found **")
                 return False
         if 'username' in kwargs:
-            user = self.get(cls, username=kwargs['username'])
+            user = self.get(classes[cls], username=kwargs['username'])
             if user:
                 print("** username already exist **")
                 return False

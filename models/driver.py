@@ -1,7 +1,7 @@
 import models
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import String, Column, Integer, VARCHAR
+from sqlalchemy import String, Column, Integer, VARCHAR, Boolean
 
 class Driver(BaseModel, Base):
     __tablename__ = 'drivers'
@@ -13,6 +13,11 @@ class Driver(BaseModel, Base):
     password_hash = Column(String(250), nullable=False)
     reset_token = Column(String(250), nullable=True)
     payment_method = Column(VARCHAR(128), nullable=False)
+
+    
+    deleted = Column(Boolean, default=False)
+    blocked = Column(Boolean, default=False)
+
     vehicle = relationship("Vehicle", uselist=False, back_populates="driver")
     notification = relationship("Notification",
                                 backref="drivers",

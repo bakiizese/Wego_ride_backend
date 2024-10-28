@@ -1,6 +1,6 @@
 import models
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Integer, VARCHAR
+from sqlalchemy import Column, String, Integer, VARCHAR, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
 class Rider(BaseModel, Base):
@@ -14,9 +14,14 @@ class Rider(BaseModel, Base):
     reset_token = Column(String(250), nullable=True)
     payment_method = Column(VARCHAR(128), nullable=False)
 
-    # 0e5dec68-f978-4c89-a32c-4478bed8efb0
+    deleted = Column(Boolean, default=False)
+    blocked = Column(Boolean, default=False)
+
     trips = relationship("TripRider", back_populates="rider")
     
     notification = relationship("Notification",
                                 backref="riders",
                                 cascade="all, delete, delete-orphan")
+    payment = relationship("Payment", 
+                           backref="riders",
+                           cascade="all, delete, delete-orphan")
