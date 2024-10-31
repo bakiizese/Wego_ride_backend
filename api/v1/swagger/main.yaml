@@ -1,0 +1,2541 @@
+swagger: "2.0"
+info:
+  title: "wego_ride"
+  version: "1.0"
+  description: "API documentation for wego_ride"
+paths:
+  #Swagger_admin
+  /api/swagger_admin/register:
+    post:
+      summary: "Register a new admin"
+      description: "Registers a new admin with the required user data."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "dani"
+              first_name:
+                type: string
+                example: "daniel"
+              last_name:
+                type: string
+                example: "abera"
+              email:
+                type: string
+                format: email
+                example: "admin@example.com"
+              phone_number:
+                type: string
+                example: "+251934567890"
+              password_hash:
+                type: string
+                example: "secure_password_hash"
+              admin_level:
+                type: string
+                example: "superadmin"
+                example2: "moderator"
+      responses:
+        201:
+          description: "admin registered successfully"
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "Admin Id"
+        400:
+          description: "Missing required user data"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "username missing"
+        415:
+          description: "Unsupported media type"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example2: "only superadmin allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/login:
+    post:
+      summary: "admin login"
+      parameters:
+        - name: credentials
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "jwt generated code"
+        415:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        400:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "email missing"
+                example2: "incorrect password"
+        500:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+
+  /api/swagger_admin/riders:
+    get:
+      summary: "get all rider users"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              riders:
+                type: list
+                example: [{ "riders_key": "value" }, { "riders_key": "value" }]
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/drivers:
+    get:
+      summary: "get all driver users"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              drivers:
+                type: list
+                example:
+                  [{ "drivers_key": "value" }, { "drivers_key": "value" }]
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/block-user/{user_id}:
+    put:
+      summary: "blocks user by user id"
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: "The ID of the user to block"
+      responses:
+        200:
+          sechma:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "driver blocked"
+        404:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user not found"
+        400:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "unable to block driver"
+        500:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "an internal error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example2: "only superadmin allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/unblock-user/{user_id}:
+    put:
+      summary: "unblocks user by user id"
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: "The ID of the user to unblock"
+      responses:
+        200:
+          sechma:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "driver unblocked"
+        404:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user not found"
+        400:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "unable to unblock driver"
+        500:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "an internal error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example2: "only superadmin allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/delete-user/{user_id}:
+    put:
+      summary: "deletes user by user id"
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: "The ID of the user to delete"
+      responses:
+        200:
+          sechma:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "driver deleted"
+        404:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user not found"
+        400:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "unable to delete driver"
+        500:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "an internal error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example2: "only superadmin allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+  /api/swagger_admin/revalidate-user/{user_id}:
+    put:
+      summary: "revalidates user by user id"
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: "The ID of the user to revalidate"
+      responses:
+        200:
+          sechma:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "driver revalidated"
+        404:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user not found"
+        400:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "unable to revalidate driver"
+        500:
+          sechma:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "an internal error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example2: "only superadmin allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/deleted-users/<user_type>:
+    get:
+      summary: "get all deleted users by user_type"
+      parameters:
+        - name: user_type
+          in: path
+          type: string
+          required: true
+          description: "The type of the users to get"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              users:
+                type: list
+                example:
+                  [{ "drivers_key": "value" }, { "drivers_key": "value" }]
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/blocked-users/{user_type}:
+    get:
+      summary: "get all blocked users by user_type"
+      parameters:
+        - name: user_type
+          in: path
+          type: string
+          required: true
+          description: "The type of the users to get"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              users:
+                type: list
+                example:
+                  [{ "drivers_key": "value" }, { "drivers_key": "value" }]
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/user-profile/{user_id}:
+    get:
+      summary: "get user-profile by user_id"
+      parameters:
+        - name: user_id
+          in: path
+          type: string
+          required: true
+          description: "The ID of the user to get"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              user:
+                type: dict
+                example: { "drivers_key": "value" }
+        404:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user not found"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/get-rides:
+    get:
+      summary: "get all rides"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              trips:
+                type: dict
+                example: { "trip1_keys": "value", "trip2_keys": "value" }
+        500:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "an internal error"
+        404:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "trip not found"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/get-ride/{ride_id}:
+    get:
+      summary: "get ride by ride_id"
+      parameters:
+        - name: ride_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the ride to get"
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              ride:
+                type: dict
+                example: { "ride1_keys": "value", "ride2_keys": "value" }
+        404:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "ride not found"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/delete-ride/{ride_id}:
+    put:
+      summary: "Delete a ride by ID"
+      parameters:
+        - name: ride_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the ride to delete"
+      responses:
+        200:
+          description: "Ride deleted successfully"
+          schema:
+            type: object
+            properties:
+              admin:
+                type: string
+                example: "Ride deleted"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/set-location:
+    post:
+      summary: "Set a new location"
+      parameters:
+        - name: location_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              latitude:
+                type: number
+                example: 1.2921
+              longitude:
+                type: number
+                example: 36.8219
+              address:
+                type: string
+                example: "Adama"
+      responses:
+        200:
+          description: "Location created successfully"
+          schema:
+            type: object
+            properties:
+              location:
+                type: string
+                example: "location created"
+        400:
+          description: "Missing required location data"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "latitude missing"
+        415:
+          description: "Unsupported media type"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/get-locations:
+    get:
+      summary: "Get all available locations"
+      responses:
+        200:
+          description: "List of all locations"
+          schema:
+            type: object
+            properties:
+              locations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                      example: -1.2921
+                    longitude:
+                      type: number
+                      example: 36.8219
+                    address:
+                      type: string
+                      example: "Adama"
+        404:
+          description: "No locations found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "location not found"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/set-ride:
+    post:
+      summary: "Create a ride"
+      description: "Creates a new ride with the specified details."
+      parameters:
+        - name: ride_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              driver_id:
+                type: string
+                example: "123"
+              pickup_location_id:
+                type: string
+                example: "456"
+              dropoff_location_id:
+                type: string
+                example: "789"
+              pickup_time:
+                type: string
+                format: date-time
+                example: "2024-11-01T09:00:00Z"
+              dropoff_time:
+                type: string
+                format: date-time
+                example: "2024-11-01T10:00:00Z"
+              fare:
+                type: number
+                example: 50.00
+              distance:
+                type: number
+                example: 10.5
+              status:
+                type: string
+                example: "ongoing"
+              is_available:
+                type: boolean
+                example: true
+      responses:
+        200:
+          description: "Ride created successfully"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: string
+                example: "ride created"
+        400:
+          description: "Missing required ride data"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "pickup_location_id missing"
+        415:
+          description: "Unsupported media type"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/transactions:
+    get:
+      summary: "Get all transactions"
+      description: "Retrieve a list of all transactions, sorted by payment time in descending order."
+      responses:
+        200:
+          description: "List of transactions"
+          schema:
+            type: object
+            properties:
+              admin:
+                type: array
+                items:
+                  type: object
+                  example:
+                    payment_id: "1"
+                    amount: 50.0
+                    payment_time: "2024-10-01T09:00:00Z"
+        404:
+          description: "No transactions found"
+          schema:
+            type: object
+            properties:
+              admin:
+                type: string
+                example: "Transactions not found"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_admin/payment-detail/{ride_id}:
+    get:
+      summary: "Get payment details for a ride"
+      description: "Retrieve payment details for a specific ride, including total amount paid, payment status, and rider details."
+      parameters:
+        - name: ride_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the ride to get payment details for"
+      responses:
+        200:
+          description: "Payment details retrieved successfully"
+          schema:
+            type: object
+            properties:
+              payment:
+                type: object
+                properties:
+                  trip:
+                    type: object
+                    description: "Trip details"
+                    example:
+                      id: "ride_id"
+                      driver_id: "123"
+                  total_paid_amount:
+                    type: number
+                    example: 150.00
+                  payment_status:
+                    type: array
+                    items:
+                      type: string
+                      example: "completed"
+                  number_of_riders:
+                    type: integer
+                    example: 3
+                  riders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rider_id:
+                          type: string
+                          example: "rider123"
+                        payment:
+                          type: object
+                          properties:
+                            amount:
+                              type: number
+                              example: 50.00
+                            payment_status:
+                              type: string
+                              example: "completed"
+        404:
+          description: "Ride not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "ride not found"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+                example3: "Admin access required"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+    #Swagger_driver
+    /api/swagger_driver/register:
+    post:
+      summary: "Register a new driver"
+      description: "Registers a new driver with the required user data."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "dani"
+              first_name:
+                type: string
+                example: "daniel"
+              last_name:
+                type: string
+                example: "abera"
+              email:
+                type: string
+                format: email
+                example: "driver@example.com"
+              phone_number:
+                type: string
+                example: "+251934567890"
+              password_hash:
+                type: string
+                example: "secure_password_hash"
+              payment_method:
+                type: string
+                example: "TeleBirr"
+      responses:
+        201:
+          description: "Driver registered successfully"
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "Driver Id"
+        400:
+          description: "Missing required user data"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "username missing"
+        415:
+          description: "Unsupported media type"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+
+  /api/swagger_driver/login:
+    post:
+      summary: "driver login"
+      parameters:
+        - name: credentials
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "jwt generated code"
+        415:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        400:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "email missing"
+                example2: "incorrect password"
+        500:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+
+  /api/swagger_driver/reset-token:
+    post:
+      summary: "Request a reset token"
+      description: "Sends a reset token to the driver's email."
+      parameters:
+        - name: email
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                example: "driver@example.com"
+      responses:
+        201:
+          description: "Reset token generated successfully"
+          schema:
+            type: object
+            properties:
+              reset_token:
+                type: string
+                example: "reset-token-123"
+        400:
+          description: "Email missing from request"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "email not given"
+        404:
+          description: "User not found"
+        415:
+          description: "Unsupported media type"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/forget-password:
+    post:
+      summary: "Reset password using token"
+      description: "Allows driver to reset password using a provided reset token."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              reset_token:
+                type: string
+                example: "reset-token-123"
+              password_hash:
+                type: string
+                example: "new_secure_password_hash"
+      responses:
+        200:
+          description: "Password updated successfully"
+          schema:
+            type: object
+            properties:
+              update:
+                type: string
+                example: "Successful"
+        400:
+          description: "Missing or incorrect information"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "password not provided"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/profile:
+    get:
+      summary: "Get driver profile"
+      description: "Retrieves the profile information of the authenticated driver."
+      responses:
+        200:
+          description: "Driver profile data"
+          schema:
+            type: object
+            properties:
+              user:
+                type: object
+                example: { "users_key": "value" }
+        404:
+          description: "User not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+    put:
+      summary: "Update driver profile"
+      description: "Allows driver to update their profile and password by provideing they informations they want to update."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: "abrha"
+              last_name:
+                type: string
+                example: "john"
+              password_hash:
+                type: string
+                example: "new_secure_password_hash"
+              old_password:
+                type: string
+                example: "old_password"
+      responses:
+        200:
+          description: "Profile updated successfully"
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "updated Successfully"
+        400:
+          description: "Missing required information or incorrect password"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "old password incorrect"
+        500:
+          description: "Update failed due to server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/availability:
+    get:
+      summary: "Check driver's availability"
+      description: "Retrieves the current availability status of the driver (online/offline)."
+      responses:
+        200:
+          description: "Availability status"
+          schema:
+            type: object
+            properties:
+              availability:
+                type: object
+                example:
+                  location_id: "location id"
+                  is_available: true
+                  last_active: "2024-10-30T12:45:00Z"
+        404:
+          description: "Availability information not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/ride-plans:
+    get:
+      summary: "Get driver's ride plans"
+      description: "Fetches the current status and list of rides available to the driver."
+      responses:
+        200:
+          description: "Driver's active ride plans"
+          schema:
+            type: object
+            properties:
+              rides:
+                type: array
+                items:
+                  type: object
+                  example:
+                    id: "trip_id"
+                    pickup_time: "2024-10-30T12:45:00Z"
+                    dropoff_time: "2024-10-30T13:30:00Z"
+                    pickup_location_id: "location id"
+                    dropoff_location_id: "location id"
+                    fare: 20.5
+                    distance: 120.2
+                    status: "scheduled"
+                    is_available: true
+        404:
+          description: "No trips found for the driver"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/current-ride/{trip_id}:
+    get:
+      summary: "Get details of the current ride"
+      description: "Fetches details of a specific ride associated with the driver, including pickup/dropoff locations and the number of passengers."
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the trip to retrieve"
+      responses:
+        200:
+          description: "Current ride details"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: object
+                example:
+                  id: "trip_id"
+                  pickup_location_id:
+                    id: "location_id_1"
+                    latitude: 12.34
+                    longitude: 56.78
+                    address: "Bole"
+                  dropoff_location_id:
+                    id: "location_id_2"
+                    latitude: 12.34
+                    longitude: 56.78
+                    address: "Adama"
+                  pickup_time: "2024-10-30T12:45:00Z"
+                  dropoff_time: "2024-10-30T13:30:00Z"
+                  fare: 20.5
+                  distance: 10.0
+                  status: "ongoing"
+                  number_of_passengers: 2
+                  is_available: false
+        400:
+          description: "Driver is not authorized for the trip"
+        404:
+          description: "Trip not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/ride-requests:
+    get:
+      summary: "Get ride requests for the driver"
+      description: "Displays all incoming ride requests and onboard riders for the driver."
+      responses:
+        200:
+          description: "List of riders associated with the driver's trips"
+          schema:
+            type: object
+            properties:
+              riders:
+                type: object
+                Trip.trip_id:
+                  type: object
+                  example:
+                    Rider.rider_id:
+                      username: "rider_username"
+                      first_name: "Jane"
+                      last_name: "Doe"
+                      phone_number: "123-456-7890"
+                      email: "rider@example.com"
+                      payment_method: "Cash"
+        404:
+          description: "No requests found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/start-ride:
+    post:
+      summary: "Start a ride"
+      description: "Marks a ride as 'Started' after the pickup is completed."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip to start"
+      responses:
+        200:
+          description: "Ride started successfully"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: string
+                example: "Started"
+        400:
+          description: "Trip ID missing from request body"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/end-ride:
+    post:
+      summary: "End a ride"
+      description: "Marks a ride as 'Completed' and updates all associated riders' statuses."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip to complete"
+      responses:
+        200:
+          description: "Ride completed successfully"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: string
+                example: "Completed"
+        400:
+          description: "Trip ID missing from request body"
+        404:
+          description: "No active riders found for the trip"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/cancel-ride:
+    post:
+      summary: "Cancel a ride"
+      description: "Cancels a ride and updates the statuses of associated riders."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip to cancel"
+      responses:
+        200:
+          description: "Ride canceled successfully"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: string
+                example: "Canceled"
+        400:
+          description: "Trip ID missing from request body"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_driver/ride-history:
+    get:
+      summary: "Get driver's ride history"
+      description: "Fetches all completed and unavailable trips for the driver."
+      responses:
+        200:
+          description: "Driver's ride history"
+          schema:
+            type: object
+            properties:
+              rides:
+                type: object
+                additionalProperties:
+                  type: object
+                  example:
+                    id: "trip_id"
+                    pickup_time: "2024-10-30T12:45:00Z"
+                    dropoff_time: "2024-10-30T13:30:00Z"
+                    dropoff_location_id: "location id"
+                    pickup_location_id: "location id"
+                    fare: 20.5
+                    status: "completed"
+                    distance: 10.0
+                    is_available: false
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  #Swagger_rider
+  /api/swagger_rider/register:
+    post:
+      summary: "Register a new rider"
+      description: "Registers a new rider with the required user data."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "dani"
+              first_name:
+                type: string
+                example: "daniel"
+              last_name:
+                type: string
+                example: "abera"
+              email:
+                type: string
+                format: email
+                example: "rider@example.com"
+              phone_number:
+                type: string
+                example: "+251934567890"
+              password_hash:
+                type: string
+                example: "secure_password_hash"
+              payment_method:
+                type: string
+                example: "TeleBirr"
+      responses:
+        201:
+          description: "Rider registered successfully"
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "Rider Id"
+        400:
+          description: "Missing required user data"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "username missing"
+        415:
+          description: "Unsupported media type"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        500:
+          description: "Internal server error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+
+  /api/swagger_rider/login:
+    post:
+      summary: "rider login"
+      parameters:
+        - name: credentials
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "jwt generated code"
+        415:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unsupported media type"
+        400:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "email missing"
+                example2: "incorrect password"
+        500:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "An internal error occurred"
+
+  /api/swagger_rider/reset-token:
+    post:
+      summary: "Request a reset token"
+      description: "Sends a reset token to the rider's email."
+      parameters:
+        - name: email
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                example: "rider@example.com"
+      responses:
+        201:
+          description: "Reset token generated successfully"
+          schema:
+            type: object
+            properties:
+              reset_token:
+                type: string
+                example: "reset-token-123"
+        400:
+          description: "Email missing from request"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "email not given"
+        404:
+          description: "User not found"
+        415:
+          description: "Unsupported media type"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/forget-password:
+    post:
+      summary: "Reset password using token"
+      description: "Allows rider to reset password using a provided reset token."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              reset_token:
+                type: string
+                example: "reset-token-123"
+              password_hash:
+                type: string
+                example: "new_secure_password_hash"
+      responses:
+        200:
+          description: "Password updated successfully"
+          schema:
+            type: object
+            properties:
+              update:
+                type: string
+                example: "Successful"
+        400:
+          description: "Missing or incorrect information"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "password not provided"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/profile:
+    get:
+      summary: "Get rider profile"
+      description: "Retrieves the profile information of the authenticated rider."
+      responses:
+        200:
+          description: "Rider profile data"
+          schema:
+            type: object
+            properties:
+              user:
+                type: object
+                example: { "users_key": "value" }
+        404:
+          description: "User not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+    put:
+      summary: "Update rider profile"
+      description: "Allows rider to update their profile and password by provideing they informations they want to update."
+      parameters:
+        - name: user_data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: "abrha"
+              last_name:
+                type: string
+                example: "john"
+              password_hash:
+                type: string
+                example: "new_secure_password_hash"
+              old_password:
+                type: string
+                example: "old_password"
+      responses:
+        200:
+          description: "Profile updated successfully"
+          schema:
+            type: object
+            properties:
+              user:
+                type: string
+                example: "updated Successfully"
+        400:
+          description: "Missing required information or incorrect password"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "old password incorrect"
+        500:
+          description: "Update failed due to server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/available-rides:
+    get:
+      summary: "View available rides"
+      description: "Fetches all available trips with driver, vehicle, and location details."
+      responses:
+        200:
+          description: "A list of available trips"
+          schema:
+            type: object
+            properties:
+              trips:
+                type: object
+                Trip.trip_id:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "trip_id_123"
+                    vehicle_holds:
+                      type: integer
+                      example: 4
+                      description: "Total seating capacity of the vehicle"
+                    available_seats:
+                      type: integer
+                      example: 3
+                      description: "Number of available seats on this trip"
+                    driver_id:
+                      type: object
+                    pickup_location_id:
+                      type: object
+                    dropoff_location_id:
+                      type: object
+                    pickup_time:
+                      type: string
+                      example: "2024-10-30T12:45:00Z"
+                    dropoff_time:
+                      type: string
+                      example: "2024-10-30T13:30:00Z"
+                    fare:
+                      type: number
+                      example: 210
+                    distance:
+                      type: number
+                      example: 212.2
+                    is_available:
+                      type: boolean
+                      example: true
+
+        404:
+          description: "No available trips found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/book-ride:
+    post:
+      summary: "Book a ride"
+      description: "Books a ride for the rider if seats are available or rebooks a canceled ride."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip to book"
+      responses:
+        201:
+          description: "Ride booked successfully"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: string
+                example: "you have booked a ride"
+        200:
+          description: "Ride already booked by the user"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "you have already booked a ride"
+        400:
+          description: "Trip ID missing from request body"
+        409:
+          description: "No available seats on this trip"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "maximum seat capacity"
+        404:
+          description: "Trip not found or data missing"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/booked-ride:
+    get:
+      summary: "View all booked rides"
+      description: "Fetches all future booked rides for the rider."
+      responses:
+        200:
+          description: "A list of future booked rides"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: object
+                Trip.trip_id:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "trip_id_123"
+                    driver_id:
+                      type: object
+                    pickup_location_id: "location id"
+                    dropoff_location_id: "location id"
+                    pickup_time:
+                      type: string
+                      example: "2024-10-30T12:45:00Z"
+                    dropoff_time:
+                      type: string
+                      example: "2024-10-30T13:30:00Z"
+                    trip_ride_id: "trip_ride_id123"
+                    fare:
+                      type: number
+                      example: 210
+                    distance:
+                      type: number
+                      example: 212.2
+                    is_available:
+                      type: boolean
+                      example: true
+        404:
+          description: "No booked rides found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/current-ride/{tripride_id}:
+    get:
+      summary: "View current ride details"
+      description: "Fetches the details of the current ride."
+      parameters:
+        - name: tripride_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the booked ride."
+      responses:
+        200:
+          description: "Current ride details"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "trip_id_123"
+                  driver_id:
+                    type: object
+                  pickup_location_id:
+                    type: object
+                  dropoff_location_id:
+                    type: object
+                  pickup_time:
+                    type: string
+                    example: "2024-10-30T12:45:00Z"
+                  dropoff_time:
+                    type: string
+                    example: "2024-10-30T13:30:00Z"
+                  fare:
+                    type: number
+                    example: 210
+                  distance:
+                    type: number
+                    example: 212.2
+                  is_available:
+                    type: boolean
+                    example: true
+                  status: "ongoing"
+        404:
+          description: "Current ride not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/ride-status/{tripride_id}:
+    get:
+      summary: "Check ride status"
+      description: "Fetches details of the ride request."
+      parameters:
+        - name: tripride_id
+          in: path
+          required: true
+          type: string
+          description: "The ID of the ride request."
+      responses:
+        200:
+          description: "Ride status details"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: object
+                properties:
+                  pickup_location:
+                    type: object
+                  dropoff_location:
+                    type: object
+                  pickup_time:
+                    type: string
+                    example: "2024-10-31T10:00:00Z"
+                  status:
+                    type: string
+                    example: "Pending"
+                  seats_left:
+                    type: integer
+                    example: 2
+                  distance:
+                    type: number
+                    example: 15.5
+                  fare:
+                    type: number
+                    example: 30.0
+        404:
+          description: "Ride status not found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/ride-history:
+    get:
+      summary: "Get past rides"
+      description: "Fetches all past trips for the rider."
+      responses:
+        200:
+          description: "A list of past rides"
+          schema:
+            type: object
+            properties:
+              ride:
+                type: object
+                Trip.trip_id:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "trip_id_123"
+                    driver_id: "driver id"
+                    pickup_location_id: "location id"
+                    dropoff_location_id: "location id"
+                    pickup_time:
+                      type: string
+                      example: "2024-10-30T12:45:00Z"
+                    dropoff_time:
+                      type: string
+                      example: "2024-10-30T13:30:00Z"
+                    fare:
+                      type: number
+                      example: 210
+                    distance:
+                      type: number
+                      example: 212.2
+                    is_available:
+                      type: boolean
+                      example: false
+                    status: "canceled"
+        404:
+          description: "No past rides found"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/cancel-ride:
+    post:
+      summary: "Cancel a ride"
+      description: "Cancels a booked ride."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip to cancel"
+      responses:
+        200:
+          description: "Ride canceled successfully"
+          schema:
+            type: object
+            properties:
+              trip:
+                type: string
+                example: "Canceled"
+        400:
+          description: "Trip ID missing from request body"
+        404:
+          description: "Trip not found"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
+
+  /api/swagger_rider/pay-ride:
+    post:
+      summary: "Make payment for a completed trip"
+      description: "Processes payment for a completed ride."
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              amount:
+                type: number
+                example: 30.0
+                description: "The amount to be paid for the ride"
+              status:
+                type: string
+                example: "Paid"
+                description: "The payment status"
+              trip_id:
+                type: string
+                example: "trip_id_123"
+                description: "The ID of the trip for which payment is being made"
+      responses:
+        201:
+          description: "Payment processed successfully"
+          schema:
+            type: object
+            properties:
+              payment:
+                type: string
+                example: "paid"
+        400:
+          description: "Invalid payment details or amount mismatch"
+        404:
+          description: "Trip not found"
+        415:
+          description: "Unsupported media type"
+        500:
+          description: "Internal server error"
+        403:
+          description: "Access not allowed"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access not allowed"
+        401:
+          description: "Unauthorized to access"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token has expired"
+                example2: "Invalid Token"
