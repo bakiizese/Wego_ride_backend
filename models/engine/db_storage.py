@@ -69,7 +69,7 @@ class DBStorage:
         return self.__session.query(classes[cls])
     
     def get_in_dict(self, cls, **kwargs):
-        data_dict = self.get_all(classes[cls], **kwargs)
+        data_dict = self.get_all(cls, **kwargs)
         for data in data_dict:
             data_dict[data] = data_dict[data].to_dict()
         return data_dict
@@ -99,10 +99,13 @@ class DBStorage:
                     arg = arg.replace('"', "")
                 elif "'" in arg:
                     arg = arg.replace("'", "")
-            # inst = self.__session.query(cls).get(arg) dont forget to make change to all on classes[cls]
-            inst = self.__session.query(classes[cls]).filter_by(id=arg).first()
-            self.__session.delete(inst)
-            self.save()
+            try:
+                inst = self.__session.query(classes[cls]).filter_by(id=arg).first()
+                self.__session.delete(inst)
+                self.save()
+            except:
+                self.__session.rollback()
+                raise(MemoryError)
     
     def update(self, cls, id, **kwargs):
         cols = classes[cls].__table__.columns.keys()

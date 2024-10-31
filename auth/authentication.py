@@ -6,6 +6,7 @@ from models.admin import Admin
 import datetime
 import uuid
 import jwt
+from flask import abort
 
 classes = {"Driver": Driver, 
            "Rider": Rider,
@@ -67,11 +68,17 @@ class Auth:
 
     def create_reset_token(self, cls,  email):
         '''create a token for updateing password'''
-        user = storage.get(cls, email=email)
+        try:
+            user = storage.get(cls, email=email)
+        except:
+            abort(500)
         reset_token = None
         if user:
             reset_token = _generate_uuid()
-        storage.update(cls, user.id, reset_token=reset_token)
+        try:
+            storage.update(cls, user.id, reset_token=reset_token)
+        except:
+            abort(500)
         return reset_token
 
 def _hash_password(password):
@@ -93,4 +100,12 @@ def _generate_jwt(user):
         }
     jwt_token = jwt.encode(token_payload, SECRET_KEY,  algorithm='HS256')
     return jwt_token
-    
+
+def clean(obj):
+    new_dict = obj.copy()
+    keys = ['created_at', 'updated_at', 'password_hash', 
+            'deleted', 'blocked', 'reset_token']
+    for i in keys:
+        if i in new_dict:
+            del new_dict[i]
+    return new_dict

@@ -95,7 +95,9 @@ class WegoCommand(cmd.Cmd):
                             return False
                 
                 if args[0] in ["Rider", "Admin", "Driver"]:
-                    if type(new_dict["phone_number"]) is not int:
+                    try:
+                        int(new_dict["phone_number"])
+                    except:
                         print("** phone_number must be a number **") 
                         return False
                     email = new_dict["email"]
@@ -158,6 +160,9 @@ class WegoCommand(cmd.Cmd):
         elif args[0] in classes and len(args) == 2:
             try:
                 storage.delete(args[0], args[1])
+            except MemoryError:
+                print('** unable to delete instance **')
+                return False
             except Exception:
                 print("** instance not found **")
                 return False
