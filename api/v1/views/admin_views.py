@@ -1,13 +1,15 @@
 from models import storage
 from api.v1.middleware import admin_required, superadmin_required
 from api.v1.views import admin_bp
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from auth import authentication
+from auth.authentication import clean
 from models.rider import Rider
 from models.driver import Driver
 from models.trip import Trip
-from collections import OrderedDict
-
+from models.location import Location
+from datetime import datetime
+from models.notification import Notification
 
 Auth = authentication.Auth()
 cls = 'Admin'
@@ -22,165 +24,205 @@ admin_key = [
 @admin_bp.route('/admin-register', methods=['POST'], strict_slashes=False)
 @superadmin_required
 def register():
-    user_data = request.get_json()
+    try:
+        user_data = request.get_json()
+    except:
+        abort(415)
 
     for k in admin_key:
         if k not in user_data.keys():
-            return jsonify({'Error': f'{k} missing'})
-
-    user = Auth.register_user(cls, **user_data)
-    message, status = user
-
+            return jsonify({'error': f'{k} missing'}), 400
+    try:
+        int(user_data['phone_number'])
+    except:
+        return jsonify({'error': 'phone_number must be number'}), 400
+    try:
+        user = Auth.register_user(cls, **user_data)
+        message, status = user
+    except:
+        abort(500)
     if status:
-        return jsonify({'User': message})
-    return jsonify({'Error': message})
+        return jsonify({'user': message}), 201
+    return jsonify({'error': message}), 400
 
 
 @admin_bp.route('/login', methods=['POST'], strict_slashes=False)
 def login():
-    user_data = request.get_json()
+    try:
+        user_data = request.get_json()
+    except:
+        abort(415)
 
     if 'email' not in user_data:
-        return jsonify({'Error': 'email missing'})
+        return jsonify({'error': 'email missing'}), 400
     if 'password_hash' not in user_data:
-        return jsonify({'Error': 'password missing'})
-    
-    user = Auth.verify_login(cls, user_data['email'], user_data['password_hash'])
-    message, status = user
+        return jsonify({'error': 'password missing'}), 400
+    try:
+        user = Auth.verify_login(cls, user_data['email'], user_data['password_hash'])
+        message, status = user
+    except:
+        abort(500)
 
     if status:
-        return jsonify({'User': status})
+        return jsonify({'user': status}), 200
     
-    return jsonify({'Error': message})
+    return jsonify({'error': message}), 400
 
 @admin_bp.route('/logout', methods=['POST'], strict_slashes=False)
 @admin_required
 def logout():
-    return jsonify({'Admin':'Logged out'})
+    return jsonify({'admin':'Logged out'})
 
 #Rider And Driver Management
 @admin_bp.route('/riders', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_riders():
-    riders = {k : v.to_dict() for k, v in storage.get_all("Rider").items() if v['deleted'] and v['blocked']}
-    if riders:
-        return jsonify({'Riders': riders})
-    return jsonify({'Error': "riders not found"})
+    riders = [clean(v.to_dict()) for v in storage.get_objs("Rider") if not v.deleted and not v.blocked]
+    return jsonify({'riders': riders}), 200
 
 @admin_bp.route('/drivers', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_drivers():
-    drivers = {k : v.to_dict() for k, v in storage.get_all("Driver").items() if v['deleted'] and v['blocked']}
-    if drivers:
-        return jsonify({'Riders': drivers})
-    return jsonify({'drivers': "drivers not found"})
+    drivers = [clean(v.to_dict()) for v in storage.get_objs("Driver") if not v.deleted and not v.blocked]
+    return jsonify({'riders': drivers}), 200
 
-@admin_bp.route('/block-user/:user_id', methods=['PUT'], strict_slashes=False)
+@admin_bp.route('/block-user/<user_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
 def block_user(user_id):
     cls_ = ''
     for cls in ['Driver', 'Rider', 'Admin']:
+        if not storage.get(cls, id=user_id):
+            continue
         if not storage.get(cls, id=user_id).blocked:
             try:
                 if cls == 'admin':
                     @superadmin_required
                     def unblock_admin():
-                        storage.update(cls, user_id, blocked=True)
+                        try:
+                            storage.update(cls, user_id, blocked=True)
+                        except:
+                            abort(500)
                     unblock_admin()
                 else:
-                    storage.update(cls, user_id, blocked=True)
+                    try:
+                        storage.update(cls, user_id, blocked=True)
+                    except:
+                        abort(500)
                 cls_ = cls
                 break
             except:
-                return jsonify({'Error': f'Unable to block {cls}'})
+                return jsonify({'error': f'Unable to block {cls}'}), 400
         else:
-            return jsonify({'User': f'{cls} already blocked'})
+            return jsonify({'user': f'{cls} already blocked'}), 200
+    if not cls_:
+        return jsonify({'user': 'user not found'}), 404
+    return jsonify({'user': f'{cls_} blocked'}), 200
 
-    return jsonify({'User': f'{cls_} blocked'})
-
-@admin_bp.route('/unblock-user/:user_id', methods=['PUT'], strict_slashes=False)
+@admin_bp.route('/unblock-user/<user_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
 def unblock_user(user_id):
     cls_ = ''
     for cls in ['Driver', 'Rider', 'Admin']:
+        if not storage.get(cls, id=user_id):
+            continue
         if storage.get(cls, id=user_id).blocked:
             try:
                 if cls == 'admin':
                     @superadmin_required
                     def unblock_admin():
-                        storage.update(cls, user_id, blocked=False)
+                        try:
+                            storage.update(cls, user_id, blocked=False)
+                        except:
+                            abort(500)
                     unblock_admin()
                 else:
-                    storage.update(cls, user_id, blocked=False)
+                    try:
+                        storage.update(cls, user_id, blocked=False)
+                    except:
+                        abort(500)
                 cls_ = cls
                 break
             except:
-                return jsonify({'Error': f'Unable to unblock {cls}'})
+                return jsonify({'error': f'Unable to unblock {cls}'}), 400
         else:
-            return jsonify({'User': f'{cls} already unblocked'})
-
-    return jsonify({'User': f'{cls_} unblocked'})
+            return jsonify({'user': f'{cls} already unblocked'}), 200
+    if not cls_:
+        return jsonify({'user': 'user not found'}), 404
+    return jsonify({'user': f'{cls_} unblocked'}), 200
 
 @admin_bp.route('/delete-user/<user_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
 def delete_user(user_id):
     cls_ = ''
     for cls in ['Driver', 'Rider', 'Admin']:
+        if not storage.get(cls, id=user_id):
+            continue
         if not storage.get(cls, id=user_id).blocked:
             try:
                 if cls == 'admin':
                     @superadmin_required
                     def delete_admin():
-                        storage.update(cls, user_id, deleted=True)
+                        try:
+                            storage.update(cls, user_id, deleted=True)
+                        except:
+                            abort(500)
                     delete_admin()
                 else:
-                    storage.update(cls, user_id, deleted=True)
+                    try:
+                        storage.update(cls, user_id, deleted=True)
+                    except:
+                        abort(500)
                 cls_ = cls
                 break
             except:
-                return jsonify({'Error': f'Unable to delete {cls}'})
+                return jsonify({'error': f'Unable to delete {cls}'}), 400
         else:
-            return jsonify({'User': f'{cls} already deleted'})
-
-    return jsonify({'User': f'{cls_} deleted'})
+            return jsonify({'user': f'{cls} already deleted'}), 200
+    if not cls_:
+        return jsonify({'user': 'user not found'}), 404
+    return jsonify({'user': f'{cls_} deleted'}), 200
 
 @admin_bp.route('/revalidate-user/<user_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
 def revalidate_user(user_id):
     cls_ = ''
     for cls in ['Driver', 'Rider', 'Admin']:
-        if storage.get(cls, id=user_id).blocked:
+        if not storage.get(cls, id=user_id):
+            continue
+        if not storage.get(cls, id=user_id).blocked:
             try:
                 if cls == 'admin':
                     @superadmin_required
                     def delete_admin():
-                        storage.update(cls, user_id, deleted=False)
+                        try:
+                            storage.update(cls, user_id, deleted=False)
+                        except:
+                            abort(500)
                     delete_admin()
                 else:
-                    storage.update(cls, user_id, deleted=False)
+                    try:
+                        storage.update(cls, user_id, deleted=False)
+                    except:
+                        abort(500)
                 cls_ = cls
                 break
             except:
-                return jsonify({'Error': f'Unable to delete {cls}'})
+                return jsonify({'error': f'Unable to revalidate {cls}'}), 400
         else:
-            return jsonify({'User': f'{cls} already deleted'})
-
-    return jsonify({'User': f'{cls_} deleted'})
+            return jsonify({'user': f'{cls} already revalidated'}), 200
+    if not cls_:
+        return jsonify({'user': 'user not found'}), 404
+    return jsonify({'user': f'{cls_} revalidated'}), 200
 
 @admin_bp.route('/deleted-users/<user_type>', methods=['GET'], strict_slashes=False)
 def deleted_users(user_type):
-    users = {k : v.to_dict() for k, v in storage.get_all(user_type).items() if not v['deleted']}
-    if users:
-        return jsonify({'Users': users})
-    return jsonify({'Users': "Deleted users not found"})
+    users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.deleted]
+    return jsonify({'users': users}), 200 
 
 @admin_bp.route('/blocked-users/<user_type>', methods=['GET'], strict_slashes=False)
 def blocked_users(user_type):
-    users = {k : v.to_dict() for k, v in storage.get_all(user_type).items() if not v['blocked']}
-    if users:
-        return jsonify({'Users': users})
-    return jsonify({'users': "Deleted users not found"})
-
+    users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.blocked]
+    return jsonify({'users': users}), 200
 
 @admin_bp.route('/user-profile/<user_id>', methods=['GET'], strict_slashes=False)
 @admin_required
@@ -188,99 +230,196 @@ def user_profile(user_id):
     user = ''
     for i in ['Rider', 'Driver', 'Admin']:
         if storage.get(i, id=user_id):
-            user = storage.get(i, id=user_id).to_dict()
+            user = clean(storage.get(i, id=user_id).to_dict())
     if user:
-        return jsonify({'User': user})
-    return jsonify({'Error': 'user not found'})
+        return jsonify({'user': user}), 200
+    return jsonify({'error': 'user not found'}), 404
 
 #Ride Management
-@admin_bp.route('/rides', methods=['GET'], strict_slashes=False)
+@admin_bp.route('/get-rides', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_rides():
-    rides = sorted([ride.to_dict() for ride in storage.get_objs("Trip")], key=lambda ride: ride['updated_at'], reverse=True)
-    
-    if rides: 
-        return jsonify({'Rides': rides})
-    return jsonify({'Error': 'rides not found'})
+    trips = storage.get_objs('Trip')
+    if not trips:
+        return jsonify({'error': 'trip found'}), 404
+    trips_dict = {}
+    try:
+        for trip in trips:
+            vehicle = storage.get('Driver', id=trip.driver_id).vehicle
+            riders = [rider.rider for rider in storage.get_objs('TripRider', trip_id=trip.id, is_past=False)]
+            available_seats = vehicle.seating_capacity - len(riders)
+            trips_dict['Trip.' + trip.id] = clean(trip.to_dict())
+            trips_dict['Trip.' + trip.id]['vehicle_holds'] = vehicle.seating_capacity
+            trips_dict['Trip.' + trip.id]['available_seats'] = available_seats
 
-@admin_bp.route('/ride/<ride_id>', methods=['GET'], strict_slashes=False)
+            trips_dict['Trip.' + trip.id]['driver_id'] = clean(storage.get('Driver', id=trips_dict['Trip.' + trip.id]['driver_id']).to_dict())
+            trips_dict['Trip.' + trip.id]['pickup_location_id'] = clean(storage.get('Location', id=trips_dict['Trip.' + trip.id]['pickup_location_id']).to_dict())
+            trips_dict['Trip.' + trip.id]['dropoff_location_id'] = clean(storage.get('Location', id=trips_dict['Trip.' + trip.id]['dropoff_location_id']).to_dict())
+            trips_dict['Trip.' + trip.id]['vehicle'] = clean(storage.get('Vehicle', driver_id=trip.driver_id).to_dict())
+            
+            del trips_dict['Trip.' + trip.id]['status']
+    except:
+        abort(500)
+
+    return jsonify({'trips': trips_dict}), 200
+   
+
+@admin_bp.route('/get-ride/<ride_id>', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_ride(ride_id):
+    booked_riders = []
+    canceled_riders = []
+    payment = None
+
     try:
-        ride = storage.get('Trip', id=ride_id).to_dict()
+        ride = clean(storage.get('Trip', id=ride_id).to_dict())
+        if not ride:
+            abort(404)
         try:
-            booked_riders = [rider.rider.to_dict() for rider in storage.get_objs('TripRider', trip_id=ride_id) if rider.rider.status == 'booked']
+            booked_riders = [clean(rider.rider.to_dict()) for rider in storage.get_objs('TripRider', trip_id=ride_id) if rider.status == 'booked']
         except:
-            riders = None
+            booked_riders = None
         try:
-            canceled_riders = [rider.rider.to_dict() for rider in storage.get_objs('TripRider', trip_id=ride_id) if rider.rider.status == 'canceled']
+            canceled_riders = [clean(rider.rider.to_dict()) for rider in storage.get_objs('TripRider', trip_id=ride_id) if rider.status == 'Canceled']
         except:
-            riders = None
+            canceled_riders = None
         try:
-            payment = storage.get("Payment", trip_id=ride_id)
+            payment = clean(storage.get("Payment", trip_id=ride_id).to_dict())
         except:
             payment = None
     except:
-        return jsonify({'ride': 'ride not found'})
+        return jsonify({'ride': 'ride not found'}), 404
     ride["riders"] = {'booked': booked_riders,
                       'canceled': canceled_riders}
     ride["payment"] = payment
-    return jsonify({'Ride': ride})
 
-@admin_bp.route('/ride/<ride_id>', methods=['PUT'], strict_slashes=False)
+    return jsonify({'ride': ride}), 200
+
+@admin_bp.route('/delete-ride/<ride_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
 def delete_ride(ride_id):
     try:
         storage.update('Trip', ride_id, is_available=False)
     except:
-        return jsonify({'Error': 'Unable to delete ride'})
-    return jsonify({'Admin': 'Ride deleted'})
+        abort(500)
+    return jsonify({'admin': 'Ride deleted'}), 200
+
+
+@admin_bp.route('/set-location', methods=['POST'], strict_slashes=False)
+@admin_required
+def set_location():
+    try:
+        location_data = request.get_json()
+    except:
+        abort(415)
+    for i in ['latitude', 'longitude', 'address']:
+        if i not in location_data:
+            return jsonify({'error': f'{i} missing'}), 400
+    kwargs = {
+        'latitude': location_data['latitude'],
+        'longitude': location_data['longitude'],
+        'address': location_data['address'],    
+    }
+    try:
+        location = Location(**kwargs)
+        location.save()
+    except:
+        abort(500)
+    return jsonify({'location': 'location created'}), 200
+
+@admin_bp.route('/get-locations', methods=['GET'], strict_slashes=False)
+@admin_required
+def get_locations():
+    locations = [clean(location.to_dict()) for location in storage.get_objs('Location')]
+    if not locations:
+        return jsonify({'error': 'location not found'}), 404
+    return jsonify({'locations': locations}), 200
 
 @admin_bp.route('/set-ride', methods=['POST'], strict_slashes=False)
 @admin_required
 def set_ride():
     '''create a ride'''
-    pass
+    try:
+        ride_data = request.get_json()
+    except:
+        abort(415)
+    args = ['driver_id', 'pickup_location_id', 'dropoff_location_id',
+            'pickup_time', 'dropoff_time', 'fare', 'distance', 'status',
+            'is_available']
+    for i in args:
+        if i not in ride_data:
+            return jsonify({'error': f'{i} missing'}), 400
+    
+    kwargs = {
+        "driver_id": ride_data['driver_id'],
+        "pickup_location_id": ride_data['pickup_location_id'],
+        "dropoff_location_id": ride_data['dropoff_location_id'],
+        "pickup_time": ride_data['pickup_time'],
+        "dropoff_time": ride_data['dropoff_time'],
+        "fare": ride_data['fare'],
+        "distance": ride_data['distance'],
+        "status": ride_data['status'],
+        "is_available": ride_data['is_available']
+    }
+    try:
+        trip = Trip(**kwargs)
+        trip.save()
+    except:
+        abort(500)
+    
+    return jsonify({'ride': 'ride created'}), 200
+
 
 #Payment Management
 @admin_bp.route('/transactions', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_transactions():
-    transactions = sorted([transaction.to_dict() for transaction in storage.get_objs('Payment')], key=lambda transaction: transaction['payment_time'], reverse=True)
+    try:
+        transactions = sorted([clean(transaction.to_dict()) for transaction in storage.get_objs('Payment')], key=lambda transaction: transaction['payment_time'], reverse=True)
+    except:
+        abort(500)
     if transactions:
-        return jsonify({'Admin': transactions})
-    return jsonify({'Admin': "Transactions not found"})
+        return jsonify({'admin': transactions}), 200
+    return jsonify({'admin': "Transactions not found"}), 404
 
 @admin_bp.route('/payment-detail/<ride_id>', methods=['GET'], strict_slashes=False)
 @admin_required
 def get_payment_detail(ride_id):
     trip = storage.get("Trip", id=ride_id)
-
     if not trip:
-        return jsonify({'Error': 'ride not found'})
+        return jsonify({'error': 'ride not found'}), 404
 
-    trip_dict = trip.to_dict()
+    trip_dict = clean(trip.to_dict())
     total_amount = 0
-    total_amount = [rider.rider.payment for rider in storage.get("Trip", id=ride_id).riders]
-    # for _ in ride_amount:
-    #     total_amount += _.amount
+    try:
+        riders = [rider.rider for rider in storage.get("Trip", id=ride_id).riders]
+    except:
+        abort(500)
+
+    for py in riders:
+        if py.payment:
+            total_amount += py.payment[0].amount
     
-    payment_status = [payment.payment_status for payment in storage.get("Trip", id=ride_id).payment]
-    number_of_riders = len([rider for rider in storage.get("Trip", id=ride_id).riders])
-    riders = [rider.rider.to_dict() for rider in storage.get("Trip", id=ride_id).riders]
-    
+    riders_dict = [clean(ride.to_dict()) for ride in riders]
+    for ride in riders_dict:
+        if ride['payment']:
+            ride['payment'] = clean(ride['payment'][0].to_dict())
+    try:
+        payment_status = [payment.payment_status for payment in storage.get("Trip", id=ride_id).payment]
+        number_of_riders = len([rider for rider in storage.get("Trip", id=ride_id).riders])
+    except:
+        abort(500)
+
     payment_dict = {
         "trip": trip_dict,
         "total_paid_amount": total_amount,
         "payment_status": payment_status,
         "number_of_riders": number_of_riders,
-        "riders": riders
+        "riders": riders_dict
     }
-    # for i in total_amount[0]:
-    #     print(i)
-    print(type(total_amount[0]))
+ 
 
-    return jsonify({'Payment': "payment_dict"})
+    return jsonify({'payment': payment_dict}), 200
 
 
 @admin_bp.route('/refund/<ride_id>', methods=['POST'], strict_slashes=False)
@@ -305,7 +444,7 @@ def get_issues():
     return jsonify({'Admin': 'Return report of issues reported by riders and drivers'})
 
 #System Configuration
-@admin_bp.route('/set-pricing', methods=['POST'], strict_slashes=False)
+@admin_bp.route('/set-pricing', methods=['PUT'], strict_slashes=False)
 @admin_required
 def set_pricing():
     return jsonify({'Admin': 'Update ride pricing and fare structure'})
