@@ -1,11 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from flasgger import Swagger
 from api.v1.views import admin_bp, rider_bp, driver_bp
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8001"}})
-swagger = Swagger(app, template_file='swagger/main.yaml')
+# CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8001"}})
+
+swagger = Swagger(app, template_file='./swagger/main.yaml')
 
 app.register_blueprint(admin_bp, url_prefix='/api/v1/admin')
 app.register_blueprint(driver_bp, url_prefix='/api/v1/driver')
