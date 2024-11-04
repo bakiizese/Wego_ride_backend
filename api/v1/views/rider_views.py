@@ -318,7 +318,6 @@ def current_ride(tripride_id):
 
     return jsonify({'ride': trip}), 200
 
-
 @rider_bp.route('/ride-status/<tripride_id>', methods=['GET'], strict_slashes=False)
 @token_required
 def ride_status(tripride_id):
@@ -352,7 +351,6 @@ def ride_status(tripride_id):
 
     return jsonify({'ride': ride_status}), 200
 
-
 #Ride History And Management
 @rider_bp.route('/ride-history', methods=['GET'], strict_slashes=False)
 @token_required
@@ -372,7 +370,6 @@ def ride_history():
         ride_dict['Trip.' + ride.id] = clean(ride.to_dict())
 
     return jsonify({'ride': ride_dict}), 200
-
 
 @rider_bp.route('/cancel-ride', methods=['POST'], strict_slashes=False)
 @token_required
@@ -400,12 +397,6 @@ def cancel_ride():
     return jsonify({'trip': 'Canceled'}), 200
 
 #Payment
-@rider_bp.route('/add-payment-method', methods=['POST'], strict_slashes=False)
-@token_required
-def add_payment_method():
-    '''add payment methods'''
-    pass
-
 @rider_bp.route('/pay-ride', methods=['POST'], strict_slashes=False)
 @token_required
 def pay_ride():
@@ -420,7 +411,7 @@ def pay_ride():
     except:
         abort(500)
     
-    for i in ['amount', 'status', 'trip_id']:
+    for i in ['amount', 'status', 'trip_id', 'payment_method']:
         if i not in request.get_json():
             abort(400)
     
@@ -436,7 +427,7 @@ def pay_ride():
     kwargs = {
         "trip_id": trip_id,
         "rider_id": user_id,
-        "payment_method": "Cash",
+        "payment_method": request.get_json()['payment_method'],
         "payment_time": datetime.utcnow(),
         "amount": amount,
         "payment_status":  request.get_json()['status']
