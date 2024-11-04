@@ -210,28 +210,28 @@ paths:
           description: "The ID of the user to block"
       responses:
         200:
-          sechma:
+          schema:
             type: object
             properties:
               user:
                 type: string
                 example: "driver blocked"
         404:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "user not found"
         400:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "unable to block driver"
         500:
-          sechma:
+          schema:
             type: object
             properties:
               error:
@@ -268,28 +268,28 @@ paths:
           description: "The ID of the user to unblock"
       responses:
         200:
-          sechma:
+          schema:
             type: object
             properties:
               user:
                 type: string
                 example: "driver unblocked"
         404:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "user not found"
         400:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "unable to unblock driver"
         500:
-          sechma:
+          schema:
             type: object
             properties:
               error:
@@ -326,28 +326,28 @@ paths:
           description: "The ID of the user to delete"
       responses:
         200:
-          sechma:
+          schema:
             type: object
             properties:
               user:
                 type: string
                 example: "driver deleted"
         404:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "user not found"
         400:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "unable to delete driver"
         500:
-          sechma:
+          schema:
             type: object
             properties:
               error:
@@ -383,28 +383,28 @@ paths:
           description: "The ID of the user to revalidate"
       responses:
         200:
-          sechma:
+          schema:
             type: object
             properties:
               user:
                 type: string
                 example: "driver revalidated"
         404:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "user not found"
         400:
-          sechma:
+          schema:
             type: object
             properties:
               error:
                 type: string
                 example: "unable to revalidate driver"
         500:
-          sechma:
+          schema:
             type: object
             properties:
               error:

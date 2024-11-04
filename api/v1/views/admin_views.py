@@ -84,7 +84,7 @@ def get_riders():
 @admin_required
 def get_drivers():
     drivers = [clean(v.to_dict()) for v in storage.get_objs("Driver") if not v.deleted and not v.blocked]
-    return jsonify({'riders': drivers}), 200
+    return jsonify({'drivers': drivers}), 200
 
 @admin_bp.route('/block-user/<user_id>', methods=['PUT'], strict_slashes=False)
 @admin_required
@@ -215,11 +215,13 @@ def revalidate_user(user_id):
     return jsonify({'user': f'{cls_} revalidated'}), 200
 
 @admin_bp.route('/deleted-users/<user_type>', methods=['GET'], strict_slashes=False)
+@admin_required
 def deleted_users(user_type):
     users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.deleted]
     return jsonify({'users': users}), 200 
 
 @admin_bp.route('/blocked-users/<user_type>', methods=['GET'], strict_slashes=False)
+@admin_required
 def blocked_users(user_type):
     users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.blocked]
     return jsonify({'users': users}), 200
@@ -422,10 +424,10 @@ def get_payment_detail(ride_id):
     return jsonify({'payment': payment_dict}), 200
 
 
-@admin_bp.route('/refund/<ride_id>', methods=['POST'], strict_slashes=False)
-@admin_required
-def refund(ride_id):
-    return jsonify({'Admin': 'Issue a refund to a rider'})
+# @admin_bp.route('/refund/<ride_id>', methods=['POST'], strict_slashes=False)
+# @admin_required
+# def refund(ride_id):
+#     return jsonify({'Admin': 'Issue a refund to a rider'})
 
 #Reports And Analytics
 @admin_bp.route('/reports/earnings', methods=['GET'], strict_slashes=False)
@@ -444,10 +446,10 @@ def get_issues():
     return jsonify({'Admin': 'Return report of issues reported by riders and drivers'})
 
 #System Configuration
-@admin_bp.route('/set-pricing', methods=['PUT'], strict_slashes=False)
-@admin_required
-def set_pricing():
-    return jsonify({'Admin': 'Update ride pricing and fare structure'})
+# @admin_bp.route('/set-pricing', methods=['PUT'], strict_slashes=False)
+# @admin_required
+# def set_pricing():
+#     return jsonify({'Admin': 'Update ride pricing and fare structure'})
 
 @admin_bp.route('/set-commission', methods=['POST'], strict_slashes=False)
 @admin_required

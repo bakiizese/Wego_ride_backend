@@ -271,11 +271,11 @@ def ride_requests():
     return jsonify({'riders': trip_dict}), 200
 
 
-@driver_bp.route('/accept-ride', methods=['POST'], strict_slashes=False)
-@token_required
-def accept_ride():
-    '''accept all ride from admin'''
-    pass
+# @driver_bp.route('/accept-ride', methods=['POST'], strict_slashes=False)
+# @token_required
+# def accept_ride():
+#     '''accept all ride from admin'''
+#     pass
 
 
 @driver_bp.route('/start-ride', methods=['POST'], strict_slashes=False)
