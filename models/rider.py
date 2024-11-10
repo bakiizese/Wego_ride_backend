@@ -3,8 +3,9 @@ from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, Integer, VARCHAR, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
+
 class Rider(BaseModel, Base):
-    __tablename__ = 'riders'
+    __tablename__ = "riders"
     username = Column(String(128), nullable=False, unique=True)
     first_name = Column(String(128), nullable=False)
     last_name = Column(String(128), nullable=False)
@@ -18,10 +19,10 @@ class Rider(BaseModel, Base):
     blocked = Column(Boolean, default=False)
 
     trips = relationship("TripRider", back_populates="rider")
-    
-    notification = relationship("Notification",
-                                backref="riders",
-                                cascade="all, delete, delete-orphan")
-    payment = relationship("Payment", 
-                           backref="riders",
-                           cascade="all, delete, delete-orphan")
+
+    # notification = relationship("Notification",
+    #                             backref="riders",
+    #                             cascade="all, delete, delete-orphan")
+    payment = relationship(
+        "Payment", backref="riders", cascade="all, delete, delete-orphan"
+    )

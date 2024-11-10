@@ -12,32 +12,43 @@ from models.notification import Notification
 from models.vehicle import Vehicle
 from models.admin import Admin
 from models.trip_rider import TripRider
+from models.total_payment import TotalPayment
 import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-mysql_user = 'wegoride_user'
-mysql_host = 'localhost'
-mysql_pwd = 'wegoride'
-mysql_db = 'wego_db'
+mysql_user = "wegoride_user"
+mysql_host = "localhost"
+mysql_pwd = "wegoride"
+mysql_db = "wego_db"
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
 
-classes = {"Notification": Notification, "Driver": Driver, 
-           "Rider": Rider, "Payment": Payment, "Trip": Trip,
-           "Location": Location, "Availability": Availability,
-           "Vehicle": Vehicle, "Admin": Admin, "TripRider": TripRider}
+classes = {
+    "Notification": Notification,
+    "Driver": Driver,
+    "Rider": Rider,
+    "Payment": Payment,
+    "Trip": Trip,
+    "Location": Location,
+    "Availability": Availability,
+    "Vehicle": Vehicle,
+    "Admin": Admin,
+    "TripRider": TripRider,
+    "TotalPayment": TotalPayment,
+}
+
 
 class DBStorage:
     __engine = None
     __session = None
 
     def __init__(self) -> None:
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'
-                                      .format('wegoride_user',
-                                              'wegoride',
-                                              'localhost',
-                                              'wego_db'))
+        self.__engine = create_engine(
+            "mysql+mysqldb://{}:{}@{}/{}".format(
+                "wegoride_user", "wegoride", "localhost", "wego_db"
+            )
+        )
         Base.metadata.create_all(self.__engine)
         sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sess_factory)
@@ -59,15 +70,15 @@ class DBStorage:
         self.__session = Session
 
     def get(self, cls, **kwargs):
-        '''returns class object that can be accessed by .'''
+        """returns class object that can be accessed by ."""
         return self.__session.query(classes[cls]).filter_by(**kwargs).first()
-    
+
     def get_objs(self, cls, **kwargs):
-        '''returns class object that can be accessed by .'''
+        """returns class object that can be accessed by ."""
         if kwargs:
             return self.__session.query(classes[cls]).filter_by(**kwargs)
         return self.__session.query(classes[cls])
-    
+
     def get_in_dict(self, cls, **kwargs):
         data_dict = self.get_all(cls, **kwargs)
         for data in data_dict:
@@ -86,10 +97,10 @@ class DBStorage:
         else:
             data = self.__session.query(classes[cls])
         for i in data:
-            key = i.__class__.__name__ + '.' + i.id
+            key = i.__class__.__name__ + "." + i.id
             new_dict[key] = i
         return new_dict
-    
+
     def delete(self, cls, arg=None):
         """deletes an instance based on the given class and id"""
         if arg:
@@ -105,8 +116,8 @@ class DBStorage:
                 self.save()
             except:
                 self.__session.rollback()
-                raise(MemoryError)
-    
+                raise (MemoryError)
+
     def update(self, cls, id, **kwargs):
         cols = classes[cls].__table__.columns.keys()
 
@@ -114,8 +125,8 @@ class DBStorage:
             if k not in cols:
                 print("** key not found **")
                 return False
-        if 'username' in kwargs:
-            user = self.get(classes[cls], username=kwargs['username'])
+        if "username" in kwargs:
+            user = self.get(classes[cls], username=kwargs["username"])
             if user:
                 print("** username already exist **")
                 return False
@@ -124,7 +135,7 @@ class DBStorage:
             self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
                 {k: v},
                 synchronize_session=False,
-                )
+            )
             self.save()
 
     def count(self, arg):

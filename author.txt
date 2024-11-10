@@ -1,0 +1,11 @@
+Project Maintainer:
+  - Name: Bereket Zeselassie
+  - Email: bereketzeselassie@gmail.com
+  - GitHub: https://github.com/bakiizese
+  - Whatsapp: +251941353944
+
+Project Created by:
+  - Bereket Zeselassie - Initial Project Setup and Development
+
+Special Thanks:
+  - Alx for guidance/support
