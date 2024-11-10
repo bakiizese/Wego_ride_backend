@@ -32,7 +32,6 @@ Welcome to **Wego Ride**, a ride-hailing service platform that allows users to r
 - **Other**: Python, DateTime
 
 ## Project Structure
-   ```bash
    /Wego_ride_backend
    │
    ├── api/                        # Contains the core logic of the Flask API
