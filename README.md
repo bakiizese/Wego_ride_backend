@@ -32,6 +32,8 @@ Welcome to **Wego Ride**, a ride-hailing service platform that allows users to r
 - **Other**: Python, DateTime
 
 ## Project Structure
+   ````markdown
+   ```bash
    /Wego_ride_backend
    │
    ├── api/                        # Contains the core logic of the Flask API
@@ -82,6 +84,8 @@ Welcome to **Wego Ride**, a ride-hailing service platform that allows users to r
    ├── requirements.txt            # Python dependencies for the project
    ├── setup_mysql_dev.sql         # MySQL setup script for development environment
    └── wego_dump.sql               # SQL dump for initializing the database
+   ```
+   ````
 
 
 ## Setup & Installation
