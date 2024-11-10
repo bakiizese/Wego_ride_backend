@@ -104,13 +104,14 @@ Before you begin, ensure you have the following software installed:
    cd Wego_ride_backend
 
 2. **Install the required  Python Packages**
-    pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
 
 3. **Set up the MySQL database**
     - cat setup_mysql_dev.sql | mysql -u root -p 
     - mysql -u username -p database_name < dump.sql
 
-4. **Running the app**
+5. **Running the app**
     python -m api/v1/app.py
 
 The application will be running at http://localhost:5000
