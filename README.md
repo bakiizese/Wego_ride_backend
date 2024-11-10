@@ -34,6 +34,7 @@ Welcome to **Wego Ride**, a ride-hailing service platform that allows users to r
 ## Project Structure
 ```bash
 /Wego_ride_backend
+ls -l
 │
 ├── api/                        # Contains the core logic of the Flask API
 │   ├── __init__.py             # Initializes the api package
