@@ -13,50 +13,60 @@ from models.notification import Notification
 from models.vehicle import Vehicle
 from models.admin import Admin
 from models.trip_rider import TripRider
+from models.total_payment import TotalPayment
 from auth.authentication import _hash_password
 import os
 import sys
 from models import storage
 from sqlalchemy.exc import IntegrityError
 
-classes = {"Notification": Notification, "Driver": Driver, 
-           "Rider": Rider, "Payment": Payment, "Trip": Trip,
-           "Location": Location, "Availability": Availability,
-           "Vehicle": Vehicle, "Admin": Admin, "TripRider": TripRider}
+classes = {
+    "Notification": Notification,
+    "Driver": Driver,
+    "Rider": Rider,
+    "Payment": Payment,
+    "Trip": Trip,
+    "Location": Location,
+    "Availability": Availability,
+    "Vehicle": Vehicle,
+    "Admin": Admin,
+    "TripRider": TripRider,
+    "TotalPayment": TotalPayment,
+}
+
 
 class WegoCommand(cmd.Cmd):
-    prompt = '(wego) '
+    prompt = "(wego) "
 
     def do_EOF(self, arg):
         return True
-    
+
     def emptyline(self):
         return False
-    
+
     def do_quit(self, arg):
         return True
-    
+
     def do_exit(self, arg):
         return True
-    
-    def do_clear(self, arg):
-        if os.name == 'nt':
-            os.system('cls')
-        else:
-            os.system('clear')
 
+    def do_clear(self, arg):
+        if os.name == "nt":
+            os.system("cls")
+        else:
+            os.system("clear")
 
     def _key_value_parser(self, args):
-        """ parses through args and conver it to dictionary representation 
-        by making class.id the key of a single instance """
+        """parses through args and conver it to dictionary representation
+        by making class.id the key of a single instance"""
         new_dict = {}
         for arg in args:
             if "=" in arg:
-                kvp = arg.split('=', 1)
+                kvp = arg.split("=", 1)
                 key = kvp[0]
                 value = kvp[1]
                 if len(value) > 0 and value[0] == value[-1] == '"':
-                    value = shlex.split(value)[0].replace('_', ' ')
+                    value = shlex.split(value)[0].replace("_", " ")
                 else:
                     try:
                         value = int(value)
@@ -65,25 +75,24 @@ class WegoCommand(cmd.Cmd):
                             value = float(value)
                         except:
                             try:
-                                if 'True' == value:
+                                if "True" == value:
                                     value = True
-                                elif 'False' == value:
+                                elif "False" == value:
                                     value = False
                             except:
                                 continue
                 new_dict[key] = value
         return new_dict
-   
 
     def do_create(self, arg):
-        """ creates an instance of a given class based on properies provided """
+        """creates an instance of a given class based on properies provided"""
         args = arg.split()
         if len(args) < 1:
             print("** class name missing **")
             return False
         if args[0] in classes:
             cols = classes[args[0]].__table__.columns.keys()
-            
+
             parent_cols = ["id", "created_at", "updated_at"]
             if len(args) >= 1:
                 new_dict = self._key_value_parser(args[1:])
@@ -93,12 +102,12 @@ class WegoCommand(cmd.Cmd):
                         if not nullable:
                             print(f"{k}: is missing")
                             return False
-                
+
                 if args[0] in ["Rider", "Admin", "Driver"]:
                     try:
                         int(new_dict["phone_number"])
                     except:
-                        print("** phone_number must be a number **") 
+                        print("** phone_number must be a number **")
                         return False
                     email = new_dict["email"]
                     phone_number = new_dict["phone_number"]
@@ -114,20 +123,21 @@ class WegoCommand(cmd.Cmd):
                     if user_phone:
                         print("** phone_number already exists **")
                         return False
-                    new_dict["password_hash"] = _hash_password(new_dict["password_hash"])
-                
+                    new_dict["password_hash"] = _hash_password(
+                        new_dict["password_hash"]
+                    )
+
                 instance = classes[args[0]](**new_dict)
-                instance.save()  
+                instance.save()
                 print(instance.id)
                 # return instance.id
         else:
             print("** class doesn't exist **")
             return False
 
-
     def do_show(self, arg):
-        """ shows the whole table of instances and
-            also a specific instance by id """
+        """shows the whole table of instances and
+        also a specific instance by id"""
         args = arg.split()
         data_dict = {}
         if len(args) < 1:
@@ -146,10 +156,9 @@ class WegoCommand(cmd.Cmd):
             for data in data_dict:
                 data_dict[data] = data_dict[data].to_dict()
             print(data_dict)
-        
-    
+
     def do_destroy(self, arg):
-        """ to delete a single instance by the given class and instance id """
+        """to delete a single instance by the given class and instance id"""
         args = arg.split()
         if len(args) < 1:
             print("** class name missing **")
@@ -161,7 +170,7 @@ class WegoCommand(cmd.Cmd):
             try:
                 storage.delete(args[0], args[1])
             except MemoryError:
-                print('** unable to delete instance **')
+                print("** unable to delete instance **")
                 return False
             except Exception:
                 print("** instance not found **")
@@ -170,7 +179,6 @@ class WegoCommand(cmd.Cmd):
         else:
             print("** class doesn't exist **")
             return False
-   
 
     def do_update(self, arg):
         """updates an instance based on a given class, id and the updates"""
@@ -184,12 +192,12 @@ class WegoCommand(cmd.Cmd):
                 return False
             if "id" in args[1]:
                 id_dict = args[1].split("=")[1]
-                
+
                 if len(args) < 3:
                     print("** update argumnets missing **")
                     return False
-                
-                key = args[0] + '.' + id_dict
+
+                key = args[0] + "." + id_dict
                 dict_data = self._key_value_parser(args[2:])
                 if not dict_data or len(dict_data) != len(args) - 2:
                     print("** property or value incorrect **")
@@ -207,24 +215,25 @@ class WegoCommand(cmd.Cmd):
                         stop = True
                 if stop:
                     return False
-                
-                if 'password_hash' in dict_data:
-                    dict_data['password_hash'] = _hash_password(dict_data['password_hash'])
-                    
+
+                if "password_hash" in dict_data:
+                    dict_data["password_hash"] = _hash_password(
+                        dict_data["password_hash"]
+                    )
+
                 for k, v in dict_data.items():
                     setattr(data, k, v)
                 data.save()
-                print('saved')
+                print("saved")
             else:
-                print("** \"id\" property missing **")
+                print('** "id" property missing **')
                 return False
         else:
             print("** class doesn't exist **")
             return False
 
-
     def do_count(self, arg):
-        """ to count the number instances of a given class """
+        """to count the number instances of a given class"""
         args = arg.split()
         if len(args) < 1:
             print("** class name missing **")
@@ -242,5 +251,5 @@ class WegoCommand(cmd.Cmd):
             return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     WegoCommand().cmdloop()
