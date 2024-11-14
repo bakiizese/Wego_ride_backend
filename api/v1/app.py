@@ -1,16 +1,23 @@
 from flask import Flask, jsonify, redirect
 from flasgger import Swagger
 from api.v1.views import admin_bp, rider_bp, driver_bp
+import logging
 from flask_cors import CORS
 
 app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8001"}})
+CORS(app)
 
 swagger = Swagger(app, template_file="./swagger/main.yaml")
 
 app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
 app.register_blueprint(driver_bp, url_prefix="/api/v1/driver")
 app.register_blueprint(rider_bp, url_prefix="/api/v1/rider")
+
+logging.basicConfig(
+    # filename="./logs/error.log",
+    level=logging.WARNING,
+    format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
+)
 
 
 @app.errorhandler(404)
@@ -20,7 +27,7 @@ def not_found(error):
 
 @app.errorhandler(400)
 def bad_request(error):
-    return jsonify({"error": "Requirement missing or incorrect"}), 400
+    return jsonify({"error": "Requirement missing or incorrect format"}), 400
 
 
 @app.errorhandler(405)

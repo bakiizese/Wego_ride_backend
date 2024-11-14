@@ -5,7 +5,7 @@ Project Maintainer:
   - Whatsapp: +251941353944
 
 Project Created by:
-  - Bereket Zeselassie - Initial Project Setup and Development
+  - Bereket Zeselassie - Project Setup and Development
 
 Special Thanks:
-  - Alx for guidance/support
+  - Alx for guidance and support

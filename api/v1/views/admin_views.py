@@ -11,7 +11,10 @@ from models.location import Location
 from datetime import datetime, timedelta
 from models.notification import Notification
 from models.total_payment import TotalPayment
-from sqlalchemy import func
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 
 Auth = authentication.Auth()
 cls = "Admin"
@@ -33,23 +36,28 @@ def register():
     """register a new admin by providing necessary informations"""
     try:
         user_data = request.get_json()
-    except:
+    except Exception as e:
+        logger.warning(e)
         abort(415)
 
     for k in admin_key:
         if k not in user_data.keys():
+            logger.warning(f"{k} missing")
             return jsonify({"error": f"{k} missing"}), 400
     try:
         int(user_data["phone_number"])
     except:
-        return jsonify({"error": "phone_number must be number"}), 400
+        logger.warning("phone_number must be integer")
+        return jsonify({"error": "phone_number must be integer"}), 400
     try:
         user = Auth.register_user(cls, **user_data)
         message, status = user
     except:
+        logger.exception("An internal errro")
         abort(500)
     if status:
         return jsonify({"user": message}), 201
+    logger.warning(message)
     return jsonify({"error": message}), 400
 
 
@@ -58,22 +66,34 @@ def login():
     """login as admin by provided credentials"""
     try:
         user_data = request.get_json()
-    except:
+    except Exception as e:
+        logger.warning(e)
         abort(415)
 
-    if "email" not in user_data:
-        return jsonify({"error": "email missing"}), 400
+    find_with = ""
+    if "email" in user_data:
+        find_with = "email"
+    elif "phone_number" in user_data:
+        find_with = "phone_number"
+    else:
+        logger.warning("email or phone_number missing")
+        return jsonify({"error": "email or phone_number missing"})
+
     if "password_hash" not in user_data:
+        logger.warning("password missing")
         return jsonify({"error": "password missing"}), 400
     try:
-        user = Auth.verify_login(cls, user_data["email"], user_data["password_hash"])
+        user = Auth.verify_login(
+            cls, find_with, user_data[find_with], user_data["password_hash"]
+        )
         message, status = user
     except:
+        logger.warning("an internal error")
         abort(500)
 
     if status:
         return jsonify({"user": status}), 200
-
+    logger.warning(message)
     return jsonify({"error": message}), 400
 
 
@@ -81,7 +101,7 @@ def login():
 @admin_required
 def logout():
     """logout and black-list jwt token"""
-    return jsonify({"admin": "Logged out"})
+    return jsonify({"admin": "Logged out"}), 200
 
 
 # Rider And Driver Management
@@ -119,13 +139,14 @@ def block_user(user_id):
             continue
         if not storage.get(cls, id=user_id).blocked:
             try:
-                if cls == "admin":
+                if cls == "Admin":
 
                     @superadmin_required
                     def unblock_admin():
                         try:
                             storage.update(cls, user_id, blocked=True)
                         except:
+                            logger.exception("an internal error")
                             abort(500)
 
                     unblock_admin()
@@ -133,14 +154,18 @@ def block_user(user_id):
                     try:
                         storage.update(cls, user_id, blocked=True)
                     except:
+                        logger.exception("an internal erro")
                         abort(500)
                 cls_ = cls
                 break
             except:
+                logger.warning(f"unable to block {cls}")
                 return jsonify({"error": f"Unable to block {cls}"}), 400
         else:
+            logger.warning(f"{cls} already blocked")
             return jsonify({"user": f"{cls} already blocked"}), 200
     if not cls_:
+        logger.warning("user not found")
         return jsonify({"user": "user not found"}), 404
     return jsonify({"user": f"{cls_} blocked"}), 200
 
@@ -155,13 +180,14 @@ def unblock_user(user_id):
             continue
         if storage.get(cls, id=user_id).blocked:
             try:
-                if cls == "admin":
+                if cls == "Admin":
 
                     @superadmin_required
                     def unblock_admin():
                         try:
                             storage.update(cls, user_id, blocked=False)
                         except:
+                            logger.exception("An internal error")
                             abort(500)
 
                     unblock_admin()
@@ -169,14 +195,18 @@ def unblock_user(user_id):
                     try:
                         storage.update(cls, user_id, blocked=False)
                     except:
+                        logger.exception("An internal error")
                         abort(500)
                 cls_ = cls
                 break
             except:
+                logger.warning(f"unable to unblock {cls}")
                 return jsonify({"error": f"Unable to unblock {cls}"}), 400
         else:
+            logger.warning(f"{cls} already unblocked")
             return jsonify({"user": f"{cls} already unblocked"}), 200
     if not cls_:
+        logger.warning("user not found")
         return jsonify({"user": "user not found"}), 404
     return jsonify({"user": f"{cls_} unblocked"}), 200
 
@@ -198,6 +228,7 @@ def delete_user(user_id):
                         try:
                             storage.update(cls, user_id, deleted=True)
                         except:
+                            logger.exception("An internal error")
                             abort(500)
 
                     delete_admin()
@@ -205,14 +236,18 @@ def delete_user(user_id):
                     try:
                         storage.update(cls, user_id, deleted=True)
                     except:
+                        logger.exception("An internal error")
                         abort(500)
                 cls_ = cls
                 break
             except:
+                logger.warning(f"unable to delete {cls}")
                 return jsonify({"error": f"Unable to delete {cls}"}), 400
         else:
+            logger.warning(f"{cls} already deleted")
             return jsonify({"user": f"{cls} already deleted"}), 200
     if not cls_:
+        logger.warning("user not found")
         return jsonify({"user": "user not found"}), 404
     return jsonify({"user": f"{cls_} deleted"}), 200
 
@@ -234,6 +269,7 @@ def revalidate_user(user_id):
                         try:
                             storage.update(cls, user_id, deleted=False)
                         except:
+                            logger.exception("An internal error")
                             abort(500)
 
                     delete_admin()
@@ -241,14 +277,18 @@ def revalidate_user(user_id):
                     try:
                         storage.update(cls, user_id, deleted=False)
                     except:
+                        logger.exception("An internal error")
                         abort(500)
                 cls_ = cls
                 break
             except:
+                logger.warning(f"unable to revalidate {cls}")
                 return jsonify({"error": f"Unable to revalidate {cls}"}), 400
         else:
+            logger.warning(f"{cls} already revalidated")
             return jsonify({"user": f"{cls} already revalidated"}), 200
     if not cls_:
+        logger.warning("user not found")
         return jsonify({"user": "user not found"}), 404
     return jsonify({"user": f"{cls_} revalidated"}), 200
 
@@ -258,6 +298,7 @@ def revalidate_user(user_id):
 def deleted_users(user_type):
     """get all users that are deleted by provided user-type"""
     if user_type not in ["Rider", "Driver", "Admin"]:
+        logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
     users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.deleted]
     return jsonify({"users": users}), 200
@@ -268,6 +309,7 @@ def deleted_users(user_type):
 def blocked_users(user_type):
     """get all users that are blocked by provided user-type"""
     if user_type not in ["Rider", "Driver", "Admin"]:
+        logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
     users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.blocked]
     return jsonify({"users": users}), 200
@@ -279,10 +321,13 @@ def user_profile(user_id):
     """get user profile by provided user-id"""
     user = ""
     for i in ["Rider", "Driver", "Admin"]:
-        if storage.get(i, id=user_id):
-            user = clean(storage.get(i, id=user_id).to_dict())
+        user = storage.get(i, id=user_id)
+        if user:
+            user = clean(user.to_dict())
+            break
     if user:
         return jsonify({"user": user}), 200
+    logger.warning("user not found")
     return jsonify({"error": "user not found"}), 404
 
 
@@ -293,11 +338,16 @@ def get_rides():
     """get all rides"""
     trips = storage.get_objs("Trip")
     if not trips:
-        return jsonify({"error": "trip found"}), 404
+        logger.warning("trips not found")
+        return jsonify({"error": "trip not found"}), 404
     trips_dict = {}
     try:
         for trip in trips:
-            vehicle = storage.get("Driver", id=trip.driver_id).vehicle
+            try:
+                vehicle = storage.get("Driver", id=trip.driver_id).vehicle
+            except:
+                logger.exception
+                abort(500)
             riders = [
                 rider.rider
                 for rider in storage.get_objs(
@@ -327,8 +377,8 @@ def get_rides():
             trips_dict["Trip." + trip.id]["vehicle"] = clean(
                 storage.get("Vehicle", driver_id=trip.driver_id).to_dict()
             )
-
     except:
+        logger.exception("An internal error")
         abort(500)
 
     return jsonify({"trips": trips_dict}), 200
@@ -343,9 +393,11 @@ def get_ride(ride_id):
     payment = None
 
     try:
-        ride = clean(storage.get("Trip", id=ride_id).to_dict())
+        ride = storage.get("Trip", id=ride_id)
         if not ride:
+            logger.warning("ride not found")
             abort(404)
+        ride = clean(ride.to_dict())
         try:
             booked_riders = [
                 clean(rider.rider.to_dict())
@@ -367,7 +419,8 @@ def get_ride(ride_id):
         except:
             payment = None
     except:
-        return jsonify({"ride": "ride not found"}), 404
+        logger.exception("an internal error")
+        abort(500)
     ride["riders"] = {"booked": booked_riders, "canceled": canceled_riders}
     ride["payment"] = payment
 
@@ -381,6 +434,7 @@ def delete_ride(ride_id):
     try:
         storage.update("Trip", ride_id, is_available=False)
     except:
+        logger.exception("An internal error")
         abort(500)
     return jsonify({"admin": "Ride deleted"}), 200
 
@@ -391,10 +445,12 @@ def set_location():
     """set a new location by provided informations"""
     try:
         location_data = request.get_json()
-    except:
+    except Exception as e:
+        logger.warning(e)
         abort(415)
     for i in ["latitude", "longitude", "address"]:
         if i not in location_data:
+            logger.warning(f"{i} missing")
             return jsonify({"error": f"{i} missing"}), 400
     kwargs = {
         "latitude": location_data["latitude"],
@@ -405,6 +461,7 @@ def set_location():
         location = Location(**kwargs)
         location.save()
     except:
+        logger.exception("an internal error")
         abort(500)
     return jsonify({"location": "location created"}), 200
 
@@ -415,6 +472,7 @@ def get_locations():
     """get all locations"""
     locations = [clean(location.to_dict()) for location in storage.get_objs("Location")]
     if not locations:
+        logger.warning("locations not found")
         return jsonify({"error": "location not found"}), 404
     return jsonify({"locations": locations}), 200
 
@@ -425,7 +483,8 @@ def set_ride():
     """set a new ride(trip) and totalpayment table by provieded informations"""
     try:
         ride_data = request.get_json()
-    except:
+    except Exception as e:
+        logger.warning(e)
         abort(415)
     args = [
         "driver_id",
@@ -440,6 +499,7 @@ def set_ride():
     ]
     for i in args:
         if i not in ride_data:
+            logger.warning(f"{i} missing")
             return jsonify({"error": f"{i} missing"}), 400
     availability = True
     if "is_available" in ride_data:
@@ -459,8 +519,8 @@ def set_ride():
     try:
         trip = Trip(**kwargs)
         trip.save()
-    except Exception as e:
-        print(e)
+    except:
+        logger.exception("An internal error")
         abort(500)
 
     kwargs = {
@@ -473,7 +533,7 @@ def set_ride():
         totalpayment = TotalPayment(**kwargs)
         totalpayment.save()
     except Exception as e:
-        print(e)
+        logger.exception("An internal error")
         abort(500)
 
     return jsonify({"ride": "ride created"}), 200
@@ -494,9 +554,11 @@ def get_transactions():
             reverse=True,
         )
     except:
+        logger.exception("An internal error")
         abort(500)
     if transactions:
         return jsonify({"admin": transactions}), 200
+    logger.warning("transactions not found")
     return jsonify({"admin": "Transactions not found"}), 404
 
 
@@ -504,8 +566,12 @@ def get_transactions():
 @admin_required
 def payment_detail(ride_id):
     """get a payment by provided ride-id"""
-    payment = clean(storage.get("TotalPayment", trip_id=ride_id).to_dict())
-    return jsonify({"payment": payment})
+    payment = storage.get("TotalPayment", trip_id=ride_id)
+    if payment:
+        payment = clean(payment.to_dict())
+        return jsonify({"payment": payment}), 200
+    logger.warning("payment not found")
+    return jsonify({"error": "payment not found"}), 404
 
 
 @admin_bp.route("/payment-detail/<ride_id>", methods=["GET"], strict_slashes=False)
@@ -514,6 +580,7 @@ def get_payment_detail(ride_id):
     """get detailed payment by provided ride-id"""
     trip = storage.get("Trip", id=ride_id)
     if not trip:
+        logger.warning("ride not found")
         return jsonify({"error": "ride not found"}), 404
 
     trip_dict = clean(trip.to_dict())
@@ -521,6 +588,7 @@ def get_payment_detail(ride_id):
     try:
         riders = [rider.rider for rider in storage.get("Trip", id=ride_id).riders]
     except:
+        logger.exception("An internal error")
         abort(500)
 
     for py in riders:
@@ -540,6 +608,7 @@ def get_payment_detail(ride_id):
             [rider for rider in storage.get("Trip", id=ride_id).riders]
         )
     except:
+        logger.exception("An internal error")
         abort(500)
 
     payment_dict = {
@@ -579,77 +648,84 @@ def get_earnings(date):
         this_year_drivers_earning,
         this_year_total_earning,
     ) = (0,) * 10
+    try:
+        if date:
+            date = datetime.strptime(date, "%d-%m-%Y")
+            for payment in payments:
+                if payment.transaction_time.date() == date.date():
+                    today_drivers_earning += payment.driver_earning
+                    today_total_earning += payment.total_revenue
+                if (
+                    payment.transaction_time.month == date.month
+                    and payment.transaction_time.year == date.year
+                ):
+                    this_month_drivers_earning += payment.driver_earning
+                    this_month_total_earning += payment.total_revenue
+                if payment.transaction_time.year == date.year:
+                    this_year_drivers_earning += payment.driver_earning
+                    this_year_total_earning += payment.total_revenue
 
-    if date:
-        date = datetime.strptime(date, "%d-%m-%Y")
+            earnings = {
+                f"day_{date.day}_earning": {
+                    "total_platform_earning": today_total_earning
+                    - today_drivers_earning,
+                    "total_driver_earning": today_drivers_earning,
+                    "total": today_total_earning,
+                },
+                f"month_{date.month}_earning": {
+                    "total_platform_earning": this_month_total_earning
+                    - this_month_drivers_earning,
+                    "total_driver_earning": this_month_drivers_earning,
+                    "total": this_month_total_earning,
+                },
+                f"year_{date.year}_earning": {
+                    "total_platform_earning": this_year_total_earning
+                    - this_year_drivers_earning,
+                    "total_driver_earning": this_year_drivers_earning,
+                    "total": this_year_total_earning,
+                },
+            }
+            return jsonify({"Admin": earnings}), 200
+
+        total_driver_revenue = sum([payment.driver_earning for payment in payments])
+        total_revenue = sum([payment.total_revenue for payment in payments])
+        total_platform_revenue = total_revenue - total_driver_revenue
+
         for payment in payments:
-            if payment.transaction_time.date() == date.date():
+            if payment.transaction_time.date() == now.date():
                 today_drivers_earning += payment.driver_earning
                 today_total_earning += payment.total_revenue
+            if payment.transaction_time.date() == (now - timedelta(days=1)).date():
+                yesterday_drivers_earning += payment.driver_earning
+                yesterday_total_earning += payment.total_revenue
             if (
-                payment.transaction_time.month == date.month
-                and payment.transaction_time.year == date.year
+                payment.transaction_time.month == now.month
+                and payment.transaction_time.year == now.year
             ):
                 this_month_drivers_earning += payment.driver_earning
                 this_month_total_earning += payment.total_revenue
-            if payment.transaction_time.year == date.year:
+            if (
+                payment.transaction_time.year == now.year
+                and payment.transaction_time.month == (now.month - 1)
+            ):
+                last_month_drivers_earning += payment.driver_earning
+                last_month_total_earning += payment.total_revenue
+            if payment.transaction_time.year == now.year:
                 this_year_drivers_earning += payment.driver_earning
                 this_year_total_earning += payment.total_revenue
 
-        earnings = {
-            f"day_{date.day}_earning": {
-                "total_platform_earning": today_total_earning - today_drivers_earning,
-                "total_driver_earning": today_drivers_earning,
-                "total": today_total_earning,
-            },
-            f"month_{date.month}_earning": {
-                "total_platform_earning": this_month_total_earning
-                - this_month_drivers_earning,
-                "total_driver_earning": this_month_drivers_earning,
-                "total": this_month_total_earning,
-            },
-            f"year_{date.year}_earning": {
-                "total_platform_earning": this_year_total_earning
-                - this_year_drivers_earning,
-                "total_driver_earning": this_year_drivers_earning,
-                "total": this_year_total_earning,
-            },
-        }
-        return jsonify({"Admin": earnings})
-
-    total_driver_revenue = sum([payment.driver_earning for payment in payments])
-    total_revenue = sum([payment.total_revenue for payment in payments])
-    total_platform_revenue = total_revenue - total_driver_revenue
-
-    for payment in payments:
-        if payment.transaction_time.date() == now.date():
-            today_drivers_earning += payment.driver_earning
-            today_total_earning += payment.total_revenue
-        if payment.transaction_time.date() == (now - timedelta(days=1)).date():
-            yesterday_drivers_earning += payment.driver_earning
-            yesterday_total_earning += payment.total_revenue
-        if (
-            payment.transaction_time.month == now.month
-            and payment.transaction_time.year == now.year
-        ):
-            this_month_drivers_earning += payment.driver_earning
-            this_month_total_earning += payment.total_revenue
-        if (
-            payment.transaction_time.year == now.year
-            and payment.transaction_time.month == (now.month - 1)
-        ):
-            last_month_drivers_earning += payment.driver_earning
-            last_month_total_earning += payment.total_revenue
-        if payment.transaction_time.year == now.year:
-            this_year_drivers_earning += payment.driver_earning
-            this_year_total_earning += payment.total_revenue
-
-    today_platform_earning = today_total_earning - today_drivers_earning
-    yesterday_platform_earning = yesterday_total_earning - yesterday_drivers_earning
-    this_month_platform_earning = this_month_total_earning - this_month_drivers_earning
-    last_month_platform_earning = last_month_total_earning - last_month_drivers_earning
-    this_year_platform_earning = this_year_total_earning - this_year_drivers_earning
-
+        today_platform_earning = today_total_earning - today_drivers_earning
+        yesterday_platform_earning = yesterday_total_earning - yesterday_drivers_earning
+        this_month_platform_earning = (
+            this_month_total_earning - this_month_drivers_earning
+        )
+        last_month_platform_earning = (
+            last_month_total_earning - last_month_drivers_earning
+        )
+        this_year_platform_earning = this_year_total_earning - this_year_drivers_earning
+    except:
+        logger.exception("An internal error")
+        abort(500)
     earnings = {
         "total_revenue": {
             "total_platform_earning": total_platform_revenue,
@@ -682,7 +758,7 @@ def get_earnings(date):
             "total": this_year_total_earning,
         },
     }
-    return jsonify({"Admin": earnings})
+    return jsonify({"Admin": earnings}), 200
 
 
 @admin_bp.route("/reports/ride-activity", methods=["GET"], strict_slashes=False)
@@ -703,33 +779,37 @@ def get_ride_activity():
     drivers = []
     locations = []
 
-    for ride in rides:
-        if ride.status == "completed":
-            completed += 1
-        elif ride.status == "canceled":
-            canceled += 1
-        elif ride.status in ["available", "started"]:
-            in_progress += 1
-        locations.append(ride.pickup_location_id + "." + ride.dropoff_location_id)
-        drivers.append(ride.drivers.username)
-        status = ride.total_payment
-        if status[0].status == "pending":
-            pending += 1
-        elif status[0].status == "paid":
-            paid += 1
-        if ride.pickup_time.hour > 5 and ride.pickup_time.hour < 12:
-            morning += 1
-        elif ride.pickup_time.hour > 12 and ride.pickup_time.hour < 17:
-            afternoon += 1
-        elif ride.pickup_time.hour > 17:
-            evening += 1
+    try:
+        for ride in rides:
+            if ride.status == "completed":
+                completed += 1
+            elif ride.status == "canceled":
+                canceled += 1
+            elif ride.status in ["available", "started"]:
+                in_progress += 1
+            locations.append(ride.pickup_location_id + "." + ride.dropoff_location_id)
+            drivers.append(ride.drivers.username)
+            status = ride.total_payment
+            if status[0].status == "pending":
+                pending += 1
+            elif status[0].status == "paid":
+                paid += 1
+            if ride.pickup_time.hour > 5 and ride.pickup_time.hour < 12:
+                morning += 1
+            elif ride.pickup_time.hour > 12 and ride.pickup_time.hour < 17:
+                afternoon += 1
+            elif ride.pickup_time.hour > 17:
+                evening += 1
 
-    location_dict = {}
-    for location in locations:
-        location_dict[location] = locations.count(location)
-    driver_dict = {}
-    for driver in drivers:
-        driver_dict[driver] = drivers.count(driver)
+        location_dict = {}
+        for location in locations:
+            location_dict[location] = locations.count(location)
+        driver_dict = {}
+        for driver in drivers:
+            driver_dict[driver] = drivers.count(driver)
+    except:
+        logger.exception("An internal error")
+        abort(500)
     ride_activity = {
         "total_rides": len(rides),
         "rides_by_status": {
@@ -753,35 +833,54 @@ def get_ride_activity():
 @admin_required
 def get_issues():
     """get all reported isssues"""
-    issues = sorted(
-        [
-            dict(clean(issue.to_dict()), sent_at=issue.created_at)
-            for issue in storage.get_objs(
-                "Notification", notification_type="issue", receiver_id=request.user_id
-            )
-        ],
-        key=lambda issue: issue["sent_at"],
-        reverse=True,
-    )
+    try:
+        issues = sorted(
+            [
+                dict(clean(issue.to_dict()), sent_at=issue.created_at)
+                for issue in storage.get_objs(
+                    "Notification",
+                    notification_type="issue",
+                    receiver_id=request.user_id,
+                )
+            ],
+            key=lambda issue: issue["sent_at"],
+            reverse=True,
+        )
+    except:
+        logger.exception("An internal error")
+        abort(500)
 
-    return jsonify({"notifications": issues})
+    return jsonify({"notifications": issues}), 200
 
 
 @admin_bp.route("/reports/issues/<issue_id>", methods=["GET"], strict_slashes=False)
 @admin_required
 def get_issue(issue_id):
     """get reported issue by provided issue-id"""
-    if not storage.get("Notification", id=issue_id):
-        return jsonify({"notification": "not found"})
-    storage.update("Notification", id=issue_id, is_read=True, read_at=datetime.utcnow())
-    issue = storage.get("Notification", id=issue_id).to_dict()
+    issue = storage.get("Notification", id=issue_id)
+    if issue:
+        logger.warning("issue not found")
+        return jsonify({"notification": "issue not found"}), 404
+    try:
+        storage.update(
+            "Notification", id=issue_id, is_read=True, read_at=datetime.utcnow()
+        )
+    except:
+        logger.exception("An internal error")
+        abort(500)
+
+    issue = issue.to_dict()
 
     issue["sent_at"] = issue["created_at"]
-    issue["sender_id"] = clean(
-        storage.get(issue["sender_type"], id=issue["sender_id"]).to_dict()
-    )
+    try:
+        issue["sender_id"] = clean(
+            storage.get(issue["sender_type"], id=issue["sender_id"]).to_dict()
+        )
+    except:
+        logger.exception("An internal error")
+        abort(500)
     issue = clean(issue)
-    return jsonify({"notification": issue})
+    return jsonify({"notification": issue}), 200
 
 
 # System Configuration
@@ -789,7 +888,29 @@ def get_issue(issue_id):
 @admin_required
 def notification():
     """set a notification by provided information"""
-    data = request.get_json()
+    try:
+        user_id = request.user_id
+    except:
+        logger.exception("An internal error")
+        abort(500)
+
+    try:
+        data = request.get_json()
+    except Exception as e:
+        logger.warning(e)
+        abort(415)
+
+    if "massage" not in data:
+        logger.warning("message missing")
+        return jsonify({"error": "massage missing"}), 400
+
+    if "notification_type" not in data:
+        logger.warning("notification_type missing")
+        return jsonify({"error": "notification_type missing"}), 400
+    if "to" not in data:
+        logger.warning("to missing")
+        return jsonify({"error": "to missing"}), 400
+
     if data["to"] == "all":
         riders_drivers = [
             rider
@@ -802,13 +923,17 @@ def notification():
         ]
         for user in riders_drivers:
             kwargs = {
-                "sender_id": request.user_id,
+                "sender_id": user_id,
                 "sender_type": "Admin",
                 "receiver_id": user.id,
                 "receiver_type": user.__class__.__name__,
                 "message": data["message"],
                 "notification_type": data["notification_type"],
             }
-            notification = Notification(**kwargs)
-            notification.save()
-    return jsonify({"admin": "sent"})
+            try:
+                notification = Notification(**kwargs)
+                notification.save()
+            except:
+                logger.exception("An internal error")
+                abort(500)
+    return jsonify({"admin": "sent"}), 200
