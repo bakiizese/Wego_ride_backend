@@ -12,4 +12,5 @@ class Vehicle(BaseModel):
     seating_capacity = Column(Integer, nullable=False)
 
     driver = relationship("Driver", back_populates="vehicle")
+    #add vehicle plate number and drivers license number
     

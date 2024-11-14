@@ -13,6 +13,7 @@ from models.vehicle import Vehicle
 from models.admin import Admin
 from models.trip_rider import TripRider
 from models.total_payment import TotalPayment
+from models.image import Image
 import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -36,6 +37,7 @@ classes = {
     "Admin": Admin,
     "TripRider": TripRider,
     "TotalPayment": TotalPayment,
+    "Image": Image,
 }
 
 
@@ -68,6 +70,10 @@ class DBStorage:
         sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sess_factory)
         self.__session = Session
+
+    def rollback(self):
+        """rollback any form commit"""
+        self.__session.rollback()
 
     def get(self, cls, **kwargs):
         """returns class object that can be accessed by ."""
@@ -120,7 +126,6 @@ class DBStorage:
 
     def update(self, cls, id, **kwargs):
         cols = classes[cls].__table__.columns.keys()
-
         for k in kwargs.keys():
             if k not in cols:
                 print("** key not found **")

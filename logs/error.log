@@ -1,0 +1,973 @@
+2024-11-11 11:24:24,181:api.v1.views.rider_views:ERROR:An error occurred
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 377, in current_ride
+    storage.get("TripRider", id=tripride_id, is_past=False).trip.to_dict()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'trip'
+2024-11-11 11:24:24,183:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 11:24:24] "[33mGET /api/v1/rider/current-ride/3-8844-d5336393a9e HTTP/1.1[0m" 404 -
+2024-11-11 11:27:00,316:api.v1.views.rider_views:ERROR:An error occurred
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 377, in current_ride
+    storage.get("TripRider", id=tripride_id, is_past=False).trip.to_dict()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'trip'
+2024-11-11 11:27:00,317:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 11:27:00] "[33mGET /api/v1/rider/current-ride/3-8844-d5336393a9e HTTP/1.1[0m" 404 -
+2024-11-11 11:30:53,268:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-11 11:30:54,180:werkzeug:INFO: * Restarting with stat
+2024-11-11 11:30:59,549:werkzeug:WARNING: * Debugger is active!
+2024-11-11 11:30:59,555:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 11:31:30,461:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-11 11:31:30,714:werkzeug:INFO: * Restarting with stat
+2024-11-11 11:31:33,636:werkzeug:WARNING: * Debugger is active!
+2024-11-11 11:31:33,641:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 11:32:28,369:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\driver_views.py', reloading
+2024-11-11 11:32:28,561:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:28:50,280:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-11 17:28:50,329:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-11 17:28:50,375:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:28:59,087:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:28:59,603:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:30:17,401:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-11 17:30:18,412:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:30:29,290:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:30:29,300:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:32:17,778:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-11 17:32:17,779:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-11 17:32:17,781:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:32:19,799:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:32:19,804:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:50:00,300:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-11 17:50:00,343:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-11 17:50:00,357:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:50:04,022:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:50:04,069:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:53:51,266:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-11 17:53:51,267:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-11 17:53:51,269:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:53:53,689:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:53:53,752:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:54:10,491:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:54:10] "[33mGET / HTTP/1.1[0m" 404 -
+2024-11-11 17:54:11,370:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:54:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2024-11-11 17:54:17,608:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:54:17] "[31m[1mGET /api/v1/rider/register HTTP/1.1[0m" 405 -
+2024-11-11 17:54:56,371:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:54:56] "[33mOPTIONS /api/v1/api/v1/rider/register HTTP/1.1[0m" 404 -
+2024-11-11 17:55:00,308:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:55:00] "[33mOPTIONS /api/v1/api/v1/rider/register HTTP/1.1[0m" 404 -
+2024-11-11 17:56:22,685:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:56:22] "OPTIONS /api/v1/rider/register HTTP/1.1" 200 -
+2024-11-11 17:56:24,377:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:56:24] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 201 -
+2024-11-11 17:57:55,614:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:57:55] "OPTIONS /api/v1/rider/register HTTP/1.1" 200 -
+2024-11-11 17:57:55,628:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:57:55] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-11 17:58:11,579:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:58:11] "OPTIONS /api/v1/rider/register HTTP/1.1" 200 -
+2024-11-11 17:58:11,672:werkzeug:INFO:127.0.0.1 - - [11/Nov/2024 17:58:11] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-11 17:58:46,265:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-11 17:58:47,459:werkzeug:INFO: * Restarting with stat
+2024-11-11 17:58:53,224:werkzeug:WARNING: * Debugger is active!
+2024-11-11 17:58:53,235:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-11 17:58:57,461:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-11 17:58:57,712:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:13:14,808:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:13:14,818:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:13:14,872:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 219)
+2024-11-13 11:13:14,873:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:13:14] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 415 -
+2024-11-13 11:14:41,852:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 219)
+2024-11-13 11:14:41,853:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:14:41] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 415 -
+2024-11-13 11:14:59,581:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 11:17:05,410:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:17:05,423:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:17:05,487:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 192)
+2024-11-13 11:17:05,489:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:17:05] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 11:24:33,088:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 11:24:33,089:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 11:24:33,091:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:24:35,482:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:24:35,482:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:30:29,314:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 11:30:29,315:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 11:30:29,317:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:30:31,677:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:30:31,713:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:30:32,528:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:30:32] "GET /api/v1/admin/riders HTTP/1.1" 200 -
+2024-11-13 11:31:37,667:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 11:31:37,668:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 11:31:37,670:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:31:39,570:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:31:39,575:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:31:40,526:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:31:40] "[31m[1mGET /api/v1/rider/register HTTP/1.1[0m" 405 -
+2024-11-13 11:54:49,066:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 11:54:49,081:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 11:54:49,086:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:54:52,320:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:54:52,346:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:54:53,188:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:54:53] "[35m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 500 -
+2024-11-13 11:56:18,961:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 11:56:19,655:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:56:22,970:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:56:22,983:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:56:23,214:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:56:23] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 11:56:36,444:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 11:56:36,675:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:56:39,846:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:56:39,853:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:56:40,115:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:56:40] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 11:56:55,214:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 11:56:55,506:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:56:58,644:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:56:58,653:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:57:05,303:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 11:57:05,303:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 11:57:05,307:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:57:08,038:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:57:08,046:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:57:08,289:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:57:08] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 11:58:41,061:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 11:58:41,551:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:58:44,666:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:58:44,674:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 11:58:44,863:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 11:58:44] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 11:58:54,081:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 11:58:54,380:werkzeug:INFO: * Restarting with stat
+2024-11-13 11:58:57,283:werkzeug:WARNING: * Debugger is active!
+2024-11-13 11:58:57,291:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:00:33,466:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:00:33,653:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:00:36,929:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:00:36,937:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:01:03,480:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:01:03,877:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:01:07,261:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:01:07,270:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:01:07,463:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:01:07] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:01:23,707:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:01:23,916:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:01:26,791:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:01:26,800:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:01:27,602:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:01:27] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:01:37,142:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:01:37,347:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:01:40,337:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:01:40,343:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:02:59,978:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:03:00,227:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:04:37,196:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 12:04:37,196:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 12:04:37,204:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:04:41,349:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:04:41,357:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:04:41,609:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:04:41] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:05:04,048:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:05:04,246:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:05:16,617:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 12:05:16,617:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 12:05:16,622:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:05:19,434:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:05:19,442:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:05:19,661:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:05:19] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:06:06,407:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:06:06,608:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:06:08,877:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:06:08,884:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:10:42,991:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:10:43,187:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:11:47,709:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 12:11:47,709:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 12:11:47,712:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:11:50,055:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:11:50,061:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:11:51,189:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:11:51] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 400 -
+2024-11-13 12:12:00,394:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:12:00,683:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:12:03,621:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:12:03,628:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:12:03,780:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:12:03] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:12:08,312:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:12:08] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 12:12:16,939:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:12:17,145:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:12:19,377:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:12:19,383:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:12:41,875:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:12:42,074:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:12:45,146:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:12:45,152:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:12:52,944:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:12:52] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 401 -
+2024-11-13 12:15:56,380:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:15:56] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 401 -
+2024-11-13 12:16:06,996:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:16:06] "[31m[1mGET /api/v1/rider/register HTTP/1.1[0m" 405 -
+2024-11-13 12:16:11,106:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 214)
+2024-11-13 12:16:11,106:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:16:11] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:16:28,992:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 185)
+2024-11-13 12:16:28,993:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:16:28] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:17:13,978:api.v1.views.rider_views:WARNING:password_hash missing
+2024-11-13 12:17:13,979:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:17:13] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:18:17,021:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting value: line 6 column 21 (char 136)
+2024-11-13 12:18:17,022:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:18:17] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:18:23,312:api.v1.views.rider_views:WARNING:invalid literal for int() with base 10: 's'
+2024-11-13 12:18:23,313:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:18:23] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:18:59,201:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:18:59,387:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:19:01,941:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:19:01,950:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:19:13,567:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting value: line 6 column 21 (char 136)
+2024-11-13 12:19:13,568:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:19:13] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:19:31,643:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 12:19:31,894:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:19:34,539:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:19:34,545:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:19:34,585:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting value: line 6 column 21 (char 136)
+2024-11-13 12:19:34,586:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:19:34] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:21:57,720:api.v1.views.rider_views:WARNING:** email already exists **
+2024-11-13 12:21:57,721:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:21:57] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:23:19,362:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:23:19,559:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:23:22,124:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:23:22,130:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:23:24,681:api.v1.views.rider_views:WARNING:** email already exists **
+2024-11-13 12:23:24,682:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:23:24] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:23:30,081:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:23:30] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:23:46,744:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:23:46,961:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:23:50,573:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:23:50,580:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:26:09,046:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:26:09,325:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:26:13,048:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:26:13,053:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:26:14,744:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:26:14] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:27:00,920:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:27:01,139:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:27:04,096:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:27:04,108:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:27:04,740:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:27:04] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:27:31,106:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:27:31,555:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:27:34,814:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:27:34,819:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:27:41,983:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 12:27:42,163:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:27:45,054:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:27:45,062:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:27:45,535:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 52, in register
+    user = Auth.register_user(cls, **user_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\auth\authentication.py", line 34, in register_user
+    raise ValueError("")
+ValueError
+2024-11-13 12:27:45,538:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:27:45] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:28:00,585:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:28:00,992:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:28:03,697:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:28:03,704:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:28:04,181:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:28:04] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:28:12,648:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 12:28:12,648:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 12:28:12,652:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:28:14,708:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:28:14,714:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:28:21,999:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:28:21] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:28:33,101:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:28:33,410:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:28:36,800:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:28:36,811:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:28:37,460:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 52, in register
+    user = Auth.register_user(cls, **user_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\auth\authentication.py", line 34, in register_user
+    raise ValueError("")
+ValueError
+2024-11-13 12:28:37,463:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:28:37] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 500 -
+2024-11-13 12:28:51,217:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:28:51,436:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:28:54,085:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:28:54,091:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:29:28,760:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:29:28] "[35m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 201 -
+2024-11-13 12:30:03,043:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:30:03] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 415 -
+2024-11-13 12:30:28,384:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 213)
+2024-11-13 12:30:28,384:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:30:28] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 400 -
+2024-11-13 12:30:43,045:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:30:43,361:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:30:46,280:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:30:46,291:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:30:46,342:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 213)
+2024-11-13 12:30:46,343:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:30:46] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 415 -
+2024-11-13 12:31:22,123:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 213)
+2024-11-13 12:31:22,125:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:31:22] "[31m[1mPOST /api/v1/rider/register HTTP/1.1[0m" 415 -
+2024-11-13 12:31:43,354:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:31:43,702:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:31:46,720:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:31:46,735:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:32:04,290:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:32:04] "POST /api/v1/rider/login HTTP/1.1" 200 -
+2024-11-13 12:32:08,709:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:32:08] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 415 -
+2024-11-13 12:32:44,006:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:32:44] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 415 -
+2024-11-13 12:32:44,113:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:32:44,357:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:32:47,578:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:32:47,592:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:32:55,357:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 9 column 1 (char 98)
+2024-11-13 12:32:55,358:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:32:55] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 415 -
+2024-11-13 12:33:06,989:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:33:07,198:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:33:10,009:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:33:10,015:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:33:35,769:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:33:36,012:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:33:38,306:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:33:38,312:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:33:42,122:api.v1.views.rider_views:WARNING:email missing
+2024-11-13 12:33:42,123:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:33:42] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 400 -
+2024-11-13 12:34:25,517:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:34:25,832:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:34:28,502:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:34:28,510:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:34:51,123:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 12:34:51,583:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:34:54,841:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:34:54,847:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:35:33,549:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:35:33,849:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:35:36,187:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:35:36,192:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:35:38,241:api.v1.views.rider_views:WARNING:email missing
+2024-11-13 12:35:38,242:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:35:38] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 400 -
+2024-11-13 12:35:44,180:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting ',' delimiter: line 8 column 5 (char 67)
+2024-11-13 12:35:44,181:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:35:44] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 400 -
+2024-11-13 12:35:48,977:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 81, in login
+    user = Auth.verify_login(cls, user_data["email"], user_data["password_hash"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\auth\authentication.py", line 53, in verify_login
+    raise TypeError("")
+TypeError
+2024-11-13 12:35:48,979:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:35:48] "[35m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 500 -
+2024-11-13 12:36:09,824:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\auth\\authentication.py', reloading
+2024-11-13 12:36:10,017:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:36:12,174:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:36:12,180:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:36:41,875:api.v1.views.rider_views:WARNING:** email doesn't exist **
+2024-11-13 12:36:41,876:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:36:41] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 400 -
+2024-11-13 12:36:46,743:api.v1.views.rider_views:WARNING:** incorrect password **
+2024-11-13 12:36:46,744:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:36:46] "[31m[1mPOST /api/v1/rider/login HTTP/1.1[0m" 400 -
+2024-11-13 12:37:15,363:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:37:15] "POST /api/v1/rider/login HTTP/1.1" 200 -
+2024-11-13 12:38:04,542:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 12:38:04] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 401 -
+2024-11-13 12:40:09,818:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:40:10,269:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:40:16,261:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:40:16,272:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 12:42:42,107:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 12:42:42,300:werkzeug:INFO: * Restarting with stat
+2024-11-13 12:42:45,555:werkzeug:WARNING: * Debugger is active!
+2024-11-13 12:42:45,561:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:10:19,851:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 13:10:19,865:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 13:10:19,867:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:10:22,319:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:10:22,374:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:10:22,459:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:10:22] "[31m[1mGET /api/v1/rider/reset-token HTTP/1.1[0m" 405 -
+2024-11-13 13:10:29,951:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:10:29] "[35m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 201 -
+2024-11-13 13:10:57,159:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting ',' delimiter: line 9 column 5 (char 101)
+2024-11-13 13:10:57,159:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:10:57] "[31m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 415 -
+2024-11-13 13:11:12,839:api.v1.views.rider_views:WARNING:user not found
+2024-11-13 13:11:12,840:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:11:12] "[33mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 404 -
+2024-11-13 13:11:42,489:api.v1.views.rider_views:WARNING:email not given
+2024-11-13 13:11:42,490:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:11:42] "[31m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 400 -
+2024-11-13 13:11:50,813:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:11:50] "[35m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 201 -
+2024-11-13 13:12:10,498:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:12:10] "[33mPOST /api/v1/rider/forger-password HTTP/1.1[0m" 404 -
+2024-11-13 13:12:29,285:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 10 column 1 (char 158)
+2024-11-13 13:12:29,286:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:12:29] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 415 -
+2024-11-13 13:12:55,163:api.v1.views.rider_views:WARNING:password missing
+2024-11-13 13:12:55,163:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:12:55] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:13:41,157:api.v1.views.rider_views:WARNING:400 Bad Request: Failed to decode JSON object: Expecting property name enclosed in double quotes: line 10 column 1 (char 103)
+2024-11-13 13:13:41,157:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:13:41] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 415 -
+2024-11-13 13:13:44,657:api.v1.views.rider_views:WARNING:reset token missing
+2024-11-13 13:13:44,658:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:13:44] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:14:08,631:api.v1.views.rider_views:WARNING:incorrect reset-token
+2024-11-13 13:14:08,632:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:14:08] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:14:59,444:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 13:14:59,779:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:15:03,262:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:15:03,268:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:15:03,361:api.v1.views.rider_views:WARNING:incorrect reset-token
+2024-11-13 13:15:03,362:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:15:03] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:15:10,883:api.v1.views.rider_views:ERROR:an internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 137, in forget_password
+    update_password = Auth.update_password(
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\auth\authentication.py", line 44, in update_password
+    storage.update(cls, user.id, password_hash=password_hash)
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\engine\db_storage.py", line 123, in update
+    raise TypeError()
+TypeError
+2024-11-13 13:15:10,886:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:15:10] "[35m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 500 -
+2024-11-13 13:15:15,751:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 13:15:16,021:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:15:19,272:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:15:19,283:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:15:26,344:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:15:26] "POST /api/v1/rider/forget-password HTTP/1.1" 200 -
+2024-11-13 13:15:46,097:api.v1.views.rider_views:WARNING:incorrect reset-token
+2024-11-13 13:15:46,099:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:15:46] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:16:30,889:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:16:31,146:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:17:43,799:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 13:17:43,800:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 13:17:43,806:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:17:46,786:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:17:46,793:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:17:46,908:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:17:46] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:18:26,731:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:18:27,048:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:18:29,722:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:18:29,729:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:18:29,764:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:18:29] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:18:49,274:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:18:49,507:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:18:53,094:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:18:53,105:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:19:10,654:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:19:10,907:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:19:14,274:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:19:14,279:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:19:14,317:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:19:14] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:19:44,866:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:19:45,060:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:19:48,343:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:19:48,352:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:19:48,387:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:19:48] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:19:51,457:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:19:51,733:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:19:53,976:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:19:53,981:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:20:54,271:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:21:00,770:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 13:21:00,771:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 13:21:00,774:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:21:03,081:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:21:03,087:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:21:06,319:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:21:06] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:21:10,279:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:21:10,494:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:21:12,795:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:21:12,803:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:21:46,516:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 13:21:46,709:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:21:49,212:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:21:49,218:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:21:49,252:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:21:49] "[33mGET /api/v1/rider/profiile HTTP/1.1[0m" 404 -
+2024-11-13 13:22:29,399:api.v1.middleware:WARNING:Incorrect token
+2024-11-13 13:22:29,399:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:22:29] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 401 -
+2024-11-13 13:24:09,920:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:24:10,151:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:24:12,826:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:24:12,832:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:24:26,346:api.v1.views.rider_views:WARNING:incorrect reset-token
+2024-11-13 13:24:26,347:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:24:26] "[31m[1mPOST /api/v1/rider/forget-password HTTP/1.1[0m" 400 -
+2024-11-13 13:24:40,864:root:WARNING:Resource not found
+2024-11-13 13:24:40,865:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:24:40] "[33mPOST /api/v1/rider/reset_token HTTP/1.1[0m" 404 -
+2024-11-13 13:24:58,168:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:24:58] "[35m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 201 -
+2024-11-13 13:25:04,338:api.v1.views.rider_views:WARNING:user not found
+2024-11-13 13:25:04,338:root:WARNING:Resource not found
+2024-11-13 13:25:04,339:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:25:04] "[33mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 404 -
+2024-11-13 13:25:35,523:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:25:35,765:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:25:40,025:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:25:40,031:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:25:50,371:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 13:25:50,578:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:25:53,194:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:25:53,206:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:25:53,385:api.v1.views.rider_views:WARNING:user not found
+2024-11-13 13:25:53,387:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:25:53] "[33mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 404 -
+2024-11-13 13:26:02,887:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:26:02] "[31m[1mPOST /api/v1/rider/profile HTTP/1.1[0m" 405 -
+2024-11-13 13:26:06,800:api.v1.middleware:WARNING:Incorrect token
+2024-11-13 13:26:06,800:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:26:06] "[31m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 401 -
+2024-11-13 13:26:20,157:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 159, in get_profile
+    user_id = request.user_id
+              ^^^^^^^^^^^^^^^
+AttributeError: 'Request' object has no attribute 'user_id'
+2024-11-13 13:26:20,162:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:26:20] "[35m[1mGET /api/v1/rider/profile HTTP/1.1[0m" 500 -
+2024-11-13 13:26:40,199:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 13:26:40,885:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:26:44,330:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:26:44,337:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:26:59,637:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 13:27:00,274:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:27:03,874:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:27:03,884:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:27:04,013:api.v1.views.rider_views:WARNING:user not found
+2024-11-13 13:27:04,014:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:27:04] "[33mGET /api/v1/rider/profile HTTP/1.1[0m" 404 -
+2024-11-13 13:27:16,303:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\middleware.py', reloading
+2024-11-13 13:27:16,619:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:27:20,263:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:27:20,270:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:27:52,075:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:27:52,279:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:30:35,623:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 13:30:35,624:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 13:30:35,628:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:30:38,258:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:30:38,269:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:30:38,314:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:30:38] "[31m[1mGET /api/v1/rider/reset-token HTTP/1.1[0m" 405 -
+2024-11-13 13:30:42,506:api.v1.views.rider_views:WARNING:user not found
+2024-11-13 13:30:42,507:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:30:42] "[33mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 404 -
+2024-11-13 13:30:52,054:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:30:52] "[35m[1mPOST /api/v1/rider/reset-token HTTP/1.1[0m" 201 -
+2024-11-13 13:31:25,442:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:31:25,692:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:31:30,895:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:31:30,906:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:31:35,164:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:31:35,462:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:31:39,576:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:31:39,586:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:31:41,698:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:31:41,911:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:31:44,883:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:31:44,891:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:31:50,607:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:31:50] "[33mPOST /api/v1/rider/forget-pasword HTTP/1.1[0m" 404 -
+2024-11-13 13:31:54,348:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:31:54] "POST /api/v1/rider/forget-password HTTP/1.1" 200 -
+2024-11-13 13:32:09,688:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:32:09,939:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:32:13,297:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:32:13,305:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:35:19,819:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 13:35:20,316:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:35:24,392:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:35:24,402:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:38:17,119:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:38:17,477:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:38:24,166:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:38:24,184:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:40:33,188:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:40:33,367:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:40:36,553:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:40:36,559:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:42:06,423:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:42:06,736:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:42:09,312:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:42:09,318:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:42:57,050:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:42:57,232:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:42:59,532:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:42:59,540:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:43:23,015:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:43:23,453:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:43:26,895:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:43:26,904:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:43:54,290:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:43:54] "[33mGET /api/v1/rider/available-ride HTTP/1.1[0m" 404 -
+2024-11-13 13:44:04,284:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:44:04] "[35m[1mGET /api/v1/rider/available-rides HTTP/1.1[0m" 500 -
+2024-11-13 13:44:26,354:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:44:26] "[35m[1mGET /api/v1/rider/available-rides HTTP/1.1[0m" 500 -
+2024-11-13 13:45:37,502:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:45:37,753:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:45:40,341:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:45:40,349:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:45:43,200:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:45:43] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:45:47,658:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:45:47,965:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:45:50,689:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:45:50,698:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:45:50,820:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:45:50] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:45:52,929:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:45:52] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:46:00,159:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:46:00,865:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:46:03,302:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:46:03,311:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:46:03,483:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:46:03] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:46:36,120:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:46:36,333:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:46:39,085:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:46:39,093:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:46:39,235:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:46:39] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:46:42,134:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:46:42] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:46:48,461:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:46:48,661:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:46:51,058:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:46:51,065:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:47:00,263:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:47:00,465:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:47:03,027:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:47:03,034:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:47:07,149:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\app.py', reloading
+2024-11-13 13:47:07,353:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:47:09,670:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:47:09,678:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:47:10,533:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:47:10] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:47:13,968:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:47:13] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:48:25,578:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:48:26,015:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:48:29,096:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:48:29,105:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:48:29,363:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:48:29] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:48:39,662:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:48:39,956:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:48:42,656:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:48:42,663:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:48:42,815:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:48:42] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:50:12,534:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:50:12] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:51:19,487:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:51:19,696:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:51:22,064:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:51:22,071:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:51:27,082:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:51:27] "[35m[1mGET /api/v1/rider/available-rides HTTP/1.1[0m" 500 -
+2024-11-13 13:51:54,968:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:51:55,390:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:51:57,959:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:51:57,965:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:51:58,095:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 262, in available_rides
+    ).to_dict()
+      ^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'to_dict'
+2024-11-13 13:51:58,098:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:51:58] "[35m[1mGET /api/v1/rider/available-rides HTTP/1.1[0m" 500 -
+2024-11-13 13:52:26,667:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:52:26,901:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:52:29,126:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:52:29,132:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:52:43,426:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:52:43,737:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:52:46,594:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:52:46,602:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:52:46,724:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:52:46] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:53:05,295:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:53:05,666:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:53:08,323:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:53:08,332:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:53:08,464:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:53:08] "GET /api/v1/rider/available-rides HTTP/1.1" 200 -
+2024-11-13 13:53:15,648:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:53:15,865:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:53:18,035:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:53:18,047:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:53:35,500:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:53:35,733:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:53:38,724:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:53:38,732:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:54:44,126:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:54:44,393:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:54:47,939:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:54:47,947:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:55:43,002:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:55:43,180:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:55:47,520:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:55:47,530:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:56:08,696:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:56:08] "[35m[1mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 500 -
+2024-11-13 13:56:28,721:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:56:29,256:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:56:31,863:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:56:31,869:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:56:31,986:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:56:31] "[33mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 404 -
+2024-11-13 13:57:05,843:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:57:06,189:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:57:10,481:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:57:10,488:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:57:17,672:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:57:17,884:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:57:19,885:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:57:19,896:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:58:58,726:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 13:58:59,390:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:59:05,059:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:59:05,069:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:59:10,781:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:59:10] "POST /api/v1/rider/book-ride HTTP/1.1" 200 -
+2024-11-13 13:59:25,029:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 13:59:25,030:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 13:59:25,033:werkzeug:INFO: * Restarting with stat
+2024-11-13 13:59:28,919:werkzeug:WARNING: * Debugger is active!
+2024-11-13 13:59:28,926:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 13:59:29,037:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 13:59:29] "POST /api/v1/rider/book-ride HTTP/1.1" 200 -
+2024-11-13 14:00:17,360:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 14:00:17] "POST /api/v1/rider/book-ride HTTP/1.1" 200 -
+2024-11-13 14:00:32,254:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:00:32,464:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:00:34,854:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:00:34,860:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:01:44,347:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:01:44,525:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:01:46,898:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:01:46,906:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:02:16,447:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:02:16,634:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:02:18,892:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:02:18,900:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:03:10,813:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:03:11,051:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:03:14,431:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:03:14,438:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:03:15,066:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 14:03:15] "[35m[1mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 201 -
+2024-11-13 14:04:00,713:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:04:00,949:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:04:04,824:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:04:04,830:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:05:32,560:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:05:32,767:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:05:36,321:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:05:36,326:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:06:23,331:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:06:23,567:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:06:25,996:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:06:26,002:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:06:35,235:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:06:35,450:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:06:38,361:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:06:38,367:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:07:45,657:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:07:45,916:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:07:50,119:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:07:50,125:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:08:41,076:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:08:41,270:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:08:44,759:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:08:44,765:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:12:25,727:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\console.py', reloading
+2024-11-13 14:14:55,153:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 14:14:55,154:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 14:14:55,157:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:14:57,366:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:14:57,373:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:14:59,369:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 358, in book_ride
+    book_ride.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\base_model.py", line 47, in save
+    models.storage.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\engine\db_storage.py", line 63, in save
+    raise KeyError()
+KeyError
+2024-11-13 14:14:59,373:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 14:14:59] "[35m[1mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 500 -
+2024-11-13 14:15:13,730:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:15:14,054:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:15:16,460:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:15:16,470:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:15:29,876:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:15:30,333:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:15:32,851:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:15:32,857:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:15:33,089:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 358, in book_ride
+    book_ride.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\base_model.py", line 47, in save
+    models.storage.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\engine\db_storage.py", line 64, in save
+    raise KeyError()
+KeyError
+2024-11-13 14:15:33,095:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 14:15:33] "[35m[1mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 500 -
+2024-11-13 14:16:07,585:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:16:08,011:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:16:10,271:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:16:10,280:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:16:41,834:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:16:42,363:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:16:45,720:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:16:45,744:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:17:03,275:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:17:03,483:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:17:06,529:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:17:06,535:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:17:06,792:api.v1.views.rider_views:ERROR:An internal error
+Traceback (most recent call last):
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\api\v1\views\rider_views.py", line 358, in book_ride
+    book_ride.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\base_model.py", line 47, in save
+    models.storage.save()
+  File "C:\Users\Bak!!\Downloads\Work\Wego_ride\Wego_ride_backend\models\engine\db_storage.py", line 64, in save
+    raise KeyError()
+KeyError
+2024-11-13 14:17:06,796:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 14:17:06] "[35m[1mPOST /api/v1/rider/book-ride HTTP/1.1[0m" 500 -
+2024-11-13 14:17:55,584:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\models\\engine\\db_storage.py', reloading
+2024-11-13 14:17:56,313:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:18:01,135:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:18:01,141:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:22:15,522:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:22:15,805:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:22:21,943:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:22:21,960:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:22:57,031:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:22:57,264:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:23:00,150:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:23:00,156:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:24:59,962:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:25:00,233:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:25:02,978:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:25:02,985:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:27:44,587:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:27:44,799:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:27:47,659:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:27:47,664:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:29:25,683:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:29:25,919:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:29:28,421:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:29:28,427:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:31:05,773:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:31:06,310:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:31:09,570:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:31:09,575:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:33:06,665:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:33:06,909:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:33:10,503:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:33:10,515:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:34:19,970:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:34:20,153:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:34:22,396:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:34:22,401:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:34:50,041:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:34:50,244:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:34:53,393:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:34:53,406:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:34:54,491:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:34:54,715:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:34:57,361:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:34:57,366:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:35:48,634:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:35:48,929:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:35:52,264:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:35:52,271:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:36:21,914:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:36:22,216:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:36:24,572:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:36:24,577:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:37:51,674:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:37:51,873:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:37:54,640:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:37:54,646:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:40:33,973:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:40:34,461:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:40:41,559:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:40:41,565:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:40:52,879:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:40:53,075:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:40:56,387:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:40:56,393:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:47:35,466:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:47:35,689:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:47:39,456:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:47:39,463:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:47:48,657:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:47:48,852:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:47:51,109:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:47:51,115:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:48:25,703:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:48:25,892:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:48:28,292:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:48:28,312:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:50:52,599:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:50:52,791:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:50:55,641:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:50:55,650:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:52:10,156:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:52:10,339:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:52:12,587:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:52:12,593:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:53:41,355:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:53:41,542:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:53:44,094:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:53:44,100:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:54:49,479:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:54:49,763:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:54:52,348:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:54:52,354:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:55:47,355:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:55:47,563:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:55:49,794:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:55:49,801:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:56:03,026:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:56:03,211:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:56:05,652:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:56:05,657:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 14:56:11,852:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 14:56:12,267:werkzeug:INFO: * Restarting with stat
+2024-11-13 14:56:14,365:werkzeug:WARNING: * Debugger is active!
+2024-11-13 14:56:14,371:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 15:00:41,435:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\rider_views.py', reloading
+2024-11-13 15:00:41,621:werkzeug:INFO: * Restarting with stat
+2024-11-13 15:00:44,161:werkzeug:WARNING: * Debugger is active!
+2024-11-13 15:00:44,168:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:15:26,850:werkzeug:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-11-13 16:15:26,859:werkzeug:INFO:[33mPress CTRL+C to quit[0m
+2024-11-13 16:15:26,864:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:15:29,190:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:15:29,242:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:16:02,241:werkzeug:INFO:127.0.0.1 - - [13/Nov/2024 16:16:02] "GET /api/v1/admin/riders HTTP/1.1" 200 -
+2024-11-13 16:16:10,995:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:16:11,614:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:16:14,512:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:16:14,517:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:18:03,187:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:18:03,389:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:18:08,029:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:18:08,039:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:18:54,925:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:18:55,194:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:18:58,206:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:18:58,216:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:20:19,373:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:20:19,605:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:20:22,927:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:20:22,934:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:20:27,058:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:20:27,279:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:20:31,747:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:20:31,755:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:22:42,081:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:22:42,345:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:22:46,346:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:22:46,356:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:23:01,800:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:23:02,090:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:23:06,296:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:23:06,302:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:24:07,942:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:24:08,456:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:24:11,624:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:24:11,630:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:24:39,302:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:24:39,530:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:24:42,173:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:24:42,182:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:26:28,328:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:26:28,516:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:26:31,321:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:26:31,327:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:27:41,455:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:27:41,994:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:27:45,655:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:27:45,662:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:30:11,880:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:30:12,124:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:30:15,323:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:30:15,332:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:31:13,895:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:31:14,208:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:31:16,742:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:31:16,753:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:32:08,038:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:32:08,256:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:32:10,459:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:32:10,466:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:33:24,340:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:33:24,530:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:33:28,170:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:33:28,180:werkzeug:INFO: * Debugger PIN: 930-988-344
+2024-11-13 16:34:25,227:werkzeug:INFO: * Detected change in 'C:\\Users\\Bak!!\\Downloads\\Work\\Wego_ride\\Wego_ride_backend\\api\\v1\\views\\admin_views.py', reloading
+2024-11-13 16:34:25,413:werkzeug:INFO: * Restarting with stat
+2024-11-13 16:34:27,329:werkzeug:WARNING: * Debugger is active!
+2024-11-13 16:34:27,337:werkzeug:INFO: * Debugger PIN: 930-988-344

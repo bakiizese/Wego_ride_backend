@@ -31,7 +31,6 @@ class Auth:
             print("** phone number already exists **")
             return "** phone number already exists **", False
         kwargs["password_hash"] = _hash_password(kwargs["password_hash"])
-
         user = classes[cls](**kwargs)
         user.save()
         print(user.id)
@@ -48,9 +47,15 @@ class Auth:
         else:
             return False
 
-    def verify_login(self, cls, email, password):
+    def verify_login(self, cls, find_with, find, password):
         """verify login if email and password are correct"""
-        user = storage.get(cls, email=email)
+        used = ""
+        if find_with == "email":
+            used = "email"
+            user = storage.get(cls, email=find)
+        else:
+            used = "phone_number"
+            user = storage.get(cls, phone_number=find)
         if user:
             if self.verify_password(password, user):
                 jwt_token = _generate_jwt(user)
@@ -58,7 +63,7 @@ class Auth:
             else:
                 return "** incorrect password **", False
         else:
-            return "** email doesn't exist **", False
+            return f"** {used} doesn't exist **", False
 
     def verify_password(self, login_password, saved_password):
         """check if the login password is the same with saved_password"""
@@ -66,12 +71,12 @@ class Auth:
             login_password.encode("utf-8"), saved_password.password_hash.encode("utf-8")
         )
 
-    def create_reset_token(self, cls, email):
+    def create_reset_token(self, cls, find_with, find):
         """create a token for updateing password"""
-        try:
-            user = storage.get(cls, email=email)
-        except:
-            abort(500)
+        if find_with == "email":
+            user = storage.get(cls, email=find)
+        else:
+            user = storage.get(cls, phone_number=find)
         reset_token = None
         if user:
             reset_token = _generate_uuid()
