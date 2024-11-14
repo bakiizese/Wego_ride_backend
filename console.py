@@ -14,6 +14,7 @@ from models.vehicle import Vehicle
 from models.admin import Admin
 from models.trip_rider import TripRider
 from models.total_payment import TotalPayment
+from models.image import Image
 from auth.authentication import _hash_password
 import os
 import sys
@@ -32,6 +33,7 @@ classes = {
     "Admin": Admin,
     "TripRider": TripRider,
     "TotalPayment": TotalPayment,
+    "Image": Image,
 }
 
 

@@ -19,9 +19,6 @@ class Driver(BaseModel, Base):
     blocked = Column(Boolean, default=False)
 
     vehicle = relationship("Vehicle", uselist=False, back_populates="driver")
-    # notification = relationship("Notification",
-    #                             backref="drivers",
-    #                             cascade="all, delete, delete-orphan")
     trip = relationship("Trip", backref="drivers", cascade="all, delete, delete-orphan")
     availability = relationship(
         "Availability", backref="drivers", cascade="all, delete, delete-orphan"
