@@ -32,57 +32,58 @@ Welcome to **Wego Ride**, a ride-hailing service platform that allows users to r
 - **Other**: Python, DateTime
 
 ## Project Structure
-
-/Wego_ride_backend
-│
-├── api/                        # Contains the core logic of the Flask API
-│   ├── __init__.py             # Initializes the api package
-│   └── v1/                     # API versioning directory
-│       ├── swagger/            # API documentation (Swagger definition)
-│       │   └── main.yaml       # API definition in YAML format (Swagger)
-│       ├── views/              # Views (Controllers) for Admin, Driver, and Rider
-│       │   ├── __init__.py     # Initializes the views package
-│       │   ├── admin_views.py  # Routes for Admin functionalities
-│       │   ├── driver_views.py # Routes for Driver functionalities
-│       │   ├── rider_views.py  # Routes for Rider functionalities
-│       ├── __init__.py         # Initializes the api/v1 package
-│       ├── app.py              # Main Flask app entry point
-│       └── middleware.py       # Middleware for authentication, error handling
-│
-├── auth/                       # Authentication module
-│   ├── __init__.py             # Initializes the auth package
-│   └── authentication.py       # Logic for user authentication and JWT handling
-│
-├── models/                     # Database models (SQLAlchemy models)
-│   ├── engine/                 # Contains database engine and storage logic
-│   │   ├── db_storage.py       # Logic for managing DB operations (CRUD)
-│   │   └── __init__.py         # Initializes the engine package
-│   ├── __init__.py             # Initializes the models package
-│   ├── admin.py                # Admin model
-│   ├── availability.py         # Availability model
-│   ├── base_model.py           # Base model for shared functionality
-│   ├── driver.py               # Driver model
-│   ├── location.py             # Location model
-│   ├── notification.py         # Notification model
-│   ├── payment.py              # Payment model
-│   ├── rider.py                # Rider model
-│   ├── total_payment.py        # Total Payment model
-│   ├── trip_rider.py           # Trip Rider model
-│   ├── trip.py                 # Trip model
-│   └── vehicle.py              # Vehicle model
-│
-├── test/                       # Unit tests for the project
-│   ├── __init__.py             # Initializes the test package
-│   ├── test_api/...            # Tests for Flask api
-│   ├── test_auth/...           # Tests for authentication
-│   ├── test_models/...         # Tests for engine and models (e.g., CRUD operations)
-│   └── ...                     # Other test files
-│
-├── console.py                  # Command-line interface for interacting with the app
-├── README.md                   # Project documentation (this file)
-├── requirements.txt            # Python dependencies for the project
-├── setup_mysql_dev.sql         # MySQL setup script for development environment
-└── wego_dump.sql               # SQL dump for initializing the database
+   ````markdown
+   /Wego_ride_backend
+   │
+   ├── api/                        # Contains the core logic of the Flask API
+   │   ├── __init__.py             # Initializes the api package
+   │   └── v1/                     # API versioning directory
+   │       ├── swagger/            # API documentation (Swagger definition)
+   │       │   └── main.yaml       # API definition in YAML format (Swagger)
+   │       ├── views/              # Views (Controllers) for Admin, Driver, and Rider
+   │       │   ├── __init__.py     # Initializes the views package
+   │       │   ├── admin_views.py  # Routes for Admin functionalities
+   │       │   ├── driver_views.py # Routes for Driver functionalities
+   │       │   ├── rider_views.py  # Routes for Rider functionalities
+   │       ├── __init__.py         # Initializes the api/v1 package
+   │       ├── app.py              # Main Flask app entry point
+   │       └── middleware.py       # Middleware for authentication, error handling
+   │
+   ├── auth/                       # Authentication module
+   │   ├── __init__.py             # Initializes the auth package
+   │   └── authentication.py       # Logic for user authentication and JWT handling
+   │
+   ├── models/                     # Database models (SQLAlchemy models)
+   │   ├── engine/                 # Contains database engine and storage logic
+   │   │   ├── db_storage.py       # Logic for managing DB operations (CRUD)
+   │   │   └── __init__.py         # Initializes the engine package
+   │   ├── __init__.py             # Initializes the models package
+   │   ├── admin.py                # Admin model
+   │   ├── availability.py         # Availability model
+   │   ├── base_model.py           # Base model for shared functionality
+   │   ├── driver.py               # Driver model
+   │   ├── location.py             # Location model
+   │   ├── notification.py         # Notification model
+   │   ├── payment.py              # Payment model
+   │   ├── rider.py                # Rider model
+   │   ├── total_payment.py        # Total Payment model
+   │   ├── trip_rider.py           # Trip Rider model
+   │   ├── trip.py                 # Trip model
+   │   └── vehicle.py              # Vehicle model
+   │
+   ├── test/                       # Unit tests for the project
+   │   ├── __init__.py             # Initializes the test package
+   │   ├── test_api/...            # Tests for Flask api
+   │   ├── test_auth/...           # Tests for authentication
+   │   ├── test_models/...         # Tests for engine and models (e.g., CRUD operations)
+   │   └── ...                     # Other test files
+   │
+   ├── console.py                  # Command-line interface for interacting with the app
+   ├── README.md                   # Project documentation (this file)
+   ├── requirements.txt            # Python dependencies for the project
+   ├── setup_mysql_dev.sql         # MySQL setup script for development environment
+   └── wego_dump.sql               # SQL dump for initializing the database
+   ````
 
 
 ## Setup & Installation
@@ -105,14 +106,17 @@ Before you begin, ensure you have the following software installed:
    cd Wego_ride_backend
 
 2. **Install the required  Python Packages**
-    pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
 
 3. **Set up the MySQL database**
-    - cat setup_mysql_dev.sql | mysql -u root -p 
-    - mysql -u username -p database_name < dump.sql
+   ```bash
+   cat setup_mysql_dev.sql | mysql -u root -p 
+   mysql -u username -p database_name < dump.sql
 
 4. **Running the app**
-    python -m api/v1/app.py
+   ```bash
+   python -m api/v1/app.py
 
 The application will be running at http://localhost:5000
 
