@@ -1,0 +1,7 @@
+_pycach_/
+*.log
+.vscode/
+.idea/
+*.swp
+*.pyc
+*.pyo

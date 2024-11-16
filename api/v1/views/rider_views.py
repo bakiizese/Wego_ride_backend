@@ -9,6 +9,7 @@ from models.notification import Notification
 from models.trip_rider import TripRider
 from models.payment import Payment
 from models.image import Image
+from api.v1.utils.pagination import paginate
 from datetime import datetime
 import logging
 import uuid
@@ -338,7 +339,15 @@ def put_profile():
 @token_required
 def available_rides():
     """get all rides that are available"""
-    trips = storage.get_objs("Trip", is_available=True)
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+
+    trips = paginate(storage.get_objs("Trip", is_available=True), column.type, column)
     if not trips:
         logger.warning("trip not found")
         abort(404)
@@ -533,7 +542,20 @@ def booked_ride():
     except:
         logger.exception("An internal error")
         abort(500)
-    rides = storage.get_objs("TripRider", rider_id=rider_id)
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(TripRider, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{TripRider}' has no attribute {order_by}"}
+        )
+
+    rides = paginate(
+        storage.get_objs("TripRider", rider_id=rider_id), column.type, column
+    )
 
     if not rides:
         logger.warning("rides not found")
@@ -660,10 +682,23 @@ def ride_history():
     except:
         logger.exception("An internal error")
         abort(500)
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+
     try:
         rides = [
             ride.trip
-            for ride in storage.get_objs("TripRider", rider_id=rider_id, is_past=True)
+            for ride in paginate(
+                storage.get_objs("TripRider", rider_id=rider_id, is_past=True),
+                column.type,
+                column,
+            )
             if ride.trip.status in ["completed", "canceled"]
         ]
     except Exception as e:
