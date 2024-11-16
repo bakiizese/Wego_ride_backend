@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from functools import wraps
 from flask import jsonify, request, abort
 import jwt

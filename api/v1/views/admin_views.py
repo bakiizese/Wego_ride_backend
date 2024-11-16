@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from models import storage
 from api.v1.middleware import admin_required, superadmin_required
 from api.v1.views import admin_bp
@@ -385,6 +386,35 @@ def user_profile(user_id):
         return jsonify({"user": user}), 200
     logger.warning("user not found")
     return jsonify({"error": "user not found"}), 404
+
+
+@admin_bp.route(
+    "/user_by/<user_type>/<search_type>/<search_by>",
+    methods=["GET"],
+    strict_slashes=False,
+)
+@admin_required
+def filter_user(user_type, search_type, search_by):
+    """search user by provided search_by"""
+    if user_type not in ["Admin", "Driver", "Rider"]:
+        logger.warning("user_type doesnt exist")
+        abort(400)
+    try:
+        column = getattr(classes[user_type], search_type)
+    except Exception as e:
+        logger.warning(e)
+        return abort(400)
+
+    users = [
+        clean(user.to_dict())
+        for user in storage.get_objs(
+            user_type,
+        )
+        .filter(column.like(f"%{search_by}%"))
+        .all()
+    ]
+
+    return jsonify({"users": users})
 
 
 # Ride Management
@@ -911,10 +941,48 @@ def get_ride_activity():
     return jsonify({"Admin": ride_activity})
 
 
+@admin_bp.route("/reports/announcements", methods=["GET"], strict_slashes=False)
+@admin_required
+def get_announcement():
+    """get all reported isssues"""
+    try:
+        user_id = request.user_id
+    except:
+        logger.exception("an internal error")
+        abort(500)
+    try:
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Notification, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{Notification}' has no attribute {order_by}"}
+        )
+
+    announcement = [
+        dict(clean(announ.to_dict()), sent_at=announ.created_at)
+        for announ in paginate(
+            storage.get_objs(
+                "Notification",
+                sender_id=user_id,
+            ),
+            column.type,
+            column,
+        )
+    ]
+    return jsonify({"announcemet": announcement}), 200
+
+
 @admin_bp.route("/reports/issues", methods=["GET"], strict_slashes=False)
 @admin_required
 def get_issues():
     """get all reported isssues"""
+    try:
+        user_id = request.user_id
+    except:
+        logger.exception("an internal error")
+        abort(500)
     try:
         order_by = request.args.get("order_by", default="updated_at", type=str)
         if order_by:
@@ -931,13 +999,13 @@ def get_issues():
             storage.get_objs(
                 "Notification",
                 notification_type="issue",
-                receiver_id=request.user_id,
+                receiver_id=user_id,
             ),
             column.type,
             column,
         )
     ]
-    return jsonify({"notifications": issues}), 200
+    return jsonify({"issues": issues}), 200
 
 
 @admin_bp.route("/reports/issues/<issue_id>", methods=["GET"], strict_slashes=False)
@@ -945,7 +1013,7 @@ def get_issues():
 def get_issue(issue_id):
     """get reported issue by provided issue-id"""
     issue = storage.get("Notification", id=issue_id)
-    if issue:
+    if not issue:
         logger.warning("issue not found")
         return jsonify({"notification": "issue not found"}), 404
     try:
@@ -967,7 +1035,7 @@ def get_issue(issue_id):
         logger.exception("An internal error")
         abort(500)
     issue = clean(issue)
-    return jsonify({"notification": issue}), 200
+    return jsonify({"issue": issue}), 200
 
 
 # System Configuration
@@ -990,7 +1058,6 @@ def notification():
     if "massage" not in data:
         logger.warning("message missing")
         return jsonify({"error": "massage missing"}), 400
-
     if "notification_type" not in data:
         logger.warning("notification_type missing")
         return jsonify({"error": "notification_type missing"}), 400
@@ -999,7 +1066,7 @@ def notification():
         return jsonify({"error": "to missing"}), 400
 
     if data["to"] == "all":
-        riders_drivers = [
+        receivers = [
             rider
             for rider in storage.get_objs("Rider")
             if not rider.deleted and not rider.blocked
@@ -1008,19 +1075,31 @@ def notification():
             for driver in storage.get_objs("Driver")
             if not driver.deleted and not driver.blocked
         ]
-        for user in riders_drivers:
-            kwargs = {
-                "sender_id": user_id,
-                "sender_type": "Admin",
-                "receiver_id": user.id,
-                "receiver_type": user.__class__.__name__,
-                "message": data["message"],
-                "notification_type": data["notification_type"],
-            }
-            try:
-                notification = Notification(**kwargs)
-                notification.save()
-            except:
-                logger.exception("An internal error")
-                abort(500)
+    elif data["to"] in ["Driver", "Rider", "Admin"]:
+        receivers = [
+            user
+            for user in storage.get_objs(data["to"])
+            if not user.deleted and not user.blocked
+        ]
+    else:
+        receivers = []
+        for i in ["Admin", "Rider", "Driver"]:
+            if storage.get(i, id=data["to"]):
+                receivers.append(storage.get(i, id=data["to"]))
+                break
+    for user in receivers:
+        kwargs = {
+            "sender_id": user_id,
+            "sender_type": "Admin",
+            "receiver_id": user.id,
+            "receiver_type": user.__class__.__name__,
+            "message": data["message"],
+            "notification_type": data["notification_type"],
+        }
+        try:
+            notification = Notification(**kwargs)
+            notification.save()
+        except:
+            logger.exception("An internal error")
+            abort(500)
     return jsonify({"admin": "sent"}), 200

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import bcrypt
 from models import storage
 from models.driver import Driver
