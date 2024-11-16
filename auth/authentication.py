@@ -112,8 +112,8 @@ def _generate_jwt(user):
 def clean(obj):
     new_dict = obj.copy()
     keys = [
-        "created_at",
-        "updated_at",
+        # "created_at",
+        # "updated_at",
         "password_hash",
         "deleted",
         "blocked",

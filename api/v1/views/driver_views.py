@@ -3,8 +3,9 @@ from flask import jsonify, request, abort, send_file
 from auth import authentication
 from auth.authentication import _hash_password, clean
 from api.v1.middleware import token_required
+from api.v1.utils.pagination import paginate
 from models import storage
-from models.total_payment import TotalPayment
+from models.trip import Trip
 from models.image import Image
 from datetime import datetime, timedelta
 import logging
@@ -365,18 +366,27 @@ def ride_pans():
     except:
         logger.exception("An internal error")
         abort(500)
-    driver_trips = []
 
-    trips = storage.get_objs("Trip", driver_id=driver_id, is_available=True)
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
 
-    if not trips:
+    driver_trips = [
+        clean(trip.to_dict())
+        for trip in paginate(
+            storage.get_objs("Trip", driver_id=driver_id, is_available=True),
+            column.type,
+            column,
+        )
+    ]
+
+    if not driver_trips:
         logger.warning("trips not found")
         abort(404)
-
-    sorted_trips = sorted(trips, key=lambda trip: trip.updated_at)
-
-    for sorted_trip in sorted_trips:
-        driver_trips.append(clean(sorted_trip.to_dict()))
 
     return jsonify({"rides": driver_trips}), 200
 
@@ -434,8 +444,20 @@ def ride_requests():
         logger.exception("An internal error")
         abort(500)
 
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+
     riders = {}
-    trips = storage.get_objs("Trip", driver_id=driver_id, is_available=True)
+    trips = paginate(
+        storage.get_objs("Trip", driver_id=driver_id, is_available=True),
+        column.type,
+        column,
+    )
     trip_dict = {}
 
     if not trips:
@@ -612,7 +634,20 @@ def ride_history():
     except:
         logger.exception("an internal error")
         abort(500)
-    trips = storage.get_objs("Trip", driver_id=user_id, is_available=False)
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+
+    trips = paginate(
+        storage.get_objs("Trip", driver_id=user_id, is_available=False),
+        column.type,
+        column,
+    )
 
     trips_dict = {}
 

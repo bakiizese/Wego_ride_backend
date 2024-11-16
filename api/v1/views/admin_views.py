@@ -6,12 +6,16 @@ from auth import authentication
 from auth.authentication import clean
 from models.rider import Rider
 from models.driver import Driver
+from models.admin import Admin
 from models.trip import Trip
 from models.location import Location
 from datetime import datetime, timedelta
 from models.notification import Notification
 from models.total_payment import TotalPayment
+from models.payment import Payment
 import logging
+from api.v1.utils.pagination import paginate
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -27,6 +31,7 @@ admin_key = [
     "password_hash",
     "admin_level",
 ]
+classes = {"Driver": Driver, "Rider": Rider, "Admin": Admin}
 
 
 # Admin Authentication
@@ -109,11 +114,21 @@ def logout():
 @admin_required
 def get_riders():
     """get all rider-users that are not deleted and blocked"""
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(classes["Rider"], order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{classes['Rider']}' has no attribute {order_by}"}
+        )
     riders = [
         clean(v.to_dict())
-        for v in storage.get_objs("Rider")
+        for v in paginate(storage.get_objs("Rider"), column.type, column)
         if not v.deleted and not v.blocked
     ]
+
     return jsonify({"riders": riders}), 200
 
 
@@ -121,11 +136,21 @@ def get_riders():
 @admin_required
 def get_drivers():
     """get all driver-users that are not deleted and blocked"""
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(classes["Driver"], order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{classes['Driver']}' has no attribute {order_by}"}
+        )
     drivers = [
         clean(v.to_dict())
-        for v in storage.get_objs("Driver")
+        for v in paginate(storage.get_objs("Driver"), column.type, column)
         if not v.deleted and not v.blocked
     ]
+
     return jsonify({"drivers": drivers}), 200
 
 
@@ -300,7 +325,22 @@ def deleted_users(user_type):
     if user_type not in ["Rider", "Driver", "Admin"]:
         logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
-    users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.deleted]
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(classes[user_type], order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{classes[user_type]}' has no attribute {order_by}"}
+        )
+
+    users = [
+        clean(v.to_dict())
+        for v in paginate(storage.get_objs(user_type), column.type, column)
+        if v.deleted
+    ]
     return jsonify({"users": users}), 200
 
 
@@ -311,7 +351,23 @@ def blocked_users(user_type):
     if user_type not in ["Rider", "Driver", "Admin"]:
         logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
-    users = [clean(v.to_dict()) for v in storage.get_objs(user_type) if v.blocked]
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at")
+        if order_by:
+            column = getattr(classes[user_type], order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{classes[user_type]}' has no attribute {order_by}"}
+        )
+
+    users = [
+        clean(v.to_dict())
+        for v in paginate(storage.get_objs(user_type), column.type, column)
+        if v.blocked
+    ]
+
     return jsonify({"users": users}), 200
 
 
@@ -340,7 +396,17 @@ def get_rides():
     if not trips:
         logger.warning("trips not found")
         return jsonify({"error": "trip not found"}), 404
-    trips_dict = {}
+
+    trips_dict = OrderedDict()
+    try:
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Trip, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+
+    trips = [trip for trip in paginate(trips, column.type, column)]
     try:
         for trip in trips:
             try:
@@ -380,7 +446,6 @@ def get_rides():
     except:
         logger.exception("An internal error")
         abort(500)
-
     return jsonify({"trips": trips_dict}), 200
 
 
@@ -470,7 +535,20 @@ def set_location():
 @admin_required
 def get_locations():
     """get all locations"""
-    locations = [clean(location.to_dict()) for location in storage.get_objs("Location")]
+    try:
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Location, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{Location}' has no attribute {order_by}"}
+        )
+
+    locations = [
+        clean(location.to_dict())
+        for location in paginate(storage.get_objs("Location"), column.type, column)
+    ]
     if not locations:
         logger.warning("locations not found")
         return jsonify({"error": "location not found"}), 404
@@ -545,19 +623,23 @@ def set_ride():
 def get_transactions():
     """get all transactions(payments)"""
     try:
-        transactions = sorted(
-            [
-                clean(transaction.to_dict())
-                for transaction in storage.get_objs("Payment")
-            ],
-            key=lambda transaction: transaction["payment_time"],
-            reverse=True,
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Payment, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{Payment}' has no attribute {order_by}"}
         )
-    except:
-        logger.exception("An internal error")
-        abort(500)
+
+    transactions = [
+        clean(transaction.to_dict())
+        for transaction in paginate(storage.get_objs("Payment"), column.type, column)
+    ]
+
     if transactions:
         return jsonify({"admin": transactions}), 200
+
     logger.warning("transactions not found")
     return jsonify({"admin": "Transactions not found"}), 404
 
@@ -834,22 +916,27 @@ def get_ride_activity():
 def get_issues():
     """get all reported isssues"""
     try:
-        issues = sorted(
-            [
-                dict(clean(issue.to_dict()), sent_at=issue.created_at)
-                for issue in storage.get_objs(
-                    "Notification",
-                    notification_type="issue",
-                    receiver_id=request.user_id,
-                )
-            ],
-            key=lambda issue: issue["sent_at"],
-            reverse=True,
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Notification, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{Notification}' has no attribute {order_by}"}
         )
-    except:
-        logger.exception("An internal error")
-        abort(500)
 
+    issues = [
+        dict(clean(issue.to_dict()), sent_at=issue.created_at)
+        for issue in paginate(
+            storage.get_objs(
+                "Notification",
+                notification_type="issue",
+                receiver_id=request.user_id,
+            ),
+            column.type,
+            column,
+        )
+    ]
     return jsonify({"notifications": issues}), 200
 
 
