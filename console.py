@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import cmd
 import shlex
 import models

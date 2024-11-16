@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 from sqlalchemy import asc, desc, String, Float, DateTime, Integer
 import sqlalchemy
 from datetime import datetime

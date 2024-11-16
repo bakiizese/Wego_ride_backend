@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, redirect
+#!/usr/bin/python
+from flask import Flask, jsonify
 from flasgger import Swagger
 from api.v1.views import admin_bp, rider_bp, driver_bp
 import logging
@@ -28,7 +29,12 @@ def not_found(error):
 
 @app.errorhandler(400)
 def bad_request(error):
-    return jsonify({"error": "Requirement missing or incorrect format"}), 400
+    return (
+        jsonify(
+            {"error": "Requirement missing, incorrect format or incorrect attribute"}
+        ),
+        400,
+    )
 
 
 @app.errorhandler(405)

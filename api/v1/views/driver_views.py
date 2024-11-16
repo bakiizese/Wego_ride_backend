@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from api.v1.views import driver_bp
 from flask import jsonify, request, abort, send_file
 from auth import authentication
@@ -7,6 +8,7 @@ from api.v1.utils.pagination import paginate
 from models import storage
 from models.trip import Trip
 from models.image import Image
+from models.notification import Notification
 from datetime import datetime, timedelta
 import logging
 import os
@@ -737,3 +739,112 @@ def earnings(date):
         f"this_year_earning": this_year_earning,
     }
     return jsonify({"earning": earnings}), 200
+
+
+@driver_bp.route("/report-issue", methods=["POST"], strict_slashes=False)
+@token_required
+def report_issue():
+    """report an issue by setting a notification table by provided informations"""
+    try:
+        data = request.get_json()
+    except Exception as e:
+        logger.warning(e)
+        abort(415)
+
+    try:
+        user_id = request.user_id
+    except:
+        logger.exception("An internal error")
+        abort(500)
+
+    if "message" not in data:
+        logger.warning("message missing")
+        return jsonify({"error": "message missing"}), 400
+
+    admins = [
+        admin
+        for admin in storage.get_objs("Admin")
+        if not admin.blocked and not admin.deleted
+    ]
+    for admin in admins:
+        if admin:
+            kwargs = {
+                "sender_id": user_id,
+                "sender_type": "Driver",
+                "receiver_id": admin.id,
+                "receiver_type": admin.__class__.__name__,
+                "message": data["message"],
+                "notification_type": "issue",
+            }
+
+            try:
+                notification = Notification(**kwargs)
+                notification.save()
+            except:
+                logger.exception("An internal error")
+                abort(500)
+
+    return jsonify({"issue": "reported"}), 201
+
+
+@driver_bp.route("/notifications", methods=["GET"], strict_slashes=False)
+@token_required
+def get_issues():
+    """get all notifications"""
+    try:
+        user_id = request.user_id
+    except:
+        logger.exception("an internal error")
+        abort(500)
+
+    try:
+        order_by = request.args.get("order_by", default="updated_at", type=str)
+        if order_by:
+            column = getattr(Notification, order_by)
+    except Exception as e:
+        logger.warning(e)
+        return jsonify(
+            {"error": f"type object '{Notification}' has no attribute {order_by}"}
+        )
+
+    notification = [
+        dict(clean(notif.to_dict()), sent_at=notif.created_at)
+        for notif in paginate(
+            storage.get_objs("Notification", receiver_id=user_id), column.type, column
+        )
+    ]
+    return jsonify({"notifications": notification}), 200
+
+
+@driver_bp.route(
+    "/notification/<notification_id>", methods=["GET"], strict_slashes=False
+)
+@token_required
+def get_notification(notification_id):
+    """get notification by notification_id"""
+    notification = storage.get("Notification", id=notification_id)
+    if not notification:
+        logger.warning("notification not found")
+        return jsonify({"notification": "notification not found"}), 404
+    try:
+        storage.update(
+            "Notification", id=notification_id, is_read=True, read_at=datetime.utcnow()
+        )
+    except:
+        logger.exception("An internal error")
+        abort(500)
+
+    notification = notification.to_dict()
+
+    notification["sent_at"] = notification["created_at"]
+    try:
+        notification["sender_id"] = clean(
+            storage.get(
+                notification["sender_type"], id=notification["sender_id"]
+            ).to_dict()
+        )
+    except:
+        logger.exception("An internal error")
+        abort(500)
+    notification = clean(notification)
+    return jsonify({"notification": notification}), 200
