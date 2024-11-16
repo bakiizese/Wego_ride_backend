@@ -5,6 +5,7 @@ import logging
 from flask_cors import CORS
 
 app = Flask(__name__)
+app.json.sort_keys = False
 CORS(app)
 
 swagger = Swagger(app, template_file="./swagger/main.yaml")
