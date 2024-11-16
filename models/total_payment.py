@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from sqlalchemy import Column, String, ForeignKey, Integer, Float, Boolean, DateTime
 from models.base_model import Base, BaseModel
 

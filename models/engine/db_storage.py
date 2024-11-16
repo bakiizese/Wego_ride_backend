@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import models
 from models.base_model import Base
 from models.availability import Availability
@@ -62,7 +62,11 @@ class DBStorage:
 
     def save(self):
         """saves the new added obj or instance"""
-        self.__session.commit()
+        try:
+            self.__session.commit()
+        except:
+            self.__session.rollback()
+            raise
 
     def reload(self):
         """creates all the obj in the database"""

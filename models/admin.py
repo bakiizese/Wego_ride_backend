@@ -1,9 +1,11 @@
+#!/usr/bin/python
 import models
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, Integer, BINARY, Enum, Boolean
 
+
 class Admin(BaseModel, Base):
-    __tablename__ = 'admins'
+    __tablename__ = "admins"
     username = Column(String(128), nullable=False, unique=True)
     first_name = Column(String(128), nullable=False)
     last_name = Column(String(128), nullable=False)
