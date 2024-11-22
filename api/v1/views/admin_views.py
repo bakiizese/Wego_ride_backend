@@ -16,12 +16,14 @@ from models.total_payment import TotalPayment
 from models.payment import Payment
 import logging
 from api.v1.utils.pagination import paginate
+from ..utils.redis import Redis
 from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 Auth = authentication.Auth()
+
 cls = "Admin"
 admin_key = [
     "email",
@@ -107,6 +109,15 @@ def login():
 @admin_required
 def logout():
     """logout and black-list jwt token"""
+    try:
+        jwt_token = request.jwt_token
+        jwt_exp = request.jwt_exp
+    except:
+        logger.exception("an internal error")
+        abort(500)
+    redis = Redis()
+    redis.jwt_blacklist(jwt_token, jwt_exp)
+
     return jsonify({"admin": "Logged out"}), 200
 
 
@@ -414,7 +425,7 @@ def filter_user(user_type, search_type, search_by):
         .all()
     ]
 
-    return jsonify({"users": users})
+    return jsonify({"users": users}), 200
 
 
 # Ride Management
@@ -1008,7 +1019,7 @@ def get_issues():
     return jsonify({"issues": issues}), 200
 
 
-@admin_bp.route("/reports/issues/<issue_id>", methods=["GET"], strict_slashes=False)
+@admin_bp.route("/reports/issue/<issue_id>", methods=["GET"], strict_slashes=False)
 @admin_required
 def get_issue(issue_id):
     """get reported issue by provided issue-id"""
@@ -1038,7 +1049,6 @@ def get_issue(issue_id):
     return jsonify({"issue": issue}), 200
 
 
-# System Configuration
 @admin_bp.route("/notification", methods=["POST"], strict_slashes=False)
 @admin_required
 def notification():
