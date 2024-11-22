@@ -10,6 +10,7 @@ from models.trip import Trip
 from models.image import Image
 from models.notification import Notification
 from datetime import datetime, timedelta
+from ..utils.redis import Redis
 import logging
 import os
 import uuid
@@ -104,6 +105,14 @@ def login():
 @token_required
 def logout():
     """logout and black-list jwt token"""
+    try:
+        jwt_token = request.jwt_token
+        jwt_exp = request.jwt_exp
+    except:
+        logger.exception("an internal error")
+        abort(500)
+    redis = Redis()
+    redis.jwt_blacklist(jwt_token, jwt_exp)
     return jsonify({"User": "Logged out"}), 200
 
 
@@ -741,6 +750,7 @@ def earnings(date):
     return jsonify({"earning": earnings}), 200
 
 
+# Notifications
 @driver_bp.route("/report-issue", methods=["POST"], strict_slashes=False)
 @token_required
 def report_issue():
