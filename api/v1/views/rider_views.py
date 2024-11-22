@@ -12,6 +12,7 @@ from models.payment import Payment
 from models.image import Image
 from api.v1.utils.pagination import paginate
 from datetime import datetime
+from ..utils.redis import Redis
 import logging
 import uuid
 import os
@@ -107,6 +108,15 @@ def login():
 @token_required
 def logout():
     """logout and black-list jwt token"""
+    try:
+        jwt_token = request.jwt_token
+        jwt_exp = request.jwt_exp
+    except:
+        logger.exception("an internal error")
+        abort(500)
+    redis = Redis()
+    redis.jwt_blacklist(jwt_token, jwt_exp)
+
     return jsonify({"User": "Logged out"}), 200
 
 
@@ -837,6 +847,7 @@ def pay_ride():
 @rider_bp.route("/transactions", methods=["GET"], strict_slashes=False)
 @token_required
 def get_transaction():
+    """get all transactions made by rider"""
     try:
         user_id = request.user_id
     except:
@@ -857,7 +868,7 @@ def get_transaction():
         )
     ]
 
-    return jsonify({"transactions": transactions})
+    return jsonify({"transactions": transactions}), 200
 
 
 # Ratings And Feedback

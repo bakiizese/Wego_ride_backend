@@ -3,8 +3,10 @@ from functools import wraps
 from flask import jsonify, request, abort
 import jwt
 from models import storage
+from models.availability import Availability
 from datetime import datetime
 import logging
+from .utils.redis import Redis
 
 SECRET_KEY = "wego_rider_service_secret_key"
 
@@ -22,8 +24,13 @@ def token_required(f):
 
         try:
             token = token.split(" ")[1]
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
+            redis = Redis()
+            if redis.check_jwt_blacklist(token):
+                logger.warning("Token blacklisted")
+                return jsonify({"error": "token blacklisted"})
+
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             if data["role"] == "Admin":
                 user = storage.get(data["role"], id=data["sub"])
                 if user:
@@ -60,18 +67,33 @@ def token_required(f):
                     return jsonify({"error": "Incorrect token"}), 401
             request.user_id = data["sub"]
             request.role = data["role"]
+            request.jwt_token = token
+            request.jwt_exp = int(data["exp"] - datetime.utcnow().timestamp())
         except jwt.ExpiredSignatureError:
             logger.warning("Token has expired")
             return jsonify({"error": "Token has expired"}), 401
         except jwt.InvalidTokenError:
             logger.warning("Invalid token")
             return jsonify({"error": "Invalid token"}), 401
-        # set availability if no data found for user
         if data["role"] == "Driver":
-            availability = storage.get("Availability", driver_id=data["sub"]).id
-            storage.update(
-                "Availability", availability, last_active_time=datetime.utcnow()
-            )
+            availability = storage.get("Availability", driver_id=data["sub"])
+            if availability:
+                availability = availability.id
+                storage.update(
+                    "Availability", availability, last_active_time=datetime.utcnow()
+                )
+            else:
+                kwargs = {
+                    "driver_id": data["sub"],
+                    "is_available": True,
+                    "last_active_time": datetime.utcnow(),
+                }
+                try:
+                    avail = Availability(**kwargs)
+                    avail.save()
+                except:
+                    logger.exception("an internal error")
+                    abort(500)
 
         return f(*args, **kwargs)
 

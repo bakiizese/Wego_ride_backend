@@ -1,15 +1,21 @@
 #!/usr/bin/python
 from flask import Flask, jsonify
 from flasgger import Swagger
-from api.v1.views import admin_bp, rider_bp, driver_bp
 import logging
 from flask_cors import CORS
+import redis
 
 app = Flask(__name__)
 app.json.sort_keys = False
 CORS(app)
 
 swagger = Swagger(app, template_file="./swagger/main.yaml")
+redis_instance = redis.StrictRedis(
+    host="localhost", port=6379, db=0, decode_responses=True
+)
+app.extensions["redis"] = redis_instance
+
+from api.v1.views import admin_bp, rider_bp, driver_bp
 
 app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
 app.register_blueprint(driver_bp, url_prefix="/api/v1/driver")
