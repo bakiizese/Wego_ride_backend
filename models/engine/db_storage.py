@@ -47,7 +47,7 @@ class DBStorage:
 
     def __init__(self) -> None:
         self.__engine = create_engine(
-            "mysql+mysqldb://{}:{}@{}/{}".format(
+            "mysql+pymysql://{}:{}@{}/{}".format(
                 "wegoride_user", "wegoride", "localhost", "wego_db"
             )
         )
