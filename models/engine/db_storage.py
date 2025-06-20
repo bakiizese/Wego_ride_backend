@@ -17,11 +17,18 @@ from models.image import Image
 import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
+import os
+
+db_host = os.environ.get('db_host')
 
 mysql_user = "wegoride_user"
+#docker mysql host is ('mysql_db')
 mysql_host = "localhost"
 mysql_pwd = "wegoride"
 mysql_db = "wego_db"
+
+if (db_host):
+	mysql_host=db_host
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
 
@@ -48,13 +55,9 @@ class DBStorage:
     def __init__(self) -> None:
         self.__engine = create_engine(
             "mysql+pymysql://{}:{}@{}/{}".format(
-                "wegoride_user", "wegoride", "localhost", "wego_db"
+                mysql_user, mysql_pwd, mysql_host, mysql_db
             )
         )
-        Base.metadata.create_all(self.__engine)
-        sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(sess_factory)
-        self.__session = Session
 
     def new(self, obj):
         """adds new obj or instance to the database"""
