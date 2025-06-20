@@ -115,8 +115,13 @@ Before you begin, ensure you have the following software installed:
    mysql -u username -p database_name < dump.sql
 
 4. **Running the app**
+  **to run on localhost**
    ```bash
-   python -m api/v1/app.py
+   python3 -m api.v1.app
+
+  **to run on docker**
+  ```bash
+  db_host="mysql_db" python3 -m api.v1.app
 
 The application will be running at http://localhost:5000
 

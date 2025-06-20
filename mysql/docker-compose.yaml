@@ -1,0 +1,18 @@
+version: "3"
+services:
+  mysql_db:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wego_db
+      MYSQL_USER: wegoride_user
+      MYSQL_PASSWORD: wegoride
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
