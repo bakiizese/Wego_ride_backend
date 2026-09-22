@@ -3,8 +3,19 @@ from api.v1.views import driver_bp
 from flask import jsonify, request, abort, send_file
 from auth import authentication
 from auth.authentication import _hash_password, clean
-from api.v1.middleware import token_required
-from api.v1.utils.pagination import paginate
+from api.v1.middleware import token_required, touch_driver_availability
+from api.v1.utils.pagination import paginate, get_sort_column
+from api.v1.utils.validation import (
+    parse_json_body,
+    validate_body,
+    UserRegisterSchema,
+    LoginSchema,
+    ProfileUpdateSchema,
+    BookRideSchema,
+    NotificationSchema,
+)
+from api.v1.utils.mail import send_reset_token_email
+from api.v1.extensions import limiter
 from models import storage
 from models.trip import Trip
 from models.image import Image
@@ -20,41 +31,21 @@ logger.setLevel(logging.WARNING)
 
 Auth = authentication.Auth()
 
-driver_key = [
-    "username",
-    "first_name",
-    "last_name",
-    "email",
-    "phone_number",
-    "password_hash",
-    "payment_method",
-]
 cls = "Driver"
 
 
 # Registration And Authentication
 @driver_bp.route("/register", methods=["POST"], strict_slashes=False)
+@limiter.limit("5 per minute")
+@validate_body(UserRegisterSchema)
 def register():
     """register a new driver by provided informations"""
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
+    user_data = request.validated.model_dump()
 
-    for k in driver_key:
-        if k not in user_data.keys():
-            logger.warning(f"{k} missing")
-            return jsonify({"error": f"{k} missing"}), 400
-    try:
-        int(user_data["phone_number"])
-    except:
-        logger.warning("phone_number must be integer")
-        return jsonify({"error": "phone_number must be integer"}), 400
     try:
         user = Auth.register_user(cls, **user_data)
         message, status = user
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -65,33 +56,24 @@ def register():
 
 
 @driver_bp.route("/login", methods=["POST"], strict_slashes=False)
+@limiter.limit("5 per minute")
+@validate_body(LoginSchema)
 def login():
     """login as driver by provided credentials"""
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
+    user_data = request.validated
 
-    find_with = ""
-    if "email" in user_data:
-        find_with = "email"
-    elif "phone_number" in user_data:
-        find_with = "phone_number"
+    if user_data.email:
+        find_with, find = "email", user_data.email
+    elif user_data.phone_number:
+        find_with, find = "phone_number", user_data.phone_number
     else:
         logger.warning("email or phone_number missing")
-        return jsonify({"error": "email or phone_number missing"})
-
-    if "password_hash" not in user_data:
-        logger.warning("password_hash missing")
-        return jsonify({"error": "password_hash missing"}), 400
+        return jsonify({"error": "email or phone_number missing"}), 400
 
     try:
-        user = Auth.verify_login(
-            cls, find_with, user_data[find_with], user_data["password_hash"]
-        )
+        user = Auth.verify_login(cls, find_with, find, user_data.password_hash)
         message, status = user
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -108,7 +90,7 @@ def logout():
     try:
         jwt_token = request.jwt_token
         jwt_exp = request.jwt_exp
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     redis = Redis()
@@ -118,15 +100,14 @@ def logout():
 
 # Profile Management
 @driver_bp.route("/reset-token", methods=["POST"], strict_slashes=False)
+@limiter.limit("5 per minute")
 def get_reset_token():
-    """generate a reset-token by provided informations, to be sent to user email or phone number"""
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-    user = ""
-    find_with = ""
+    """generate a reset-token and email it to the account's registered
+    address - never returned in the response, and always answers the
+    same way whether or not the account exists (avoids enumeration)"""
+    user_data = parse_json_body()
+    user = None
+    find_with = None
     if "email" in user_data:
         user = storage.get(cls, email=user_data["email"])
         find_with = "email"
@@ -136,22 +117,24 @@ def get_reset_token():
     else:
         logger.warning("email or phone_number missing")
         return jsonify({"error": "email or phone_number missing"}), 400
+
     if user:
         reset_token = Auth.create_reset_token(cls, find_with, user_data[find_with])
-        return jsonify({"reset_token": reset_token}), 201
+        send_reset_token_email(user.email, reset_token)
     else:
-        logger.warning("user not found")
-        abort(404)
+        logger.warning("user not found for reset-token request")
+
+    return (
+        jsonify({"message": "if that account exists, a reset code has been sent"}),
+        200,
+    )
 
 
 @driver_bp.route("/forget-password", methods=["POST"], strict_slashes=False)
+@limiter.limit("5 per minute")
 def forget_password():
     """update password by provided informations i.e. reset-token, e.t.c."""
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
+    user_data = parse_json_body()
 
     if "password_hash" not in user_data:
         logger.warning("password missing")
@@ -161,7 +144,7 @@ def forget_password():
             update_password = Auth.update_password(
                 cls, user_data["reset_token"], user_data["password_hash"]
             )
-        except:
+        except Exception:
             logger.exception("An internal error")
             abort(500)
 
@@ -181,7 +164,7 @@ def get_image():
     """returns a profile picture saved for this user"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     image = storage.get("Image", user_id=user_id)
@@ -197,7 +180,7 @@ def remove_image():
     """remove image of this user if exist"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     image = storage.get("Image", user_id=user_id)
@@ -206,13 +189,13 @@ def remove_image():
         return jsonify({"error": "image not found"}), 404
     try:
         storage.delete("Image", image.id)
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     if os.path.exists(image.path):
         try:
             os.remove(image.path)
-        except:
+        except Exception:
             logger.exception("an internal error")
             abort(500)
     else:
@@ -221,13 +204,17 @@ def remove_image():
     return jsonify({"image": "removed successfuly"}), 200
 
 
+ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
+ALLOWED_IMAGE_MIMETYPES = {"image/png", "image/jpeg"}
+
+
 @driver_bp.route("/profile/image", methods=["POST"], strict_slashes=False)
 @token_required
 def upload_image():
     """uploads a profile picture for this user"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     try:
@@ -240,31 +227,35 @@ def upload_image():
         logger.warning("no file selected")
         return jsonify({"error": "no file selected"}), 400
 
-    new_name = str(uuid.uuid4()) + os.path.splitext(image.filename)[1]
+    ext = os.path.splitext(image.filename)[1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS or image.mimetype not in ALLOWED_IMAGE_MIMETYPES:
+        logger.warning("rejected upload with extension %s / mimetype %s", ext, image.mimetype)
+        return jsonify({"error": "only png/jpg/jpeg images are allowed"}), 400
+
+    new_name = str(uuid.uuid4()) + ext
     file_path = os.path.join("./image_uploads", new_name)
-    full_path = os.path.abspath(file_path)
 
     user_image = storage.get("Image", user_id=user_id)
     if user_image:
         if os.path.exists(user_image.path):
             try:
                 os.remove(user_image.path)
-            except:
+            except Exception:
                 logger.exception("an internal error")
                 abort(500)
         try:
             storage.delete("Image", user_image.id)
-        except:
+        except Exception:
             logger.exception("an internal error")
             abort(500)
 
     image.save(file_path)
 
-    kwargs = {"path": full_path, "user_id": user_id, "user_type": "Driver"}
+    kwargs = {"path": file_path, "user_id": user_id, "user_type": "Driver"}
     try:
         new_image = Image(**kwargs)
         new_image.save()
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
 
@@ -277,7 +268,7 @@ def get_profile():
     """get user profile"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     user = storage.get(cls, id=user_id)
@@ -293,57 +284,42 @@ def get_profile():
 
 @driver_bp.route("/profile", methods=["PUT"], strict_slashes=False)
 @token_required
+@validate_body(ProfileUpdateSchema)
 def put_profile():
-    """update user profile by provided informations including password update"""
+    """update user profile by provided informations - password change is
+    optional and only validated when actually requested"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-
-    unmutables_by_user = ["email", "phone_number", "reset_token"]
     user = storage.get_in_dict(cls, id=user_id)
-    updates = {}
-    if user:
-        for k in user_data.keys():
-            if k not in unmutables_by_user:
-                updates[k] = user_data[k]
-
-        if "password_hash" in updates:
-            if "old_password" in updates:
-                user_password = storage.get(cls, id=user_id)
-                if not user_password:
-                    logger.warning("user not found")
-                    abort(404)
-                check_password = Auth.verify_password(
-                    updates["old_password"], user_password
-                )
-                if check_password:
-                    updates["password_hash"] = _hash_password(updates["password_hash"])
-                    del updates["old_password"]
-                else:
-                    logger.warning("password incorrect")
-                    return jsonify({"error": "password incorrect"}), 400
-            else:
-                logger.warning("old password missing")
-                return jsonify({"error": "old_password missing"}), 400
-        else:
-            logger.warning("password_hash missing")
-            return jsonify({"error": "password_hash missing"}), 400
-        try:
-            storage.update(cls, id=user_id, **updates)
-        except:
-            logger.exception("An internal error")
-            return jsonify({"error": "Update Failed"}), 500
-    else:
+    if not user:
         logger.warning("user not found")
         abort(404)
+
+    updates = request.validated.model_dump(exclude_unset=True, exclude_none=True)
+
+    if "password_hash" in updates:
+        if "old_password" not in updates:
+            logger.warning("old password missing")
+            return jsonify({"error": "old_password missing"}), 400
+        user_password = storage.get(cls, id=user_id)
+        check_password = Auth.verify_password(updates["old_password"], user_password)
+        if not check_password:
+            logger.warning("password incorrect")
+            return jsonify({"error": "password incorrect"}), 400
+        updates["password_hash"] = _hash_password(updates["password_hash"])
+        del updates["old_password"]
+    else:
+        updates.pop("old_password", None)
+
+    try:
+        storage.update(cls, id=user_id, **updates)
+    except Exception:
+        logger.exception("An internal error")
+        return jsonify({"error": "Update Failed"}), 500
     return jsonify({"user": "updated Successfuly"}), 200
 
 
@@ -354,10 +330,11 @@ def availability():
     """get drivers availablility"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
+    touch_driver_availability(user_id)
     availability = storage.get("Availability", driver_id=user_id)
 
     if availability:
@@ -374,17 +351,13 @@ def ride_pans():
     """get all ride-plans assigned to this driver"""
     try:
         driver_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(Trip, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+    touch_driver_availability(driver_id)
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(Trip, "Trip", order_by)
 
     driver_trips = [
         clean(trip.to_dict())
@@ -408,7 +381,7 @@ def current_ride(trip_id):
     """get detailed current-ride information by provided trip_id"""
     try:
         request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     trip = storage.get("Trip", id=trip_id)
@@ -435,7 +408,7 @@ def current_ride(trip_id):
         trip["dropoff_location_id"] = clean(
             storage.get("Location", id=trip["dropoff_location_id"]).to_dict()
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -451,17 +424,13 @@ def ride_requests():
     """get all detailed ride-requests to all rides assigned to this driver"""
     try:
         driver_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(Trip, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+    touch_driver_availability(driver_id)
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(Trip, "Trip", order_by)
 
     riders = {}
     trips = paginate(
@@ -484,7 +453,7 @@ def ride_requests():
             try:
                 riders["Rider." + triprider.rider.id] = clean(triprider.rider.to_dict())
                 trip_dict["Trip." + trip.id] = riders
-            except:
+            except Exception:
                 logger.exception("An internal error")
                 abort(500)
         riders = {}
@@ -494,19 +463,16 @@ def ride_requests():
 
 @driver_bp.route("/start-ride", methods=["POST"], strict_slashes=False)
 @token_required
+@validate_body(BookRideSchema)
 def start_ride():
     """mark a start-ride by updating trip table, by provided informations"""
-    try:
-        trip_id = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-
-    if "trip_id" not in trip_id:
-        logger.warning("trip_id missing")
-        return jsonify({"error": "trip_id missing"}), 400
-    trip_id = trip_id["trip_id"]
-    if not storage.get("Trip", id=trip_id).is_available:
+    trip_id = request.validated.trip_id
+    touch_driver_availability(request.user_id)
+    trip = storage.get("Trip", id=trip_id)
+    if not trip:
+        logger.warning("trip not found")
+        abort(404)
+    if not trip.is_available:
         logger.warning("trip not available")
         return jsonify({"error": "trip not available"}), 400
     try:
@@ -517,7 +483,7 @@ def start_ride():
             is_available=False,
             pickup_time=datetime.now(),
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -526,17 +492,11 @@ def start_ride():
 
 @driver_bp.route("/end-ride", methods=["POST"], strict_slashes=False)
 @token_required
+@validate_body(BookRideSchema)
 def end_ride():
     """mark an end-ride by updating trip, triprider, totalpayment tables, by provided informations"""
-    try:
-        trip_id = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-    if "trip_id" not in trip_id:
-        logger.warning("trip_id missing")
-        return jsonify({"error": "trip_id missing"}), 400
-    trip_id = trip_id["trip_id"]
+    trip_id = request.validated.trip_id
+    touch_driver_availability(request.user_id)
 
     tripriders = storage.get_objs("TripRider", trip_id=trip_id, is_past=False)
     if not tripriders:
@@ -564,7 +524,7 @@ def end_ride():
                 status_by="completed-Paid-Ride",
                 is_past=True,
             )
-        except:
+        except Exception:
             logger.exception("An internal error")
             abort(500)
     if len(riders_not_paid) != 0:
@@ -584,7 +544,7 @@ def end_ride():
             transaction_time=datetime.now(),
             status="paid",
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     return jsonify({"ride": "completed"}), 200
@@ -592,17 +552,11 @@ def end_ride():
 
 @driver_bp.route("/cancel-ride", methods=["POST"], strict_slashes=False)
 @token_required
+@validate_body(BookRideSchema)
 def cancel_ride():
     """cancel a ride by updating triprider, trip tables, by provided informations"""
-    try:
-        trip_id = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-    if "trip_id" not in trip_id:
-        logger.warning("trip_id missing")
-        return jsonify({"error": "trip_id missing"}), 400
-    trip_id = trip_id["trip_id"]
+    trip_id = request.validated.trip_id
+    touch_driver_availability(request.user_id)
 
     tripriders = storage.get_objs("TripRider", trip_id=trip_id, is_past=False)
     trips = [trips for trips in tripriders]
@@ -623,12 +577,12 @@ def cancel_ride():
                 status_by="Driver",
                 is_past=True,
             )
-        except:
+        except Exception:
             logger.exception("An internal error")
             abort(500)
     try:
         storage.update("Trip", trip_id, status="canceled", is_available=False)
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -642,17 +596,12 @@ def ride_history():
     """get all ride-histories of this driver"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(Trip, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(Trip, "Trip", order_by)
 
     trips = paginate(
         storage.get_objs("Trip", driver_id=user_id, is_available=False),
@@ -678,7 +627,7 @@ def earnings(date):
     """show driver's earning daily, monthly, annually or by date if provided"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     payments = [
@@ -736,7 +685,7 @@ def earnings(date):
                 last_month_earning += payment.driver_earning
             if payment.transaction_time.year == now.year:
                 this_year_earning += payment.driver_earning
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     earnings = {
@@ -753,23 +702,16 @@ def earnings(date):
 # Notifications
 @driver_bp.route("/report-issue", methods=["POST"], strict_slashes=False)
 @token_required
+@validate_body(NotificationSchema)
 def report_issue():
     """report an issue by setting a notification table by provided informations"""
     try:
-        data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
-
-    try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
-    if "message" not in data:
-        logger.warning("message missing")
-        return jsonify({"error": "message missing"}), 400
+    message = request.validated.message
 
     admins = [
         admin
@@ -783,14 +725,14 @@ def report_issue():
                 "sender_type": "Driver",
                 "receiver_id": admin.id,
                 "receiver_type": admin.__class__.__name__,
-                "message": data["message"],
+                "message": message,
                 "notification_type": "issue",
             }
 
             try:
                 notification = Notification(**kwargs)
                 notification.save()
-            except:
+            except Exception:
                 logger.exception("An internal error")
                 abort(500)
 
@@ -803,19 +745,12 @@ def get_issues():
     """get all notifications"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Notification, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{Notification}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Notification, "Notification", order_by)
 
     notification = [
         dict(clean(notif.to_dict()), sent_at=notif.created_at)
@@ -840,7 +775,7 @@ def get_notification(notification_id):
         storage.update(
             "Notification", id=notification_id, is_read=True, read_at=datetime.utcnow()
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -853,7 +788,7 @@ def get_notification(notification_id):
                 notification["sender_type"], id=notification["sender_id"]
             ).to_dict()
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     notification = clean(notification)
