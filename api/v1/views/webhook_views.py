@@ -7,6 +7,7 @@ import logging
 from flask import abort, jsonify, request
 
 from api.v1.views import webhook_bp
+from api.v1.sockets import emit_ride_status_update
 from models import storage
 from payments.factory import get_gateway
 
@@ -83,4 +84,7 @@ def chapa_webhook():
             "total_payment rider counts are inconsistent for trip %s", payment.trip_id
         )
 
+    emit_ride_status_update(
+        payment.trip_id, "payment_confirmed", rider_id=payment.rider_id
+    )
     return jsonify({"status": "payment confirmed"}), 200

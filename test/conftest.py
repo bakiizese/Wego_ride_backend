@@ -20,6 +20,7 @@ import models  # noqa: E402
 from config import settings  # noqa: E402
 from models.base_model import Base  # noqa: E402
 from api.v1.app import create_app  # noqa: E402
+from api.v1.extensions import socketio  # noqa: E402
 
 
 def _test_db_url():
@@ -155,6 +156,31 @@ def auth_header():
         return {"Authorization": f"Bearer {token}"}
 
     return _header
+
+
+@pytest.fixture
+def socket_client(app, client):
+    """Connects a Flask-SocketIO test client to the /rides namespace,
+    reusing the Flask test client so the session flask_socketio's
+    connect/join handlers rely on (see api/v1/sockets.py) is shared
+    between the two."""
+    created = []
+
+    def _connect(token=None):
+        sio_client = socketio.test_client(
+            app,
+            namespace="/rides",
+            auth={"token": token} if token else {},
+            flask_test_client=client,
+        )
+        created.append(sio_client)
+        return sio_client
+
+    yield _connect
+
+    for sio_client in created:
+        if sio_client.is_connected(namespace="/rides"):
+            sio_client.disconnect(namespace="/rides")
 
 
 @pytest.fixture(autouse=True)

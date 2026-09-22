@@ -22,6 +22,7 @@ from api.v1.utils.validation import (
     SetRideSchema,
 )
 from api.v1.extensions import limiter
+from api.v1.sockets import emit_ride_status_update
 from ..utils.redis import Redis
 from collections import OrderedDict
 
@@ -562,6 +563,7 @@ def set_ride():
         logger.exception("An internal error")
         abort(500)
 
+    emit_ride_status_update(trip.id, "assigned", driver_id=trip.driver_id)
     return jsonify({"ride": "ride created"}), 200
 
 

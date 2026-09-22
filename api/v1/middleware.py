@@ -27,6 +27,40 @@ def _extract_bearer_token():
     return parts[1]
 
 
+class TokenBlacklisted(Exception):
+    """Well-formed token, but it's been logged out."""
+
+
+class TokenUserMissing(Exception):
+    """Well-formed token, but the user it names no longer exists."""
+
+
+class TokenUserDeleted(Exception):
+    """Well-formed token, but the account has been deleted."""
+
+
+def decode_token(token):
+    """Decode + validate a JWT down to (user, role, payload): blacklist
+    check, signature/expiry check, and that the referenced user still
+    exists and isn't deleted. Shared by the HTTP `token_required`
+    decorator and the Socket.IO connection handler, which can't reuse
+    `token_required` as-is since it has no Flask `request.endpoint` to
+    match a role against. Raises jwt.PyJWTError subclasses for a
+    malformed/expired token, or one of the TokenBlacklisted/
+    TokenUserMissing/TokenUserDeleted exceptions above."""
+    redis = Redis()
+    if redis.check_jwt_blacklist(token):
+        raise TokenBlacklisted()
+
+    data = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+    user = storage.get(data["role"], id=data["sub"])
+    if not user:
+        raise TokenUserMissing()
+    if user.deleted:
+        raise TokenUserDeleted()
+    return user, data["role"], data
+
+
 def touch_driver_availability(driver_id):
     """Update (or create) a driver's Availability row. Called explicitly
     from ride-related driver routes, not baked into auth as a side effect."""
@@ -52,50 +86,48 @@ def token_required(f):
         token = _extract_bearer_token()
 
         try:
-            redis = Redis()
-            if redis.check_jwt_blacklist(token):
-                logger.warning("Token blacklisted")
-                return jsonify({"error": "token blacklisted"}), 401
-
-            data = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
-            user = storage.get(data["role"], id=data["sub"])
-            if not user:
-                logger.warning("user not found")
-                abort(404)
-            if user.deleted:
-                logger.warning("access not allowed")
-                abort(403)
-            if user.blocked:
-                if data["role"] == "Admin" or request.endpoint.split(".")[1] not in [
-                    "get_profile",
-                    "put_profile",
-                    "ride_history",
-                ]:
-                    logger.warning("access not allowed")
-                    abort(403)
-
-            real_user = request.endpoint.split(".")[0].split("_")[0]
-            real_user = (
-                "Rider"
-                if (real_user == "rider")
-                else "Driver"
-                if (real_user == "driver")
-                else "Admin"
-            )
-            if real_user != data["role"]:
-                logger.warning("Incorrect token")
-                return jsonify({"error": "Incorrect token"}), 401
-
-            request.user_id = data["sub"]
-            request.role = data["role"]
-            request.jwt_token = token
-            request.jwt_exp = int(data["exp"] - datetime.utcnow().timestamp())
+            user, role, data = decode_token(token)
+        except TokenBlacklisted:
+            logger.warning("Token blacklisted")
+            return jsonify({"error": "token blacklisted"}), 401
+        except TokenUserMissing:
+            logger.warning("user not found")
+            abort(404)
+        except TokenUserDeleted:
+            logger.warning("access not allowed")
+            abort(403)
         except jwt.ExpiredSignatureError:
             logger.warning("Token has expired")
             return jsonify({"error": "Token has expired"}), 401
         except jwt.InvalidTokenError:
             logger.warning("Invalid token")
             return jsonify({"error": "Invalid token"}), 401
+
+        if user.blocked:
+            if role == "Admin" or request.endpoint.split(".")[1] not in [
+                "get_profile",
+                "put_profile",
+                "ride_history",
+            ]:
+                logger.warning("access not allowed")
+                abort(403)
+
+        real_user = request.endpoint.split(".")[0].split("_")[0]
+        real_user = (
+            "Rider"
+            if (real_user == "rider")
+            else "Driver"
+            if (real_user == "driver")
+            else "Admin"
+        )
+        if real_user != role:
+            logger.warning("Incorrect token")
+            return jsonify({"error": "Incorrect token"}), 401
+
+        request.user_id = data["sub"]
+        request.role = role
+        request.jwt_token = token
+        request.jwt_exp = int(data["exp"] - datetime.utcnow().timestamp())
 
         return f(*args, **kwargs)
 

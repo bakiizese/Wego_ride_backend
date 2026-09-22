@@ -5,6 +5,7 @@ wired to the app inside create_app()."""
 
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_socketio import SocketIO
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -13,3 +14,5 @@ limiter = Limiter(
     # than taking every endpoint down with it
     in_memory_fallback_enabled=True,
 )
+
+socketio = SocketIO()

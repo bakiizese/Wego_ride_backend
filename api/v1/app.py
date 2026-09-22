@@ -6,7 +6,7 @@ from flask_cors import CORS
 import redis
 
 from config import settings
-from api.v1.extensions import limiter
+from api.v1.extensions import limiter, socketio
 
 logging.basicConfig(
     # filename="./logs/error.log",
@@ -19,6 +19,11 @@ def create_app():
     app = Flask(__name__)
     app.json.sort_keys = False
     app.config["MAX_CONTENT_LENGTH"] = settings.max_content_length_mb * 1024 * 1024
+    # Flask-SocketIO's per-connection session support (used to remember a
+    # socket's authenticated user_id/role between the `connect` and `join`
+    # events) is built on Flask's own signed session, so it needs a key
+    # even though nothing else in the app uses cookie-based sessions.
+    app.config["SECRET_KEY"] = settings.secret_key
     CORS(app, origins=settings.cors_origin_list)
 
     Swagger(app, template_file="./swagger/main.yaml")
@@ -33,16 +38,34 @@ def create_app():
     )
     app.extensions["redis"] = redis_instance
 
-    redis_scheme = "rediss" if settings.redis_ssl else "redis"
-    redis_auth = f":{settings.redis_password}@" if settings.redis_password else ""
-    app.config["RATELIMIT_STORAGE_URI"] = (
-        f"{redis_scheme}://{redis_auth}{settings.redis_host}:{settings.redis_port}"
-    )
+    app.config["RATELIMIT_STORAGE_URI"] = settings.redis_url
     # must be set before init_app() - Limiter caches "enabled" at init time
     app.config["RATELIMIT_ENABLED"] = settings.flask_env != "testing"
     limiter.init_app(app)
 
+    # message_queue makes this horizontally-scalable from day one - any
+    # number of app instances can share ride-status broadcasts through
+    # the same Redis instance already required for the JWT blacklist.
+    # Skipped in testing: flask-socketio's test client talks to the
+    # server object directly and doesn't need a real queue backing it,
+    # and it lets the test suite run without a live Redis pub/sub round
+    # trip on every emit.
+    is_testing = settings.flask_env == "testing"
+    socketio.init_app(
+        app,
+        cors_allowed_origins=settings.cors_origin_list,
+        message_queue=None if is_testing else settings.redis_url,
+        # eventlet matches the Dockerfile's gunicorn -k eventlet worker in
+        # production/dev; "threading" in tests avoids eventlet spinning
+        # up its own hub on every one of the hundred-plus per-test Flask
+        # app instances the suite creates, which was tripling the runtime
+        # for no real benefit (nothing in the test suite runs under an
+        # actual eventlet-served WSGI server anyway)
+        async_mode="threading" if is_testing else "eventlet",
+    )
+
     from api.v1.views import admin_bp, rider_bp, driver_bp, webhook_bp
+    import api.v1.sockets  # noqa: F401 - registers the socket event handlers
 
     app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
     app.register_blueprint(driver_bp, url_prefix="/api/v1/driver")
@@ -109,4 +132,10 @@ def register_error_handlers(app):
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=(settings.flask_env == "development"), host="0.0.0.0", port=5000)
+    # socketio.run() instead of app.run() - a bare Werkzeug dev server
+    # doesn't support real WebSocket upgrades, only the eventlet-backed
+    # server this starts does (matches the Dockerfile's gunicorn -k
+    # eventlet worker in production).
+    socketio.run(
+        app, debug=(settings.flask_env == "development"), host="0.0.0.0", port=5000
+    )
