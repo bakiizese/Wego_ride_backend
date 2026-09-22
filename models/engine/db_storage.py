@@ -51,17 +51,26 @@ class DBStorage:
     __session = None
 
     def __init__(self, db_url=None) -> None:
+        self.configure(db_url or _default_db_url())
+
+    def configure(self, db_url):
+        """(Re)point this instance at a database and reload the session.
+        Used directly by tests to redirect the process-wide `storage`
+        singleton to an isolated test database in place - mutating the
+        existing object works regardless of how many modules already
+        hold a `from models import storage` reference to it."""
         connect_args = {}
         if settings.db_ssl_ca:
             connect_args["ssl"] = {"ca": settings.db_ssl_ca}
         self.__engine = create_engine(
-            db_url or _default_db_url(),
+            db_url,
             pool_pre_ping=True,
             pool_recycle=280,
             pool_size=5,
             max_overflow=10,
             connect_args=connect_args,
         )
+        self.reload()
 
     def new(self, obj):
         """adds new obj or instance to the database"""
@@ -150,7 +159,11 @@ class DBStorage:
 
         self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
             kwargs,
-            synchronize_session=False,
+            # "fetch" keeps the session's identity map in sync, so a
+            # storage.get() for this id right after this update() doesn't
+            # return a stale cached object (synchronize_session=False was
+            # silently doing that)
+            synchronize_session="fetch",
         )
         self.save()
 
