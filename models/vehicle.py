@@ -11,6 +11,6 @@ class Vehicle(BaseModel):
     model = Column(VARCHAR(60))
     color = Column(String(60), nullable=False)
     seating_capacity = Column(Integer, nullable=False)
+    plate_number = Column(String(20), unique=True, nullable=True)
 
     driver = relationship("Driver", back_populates="vehicle")
-    # add vehicle plate number and drivers license number

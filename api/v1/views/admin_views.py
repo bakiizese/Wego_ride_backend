@@ -354,13 +354,16 @@ def get_rides():
     column = get_sort_column(Trip, "Trip", order_by)
 
     trips = [trip for trip in paginate(trips, column.type, column)]
-    try:
-        for trip in trips:
-            try:
-                vehicle = storage.get("Driver", id=trip.driver_id).vehicle
-            except Exception:
-                logger.exception("An internal error")
-                abort(500)
+    for trip in trips:
+        driver = storage.get("Driver", id=trip.driver_id)
+        if not driver:
+            logger.warning("driver not found, skipping trip %s", trip.id)
+            continue
+        vehicle = driver.vehicle
+        if not vehicle:
+            logger.warning("driver has no vehicle registered, skipping trip %s", trip.id)
+            continue
+        try:
             riders = [
                 rider.rider
                 for rider in storage.get_objs("TripRider", trip_id=trip.id, is_past=False)
@@ -370,11 +373,7 @@ def get_rides():
             trips_dict["Trip." + trip.id]["vehicle_holds"] = vehicle.seating_capacity
             trips_dict["Trip." + trip.id]["available_seats"] = available_seats
 
-            trips_dict["Trip." + trip.id]["driver_id"] = clean(
-                storage.get(
-                    "Driver", id=trips_dict["Trip." + trip.id]["driver_id"]
-                ).to_dict()
-            )
+            trips_dict["Trip." + trip.id]["driver_id"] = clean(driver.to_dict())
             trips_dict["Trip." + trip.id]["pickup_location_id"] = clean(
                 storage.get(
                     "Location", id=trips_dict["Trip." + trip.id]["pickup_location_id"]
@@ -385,12 +384,10 @@ def get_rides():
                     "Location", id=trips_dict["Trip." + trip.id]["dropoff_location_id"]
                 ).to_dict()
             )
-            trips_dict["Trip." + trip.id]["vehicle"] = clean(
-                storage.get("Vehicle", driver_id=trip.driver_id).to_dict()
-            )
-    except Exception:
-        logger.exception("An internal error")
-        abort(500)
+            trips_dict["Trip." + trip.id]["vehicle"] = clean(vehicle.to_dict())
+        except Exception:
+            logger.exception("An internal error")
+            abort(500)
     return jsonify({"trips": trips_dict}), 200
 
 

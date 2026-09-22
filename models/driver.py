@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import String, Column, VARCHAR, Boolean
+from sqlalchemy import String, Column, VARCHAR, Boolean, Float, Integer
 
 
 class Driver(BaseModel, Base):
@@ -14,6 +14,9 @@ class Driver(BaseModel, Base):
     password_hash = Column(String(250), nullable=False)
     reset_token = Column(String(250), nullable=True)
     payment_method = Column(VARCHAR(128), nullable=False)
+    license_number = Column(String(50), unique=True, nullable=True)
+    average_rating = Column(Float, default=0.0)
+    ratings_count = Column(Integer, default=0)
 
     deleted = Column(Boolean, default=False)
     blocked = Column(Boolean, default=False)

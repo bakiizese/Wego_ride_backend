@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from sqlalchemy import asc, desc, String, Float, DateTime, Integer
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import request, abort
 import logging
 import sys
@@ -43,6 +43,7 @@ ALLOWED_SORT_COLUMNS = {
         "phone_number",
     },
     "Location": {"created_at", "updated_at", "address"},
+    "Rating": {"created_at", "updated_at", "score"},
 }
 
 
@@ -60,7 +61,10 @@ def paginate(cls, column_type, column):
     page_size = request.args.get("page_size", default=15, type=int)
     asc_order_recently = request.args.get("asc_order_recently", "true").lower() == "true"
     next_page = request.args.get("next_page")
-    date = datetime.now()
+    # stored timestamps are all UTC (datetime.utcnow(), same as everywhere
+    # else in the codebase) - using local time here would make the cursor
+    # boundary wrong by the server's UTC offset
+    date = datetime.utcnow()
     asc_order = asc if asc_order_recently else desc
     if isinstance(column_type, DateTime):
         asc_order = desc if asc_order_recently else asc
@@ -72,7 +76,14 @@ def paginate(cls, column_type, column):
                 abort(400)
         else:
             if asc_order_recently:
-                next_page = date
+                # MySQL's DATETIME columns here have no fractional-seconds
+                # precision, so storing a Python timestamp (which has
+                # microseconds) gets *rounded*, not truncated - a row
+                # committed a moment ago can end up stored up to ~1s in
+                # the "future" relative to this request. Padding the
+                # default cursor absorbs that instead of silently
+                # dropping just-written rows off the first page.
+                next_page = date + timedelta(seconds=1)
             else:
                 next_page = datetime.min
             next_page.isoformat()

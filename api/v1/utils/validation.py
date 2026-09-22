@@ -90,3 +90,32 @@ class SetRideSchema(BaseModel):
     fare: float = Field(gt=0)
     distance: float = Field(gt=0)
     driver_commission: float = Field(ge=0, le=100)
+
+
+class VehicleRegisterSchema(BaseModel):
+    type: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    color: str = Field(min_length=1)
+    seating_capacity: int = Field(gt=0)
+    plate_number: str = Field(min_length=1)
+    license_number: Optional[str] = None
+
+
+class VehicleUpdateSchema(BaseModel):
+    """All fields optional - a caller can update just one field."""
+
+    type: Optional[str] = None
+    model: Optional[str] = None
+    color: Optional[str] = None
+    seating_capacity: Optional[int] = Field(default=None, gt=0)
+    plate_number: Optional[str] = None
+    license_number: Optional[str] = None
+
+
+class RatingSchema(BaseModel):
+    score: int = Field(ge=1, le=5)
+    comment: Optional[str] = Field(default=None, max_length=500)
+
+
+class DriverRateRiderSchema(RatingSchema):
+    rider_id: str = Field(min_length=1)
