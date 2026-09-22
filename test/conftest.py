@@ -155,3 +155,61 @@ def auth_header():
         return {"Authorization": f"Bearer {token}"}
 
     return _header
+
+
+@pytest.fixture(autouse=True)
+def fake_payment_gateway(monkeypatch):
+    """Test double for the Chapa gateway - no real HTTP calls anywhere in
+    the suite. A test can steer the webhook's defense-in-depth
+    verify_payment check via `fake_payment_gateway.outcomes[tx_ref]`."""
+
+    class _FakeGateway:
+        def __init__(self):
+            self.outcomes = {}
+
+        def initialize_payment(
+            self, amount, currency, customer, tx_ref, callback_url, return_url
+        ):
+            from payments.base import PaymentInitResult
+
+            self.outcomes.setdefault(tx_ref, "success")
+            return PaymentInitResult(
+                checkout_url=f"https://checkout.chapa.co/{tx_ref}", tx_ref=tx_ref
+            )
+
+        def verify_payment(self, tx_ref):
+            from payments.base import PaymentStatus
+
+            return PaymentStatus(
+                tx_ref=tx_ref, status=self.outcomes.get(tx_ref, "success")
+            )
+
+        def verify_webhook_signature(self, payload_bytes, signature_header):
+            return signature_header == "test-signature"
+
+        def parse_webhook(self, payload):
+            from payments.base import PaymentEvent
+
+            return PaymentEvent(
+                tx_ref=payload.get("tx_ref"), status=payload.get("status", "success")
+            )
+
+    gateway = _FakeGateway()
+    monkeypatch.setattr("api.v1.views.rider_views.get_gateway", lambda: gateway)
+    monkeypatch.setattr("api.v1.views.webhook_views.get_gateway", lambda: gateway)
+    return gateway
+
+
+@pytest.fixture
+def confirm_chapa_payment(client):
+    """Simulate Chapa calling our webhook to confirm (or fail) a payment
+    initiated through /rider/pay-ride."""
+
+    def _confirm(tx_ref, status="success"):
+        return client.post(
+            "/api/v1/webhooks/chapa",
+            json={"tx_ref": tx_ref, "status": status},
+            headers={"Chapa-Signature": "test-signature"},
+        )
+
+    return _confirm

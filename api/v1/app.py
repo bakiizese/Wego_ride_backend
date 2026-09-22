@@ -42,11 +42,12 @@ def create_app():
     app.config["RATELIMIT_ENABLED"] = settings.flask_env != "testing"
     limiter.init_app(app)
 
-    from api.v1.views import admin_bp, rider_bp, driver_bp
+    from api.v1.views import admin_bp, rider_bp, driver_bp, webhook_bp
 
     app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
     app.register_blueprint(driver_bp, url_prefix="/api/v1/driver")
     app.register_blueprint(rider_bp, url_prefix="/api/v1/rider")
+    app.register_blueprint(webhook_bp, url_prefix="/api/v1/webhooks")
 
     register_error_handlers(app)
 
@@ -92,6 +93,10 @@ def register_error_handlers(app):
     @app.errorhandler(500)
     def internal_error(error):
         return jsonify({"error": "An internal error occurred"}), 500
+
+    @app.errorhandler(502)
+    def upstream_error(error):
+        return jsonify({"error": "An upstream service is unavailable"}), 502
 
     @app.errorhandler(401)
     def unauthorized(error):

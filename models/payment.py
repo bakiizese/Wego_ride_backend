@@ -11,3 +11,5 @@ class Payment(BaseModel, Base):
     payment_time = Column(DateTime, nullable=False)
     amount = Column(Float, nullable=False)
     payment_status = Column(VARCHAR(128), nullable=False)
+    provider = Column(VARCHAR(60), nullable=True)
+    provider_tx_ref = Column(String(128), unique=True, nullable=True)

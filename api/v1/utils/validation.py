@@ -112,6 +112,11 @@ class VehicleUpdateSchema(BaseModel):
     license_number: Optional[str] = None
 
 
+class PayRideSchema(BaseModel):
+    trip_id: str = Field(min_length=1)
+    return_url: Optional[str] = None
+
+
 class RatingSchema(BaseModel):
     score: int = Field(ge=1, le=5)
     comment: Optional[str] = Field(default=None, max_length=500)
