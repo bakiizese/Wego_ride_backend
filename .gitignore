@@ -5,3 +5,6 @@ _pycach_/
 *.swp
 *.pyc
 *.pyo
+
+.vscode
+.env

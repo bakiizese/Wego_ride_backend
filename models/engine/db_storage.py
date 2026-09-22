@@ -5,7 +5,6 @@ from models.availability import Availability
 from models.driver import Driver
 from models.location import Location
 from models.rider import Rider
-from models.driver import Driver
 from models.payment import Payment
 from models.trip import Trip
 from models.notification import Notification
@@ -14,23 +13,22 @@ from models.admin import Admin
 from models.trip_rider import TripRider
 from models.total_payment import TotalPayment
 from models.image import Image
-import sqlalchemy
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
-import os
 
-db_host = os.environ.get('db_host')
-
-mysql_user = "wegoride_user"
-#docker mysql host is ('mysql_db')
-mysql_host = "localhost"
-mysql_pwd = "wegoride"
-mysql_db = "wego_db"
-
-if (db_host):
-	mysql_host=db_host
+from config import settings
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
+
+
+def _default_db_url():
+    return "mysql+pymysql://{}:{}@{}:{}/{}".format(
+        settings.db_user,
+        settings.db_password,
+        settings.db_host,
+        settings.db_port,
+        settings.db_name,
+    )
 
 classes = {
     "Notification": Notification,
@@ -52,11 +50,17 @@ class DBStorage:
     __engine = None
     __session = None
 
-    def __init__(self) -> None:
+    def __init__(self, db_url=None) -> None:
+        connect_args = {}
+        if settings.db_ssl_ca:
+            connect_args["ssl"] = {"ca": settings.db_ssl_ca}
         self.__engine = create_engine(
-            "mysql+pymysql://{}:{}@{}/{}".format(
-                mysql_user, mysql_pwd, mysql_host, mysql_db
-            )
+            db_url or _default_db_url(),
+            pool_pre_ping=True,
+            pool_recycle=280,
+            pool_size=5,
+            max_overflow=10,
+            connect_args=connect_args,
         )
 
     def new(self, obj):
@@ -73,7 +77,8 @@ class DBStorage:
 
     def reload(self):
         """creates all the obj in the database"""
-        Base.metadata.create_all(self.__engine)
+        if settings.auto_create_tables:
+            Base.metadata.create_all(self.__engine)
         sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sess_factory)
         self.__session = Session
