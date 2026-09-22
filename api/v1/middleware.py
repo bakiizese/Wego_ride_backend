@@ -7,8 +7,7 @@ from models.availability import Availability
 from datetime import datetime
 import logging
 from .utils.redis import Redis
-
-SECRET_KEY = "REDACTED_SECRET_KEY"
+from config import settings
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -30,7 +29,7 @@ def token_required(f):
                 logger.warning("Token blacklisted")
                 return jsonify({"error": "token blacklisted"})
 
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            data = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
             if data["role"] == "Admin":
                 user = storage.get(data["role"], id=data["sub"])
                 if user:
@@ -123,7 +122,7 @@ def superadmin_required(f):
 
         try:
             token = token.split(" ")[1]
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            data = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
             if data["role"] == "Admin":
                 user_id = data["sub"]
                 user = storage.get("Admin", id=user_id)

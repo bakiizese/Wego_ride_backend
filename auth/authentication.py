@@ -9,9 +9,9 @@ import uuid
 import jwt
 from flask import abort
 
-classes = {"Driver": Driver, "Rider": Rider, "Admin": Admin}
+from config import settings
 
-SECRET_KEY = "REDACTED_SECRET_KEY"
+classes = {"Driver": Driver, "Rider": Rider, "Admin": Admin}
 
 
 class Auth:
@@ -104,9 +104,10 @@ def _generate_jwt(user):
     token_payload = {
         "sub": user.id,
         "role": user.__class__.__name__,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(weeks=4),
+        "exp": datetime.datetime.utcnow()
+        + datetime.timedelta(weeks=settings.jwt_exp_weeks),
     }
-    jwt_token = jwt.encode(token_payload, SECRET_KEY, algorithm="HS256")
+    jwt_token = jwt.encode(token_payload, settings.secret_key, algorithm="HS256")
     return jwt_token
 
 
