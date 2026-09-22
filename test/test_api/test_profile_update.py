@@ -2,6 +2,7 @@
 """Regression test: PUT /profile used to unconditionally require
 password_hash/old_password even for an unrelated field update like
 first_name - now the password-change branch only runs when requested."""
+
 import pytest
 
 
@@ -36,9 +37,7 @@ def test_password_change_requires_old_password(client, make_user, auth_header, r
 
 
 @pytest.mark.parametrize("role", ["rider", "driver"])
-def test_password_change_rejects_wrong_old_password(
-    client, make_user, auth_header, role
-):
+def test_password_change_rejects_wrong_old_password(client, make_user, auth_header, role):
     _, token, _ = make_user(role.capitalize())
 
     r = client.put(

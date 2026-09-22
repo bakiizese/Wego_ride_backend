@@ -230,8 +230,13 @@ def upload_image():
         return jsonify({"error": "no file selected"}), 400
 
     ext = os.path.splitext(image.filename)[1].lower()
-    if ext not in ALLOWED_IMAGE_EXTENSIONS or image.mimetype not in ALLOWED_IMAGE_MIMETYPES:
-        logger.warning("rejected upload with extension %s / mimetype %s", ext, image.mimetype)
+    if (
+        ext not in ALLOWED_IMAGE_EXTENSIONS
+        or image.mimetype not in ALLOWED_IMAGE_MIMETYPES
+    ):
+        logger.warning(
+            "rejected upload with extension %s / mimetype %s", ext, image.mimetype
+        )
         return jsonify({"error": "only png/jpg/jpeg images are allowed"}), 400
 
     new_name = str(uuid.uuid4()) + ext
@@ -352,9 +357,7 @@ def available_rides():
                 abort(404)
             riders = [
                 rider.rider
-                for rider in storage.get_objs(
-                    "TripRider", trip_id=trip.id, is_past=False
-                )
+                for rider in storage.get_objs("TripRider", trip_id=trip.id, is_past=False)
             ]
             available_seats = vehicle.seating_capacity - len(riders)
             trips_dict["Trip." + trip.id] = clean(trip.to_dict())
@@ -405,13 +408,13 @@ def book_ride():
         logger.warning("trip not found")
         abort(404)
 
-    if trip.is_available == False:
+    if trip.is_available == False:  # noqa: E712 - nullable column, `not x` would also flip NULL handling
         logger.warning("trip not available")
         return jsonify({"error": "trip not available"}), 400
 
     riders = []
     for rider in trip.riders:
-        if rider.is_past == False:
+        if rider.is_past == False:  # noqa: E712 - nullable column, `not x` would also flip NULL handling
             riders.append(rider.rider_id)
 
     if rider_id in riders:
@@ -876,9 +879,7 @@ def get_issues():
     return jsonify({"notifications": notification}), 200
 
 
-@rider_bp.route(
-    "/notification/<notification_id>", methods=["GET"], strict_slashes=False
-)
+@rider_bp.route("/notification/<notification_id>", methods=["GET"], strict_slashes=False)
 @token_required
 def get_notification(notification_id):
     """get notification by notification_id"""

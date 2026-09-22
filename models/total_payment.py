@@ -23,6 +23,4 @@ class TotalPayment(BaseModel, Base):
             self.number_of_riders_not_paid + self.number_of_riders_paid
             != self.total_number_of_riders
         ):
-            raise ValueError(
-                "Total riders must equal the sum of paid and unpaid riders."
-            )
+            raise ValueError("Total riders must equal the sum of paid and unpaid riders.")

@@ -1,8 +1,6 @@
 #!/usr/bin/python
 from sqlalchemy import String, Column
 from models.base_model import Base, BaseModel
-from sqlalchemy.orm import relationship
-import models
 
 
 class Image(BaseModel, Base):

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 from sqlalchemy import asc, desc, String, Float, DateTime, Integer
-import sqlalchemy
 from datetime import datetime
 from flask import request, abort
 import logging
@@ -17,16 +16,31 @@ ALLOWED_SORT_COLUMNS = {
     "Payment": {"created_at", "updated_at", "amount", "payment_status"},
     "Notification": {"created_at", "updated_at", "is_read"},
     "Rider": {
-        "created_at", "updated_at", "username", "first_name", "last_name",
-        "email", "phone_number",
+        "created_at",
+        "updated_at",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "phone_number",
     },
     "Driver": {
-        "created_at", "updated_at", "username", "first_name", "last_name",
-        "email", "phone_number",
+        "created_at",
+        "updated_at",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "phone_number",
     },
     "Admin": {
-        "created_at", "updated_at", "username", "first_name", "last_name",
-        "email", "phone_number",
+        "created_at",
+        "updated_at",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "phone_number",
     },
     "Location": {"created_at", "updated_at", "address"},
 }
@@ -44,9 +58,7 @@ def get_sort_column(model_cls, model_name, order_by):
 
 def paginate(cls, column_type, column):
     page_size = request.args.get("page_size", default=15, type=int)
-    asc_order_recently = (
-        request.args.get("asc_order_recently", "true").lower() == "true"
-    )
+    asc_order_recently = request.args.get("asc_order_recently", "true").lower() == "true"
     next_page = request.args.get("next_page")
     date = datetime.now()
     asc_order = asc if asc_order_recently else desc

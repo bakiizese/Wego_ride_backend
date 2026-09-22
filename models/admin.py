@@ -1,7 +1,6 @@
 #!/usr/bin/python
-import models
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Integer, BINARY, Enum, Boolean
+from sqlalchemy import Column, String, Enum, Boolean
 
 
 class Admin(BaseModel, Base):

@@ -363,9 +363,7 @@ def get_rides():
                 abort(500)
             riders = [
                 rider.rider
-                for rider in storage.get_objs(
-                    "TripRider", trip_id=trip.id, is_past=False
-                )
+                for rider in storage.get_objs("TripRider", trip_id=trip.id, is_past=False)
             ]
             available_seats = vehicle.seating_capacity - len(riders)
             trips_dict["Trip." + trip.id] = clean(trip.to_dict())
@@ -629,8 +627,7 @@ def get_payment_detail(ride_id):
             ride["payment"] = clean(ride["payment"][0].to_dict())
     try:
         payment_status = [
-            payment.payment_status
-            for payment in storage.get("Trip", id=ride_id).payment
+            payment.payment_status for payment in storage.get("Trip", id=ride_id).payment
         ]
         number_of_riders = len(
             [rider for rider in storage.get("Trip", id=ride_id).riders]
@@ -660,7 +657,7 @@ def get_earnings(date):
     payments = [
         payment
         for payment in storage.get_objs("TotalPayment")
-        if payment.transaction_over == True
+        if payment.transaction_over == True  # noqa: E712 - nullable column, `is True` would also flip NULL handling
     ]
     now = datetime.now()
 
@@ -695,8 +692,7 @@ def get_earnings(date):
 
             earnings = {
                 f"day_{date.day}_earning": {
-                    "total_platform_earning": today_total_earning
-                    - today_drivers_earning,
+                    "total_platform_earning": today_total_earning - today_drivers_earning,
                     "total_driver_earning": today_drivers_earning,
                     "total": today_total_earning,
                 },

@@ -76,9 +76,7 @@ def register_error_handlers(app):
     def bad_request(error):
         return (
             jsonify(
-                {
-                    "error": "Requirement missing, incorrect format or incorrect attribute"
-                }
+                {"error": "Requirement missing, incorrect format or incorrect attribute"}
             ),
             400,
         )
