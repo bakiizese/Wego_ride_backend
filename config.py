@@ -55,5 +55,11 @@ class Settings(BaseSettings):
             origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
         ]
 
+    @property
+    def redis_url(self) -> str:
+        scheme = "rediss" if self.redis_ssl else "redis"
+        auth = f":{self.redis_password}@" if self.redis_password else ""
+        return f"{scheme}://{auth}{self.redis_host}:{self.redis_port}"
+
 
 settings = Settings()

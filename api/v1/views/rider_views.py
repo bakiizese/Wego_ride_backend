@@ -24,6 +24,7 @@ from api.v1.utils.validation import (
 )
 from api.v1.utils.mail import send_reset_token_email
 from api.v1.utils.ratings import submit_rating
+from api.v1.sockets import emit_ride_status_update
 from api.v1.extensions import limiter
 from models.rating import Rating
 from payments.factory import get_gateway
@@ -726,6 +727,7 @@ def cancel_ride():
         logger.exception("An internal error")
         abort(500)
 
+    emit_ride_status_update(trip_id, "rider_canceled", rider_id=request.user_id)
     return jsonify({"trip": "canceled"}), 200
 
 
