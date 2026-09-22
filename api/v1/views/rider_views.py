@@ -19,9 +19,12 @@ from api.v1.utils.validation import (
     ProfileUpdateSchema,
     BookRideSchema,
     NotificationSchema,
+    RatingSchema,
 )
 from api.v1.utils.mail import send_reset_token_email
+from api.v1.utils.ratings import submit_rating
 from api.v1.extensions import limiter
+from models.rating import Rating
 from datetime import datetime
 from ..utils.redis import Redis
 import logging
@@ -344,17 +347,15 @@ def available_rides():
         abort(404)
     trips_dict = {}
     for trip in trips:
+        driver = storage.get("Driver", id=trip.driver_id)
+        if not driver:
+            logger.warning("driver not found, skipping trip %s", trip.id)
+            continue
+        vehicle = driver.vehicle
+        if not vehicle:
+            logger.warning("driver has no vehicle registered, skipping trip %s", trip.id)
+            continue
         try:
-            vehicle = storage.get("Driver", id=trip.driver_id)
-            if vehicle:
-                try:
-                    vehicle = vehicle.vehicle
-                except Exception:
-                    logger.exception("vehicle not found")
-                    abort(500)
-            else:
-                logger.warning("driver not found")
-                abort(404)
             riders = [
                 rider.rider
                 for rider in storage.get_objs("TripRider", trip_id=trip.id, is_past=False)
@@ -421,12 +422,11 @@ def book_ride():
         logger.warning("you have already booked a ride")
         return jsonify({"error": "you have already booked a ride"}), 200
 
-    try:
-        vehicle = trip.drivers.vehicle
-        seating_capacity = vehicle.seating_capacity
-    except Exception:
-        logger.exception("An internal error")
-        abort(500)
+    vehicle = trip.drivers.vehicle
+    if not vehicle:
+        logger.warning("driver has no vehicle registered")
+        return jsonify({"error": "driver has no vehicle registered"}), 409
+    seating_capacity = vehicle.seating_capacity
     number_of_passengers = 0
 
     for _ in trip.riders:
@@ -593,8 +593,6 @@ def ride_status(tripride_id):
     """get ride-status by provided tripride-id"""
     try:
         trip = storage.get("TripRider", id=tripride_id, is_past=False).trip
-        vehicle = trip.drivers.vehicle
-        seating_capacity = vehicle.seating_capacity
     except Exception:
         logger.exception("An internal error")
         abort(500)
@@ -602,6 +600,12 @@ def ride_status(tripride_id):
     if not trip:
         logger.warning("trip not found")
         abort(404)
+
+    vehicle = trip.drivers.vehicle
+    if not vehicle:
+        logger.warning("driver has no vehicle registered")
+        abort(404)
+    seating_capacity = vehicle.seating_capacity
 
     number_of_passengers = 0
     for _ in trip.riders:
@@ -817,7 +821,61 @@ def get_transaction():
     return jsonify({"transactions": transactions}), 200
 
 
-# Ratings And Feedback
+# Ratings
+@rider_bp.route("/rate-driver/<trip_id>", methods=["POST"], strict_slashes=False)
+@token_required
+@validate_body(RatingSchema)
+def rate_driver(trip_id):
+    """rate the driver of a trip this rider completed"""
+    rider_id = request.user_id
+
+    trip = storage.get("Trip", id=trip_id)
+    if not trip:
+        logger.warning("trip not found")
+        abort(404)
+
+    triprider = storage.get("TripRider", trip_id=trip_id, rider_id=rider_id)
+    if not triprider or triprider.status != "completed":
+        logger.warning("trip not completed for this rider")
+        return jsonify({"error": "you can only rate a completed trip"}), 400
+
+    rating, error = submit_rating(
+        trip_id=trip_id,
+        rater_type="Rider",
+        rater_id=rider_id,
+        ratee_type="Driver",
+        ratee_id=trip.driver_id,
+        score=request.validated.score,
+        comment=request.validated.comment,
+    )
+    if error:
+        message, status = error
+        logger.warning(message)
+        return jsonify({"error": message}), status
+
+    return jsonify({"rating": clean(rating.to_dict())}), 201
+
+
+@rider_bp.route("/ratings", methods=["GET"], strict_slashes=False)
+@token_required
+def get_rider_ratings():
+    """get all ratings this rider has received from drivers"""
+    rider_id = request.user_id
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(Rating, "Rating", order_by)
+
+    ratings = [
+        clean(rating.to_dict())
+        for rating in paginate(
+            storage.get_objs("Rating", ratee_type="Rider", ratee_id=rider_id),
+            column.type,
+            column,
+        )
+    ]
+    return jsonify({"ratings": ratings}), 200
+
+
+# Notifications
 @rider_bp.route("/report-issue", methods=["POST"], strict_slashes=False)
 @token_required
 @validate_body(NotificationSchema)

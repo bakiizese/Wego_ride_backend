@@ -12,6 +12,7 @@ from models.admin import Admin
 from models.trip_rider import TripRider
 from models.total_payment import TotalPayment
 from models.image import Image
+from models.rating import Rating
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -43,6 +44,7 @@ classes = {
     "TripRider": TripRider,
     "TotalPayment": TotalPayment,
     "Image": Image,
+    "Rating": Rating,
 }
 
 

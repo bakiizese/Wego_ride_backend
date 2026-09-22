@@ -43,6 +43,7 @@ ALLOWED_SORT_COLUMNS = {
         "phone_number",
     },
     "Location": {"created_at", "updated_at", "address"},
+    "Rating": {"created_at", "updated_at", "score"},
 }
 
 

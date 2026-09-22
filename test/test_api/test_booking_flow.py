@@ -1,34 +1,32 @@
 #!/usr/bin/python
 """Coverage for the core booking state machine: book -> ride-status ->
 cancel-ride / start-ride / end-ride.
-
-There's currently no HTTP endpoint to register a Vehicle (a known gap,
-see models/vehicle.py's own TODO comment) so the driver's vehicle is
-seeded directly through the ORM here, same as the app's own console.py
-would do it.
 """
 
 from datetime import datetime, timedelta
 
 import pytest
 
-from models.vehicle import Vehicle
-
 
 @pytest.fixture
 def ride_setup(client, make_admin, make_user, auth_header):
     """Admin creates two locations + a ride assigned to a driver with a
-    seeded vehicle. Returns (trip_id, driver_token, admin_token)."""
+    registered vehicle. Returns (trip_id, driver_token, admin_token)."""
     _, admin_token = make_admin(admin_level="superadmin")
     driver_id, driver_token, _ = make_user("Driver")
 
-    Vehicle(
-        driver_id=driver_id,
-        type="sedan",
-        model="corolla",
-        color="white",
-        seating_capacity=4,
-    ).save()
+    r = client.post(
+        "/api/v1/driver/vehicle",
+        json={
+            "type": "sedan",
+            "model": "corolla",
+            "color": "white",
+            "seating_capacity": 4,
+            "plate_number": "AA-123-BB",
+        },
+        headers=auth_header(driver_token),
+    )
+    assert r.status_code == 201, r.get_json()
 
     headers = auth_header(admin_token)
     r = client.post(

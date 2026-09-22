@@ -13,13 +13,19 @@ from api.v1.utils.validation import (
     ProfileUpdateSchema,
     BookRideSchema,
     NotificationSchema,
+    VehicleRegisterSchema,
+    VehicleUpdateSchema,
+    DriverRateRiderSchema,
 )
 from api.v1.utils.mail import send_reset_token_email
+from api.v1.utils.ratings import submit_rating
 from api.v1.extensions import limiter
 from models import storage
 from models.trip import Trip
 from models.image import Image
 from models.notification import Notification
+from models.rating import Rating
+from models.vehicle import Vehicle
 from datetime import datetime, timedelta
 from ..utils.redis import Redis
 import logging
@@ -326,6 +332,76 @@ def put_profile():
         logger.exception("An internal error")
         return jsonify({"error": "Update Failed"}), 500
     return jsonify({"user": "updated Successfuly"}), 200
+
+
+# Vehicle Management
+@driver_bp.route("/vehicle", methods=["POST"], strict_slashes=False)
+@token_required
+@validate_body(VehicleRegisterSchema)
+def register_vehicle():
+    """register this driver's vehicle - one per driver"""
+    driver_id = request.user_id
+
+    if storage.get("Vehicle", driver_id=driver_id):
+        logger.warning("vehicle already registered")
+        return jsonify({"error": "vehicle already registered for this driver"}), 409
+
+    data = request.validated.model_dump(exclude_unset=True)
+    license_number = data.pop("license_number", None)
+
+    try:
+        vehicle = Vehicle(driver_id=driver_id, **data)
+        vehicle.save()
+    except Exception:
+        logger.exception("An internal error")
+        abort(500)
+
+    if license_number:
+        try:
+            storage.update(cls, driver_id, license_number=license_number)
+        except Exception:
+            logger.exception("An internal error")
+            abort(500)
+
+    return jsonify({"vehicle": clean(vehicle.to_dict())}), 201
+
+
+@driver_bp.route("/vehicle", methods=["GET"], strict_slashes=False)
+@token_required
+def get_vehicle():
+    """get this driver's registered vehicle"""
+    driver_id = request.user_id
+    vehicle = storage.get("Vehicle", driver_id=driver_id)
+    if not vehicle:
+        logger.warning("vehicle not registered")
+        abort(404)
+    return jsonify({"vehicle": clean(vehicle.to_dict())}), 200
+
+
+@driver_bp.route("/vehicle", methods=["PUT"], strict_slashes=False)
+@token_required
+@validate_body(VehicleUpdateSchema)
+def put_vehicle():
+    """update this driver's registered vehicle"""
+    driver_id = request.user_id
+    vehicle = storage.get("Vehicle", driver_id=driver_id)
+    if not vehicle:
+        logger.warning("vehicle not registered")
+        abort(404)
+
+    updates = request.validated.model_dump(exclude_unset=True, exclude_none=True)
+    license_number = updates.pop("license_number", None)
+
+    try:
+        if updates:
+            storage.update("Vehicle", vehicle.id, **updates)
+        if license_number:
+            storage.update(cls, driver_id, license_number=license_number)
+    except Exception:
+        logger.exception("An internal error")
+        abort(500)
+
+    return jsonify({"vehicle": "updated"}), 200
 
 
 # Ride Management
@@ -700,6 +776,61 @@ def earnings(date):
         "this_year_earning": this_year_earning,
     }
     return jsonify({"earning": earnings}), 200
+
+
+# Ratings
+@driver_bp.route("/rate-rider/<trip_id>", methods=["POST"], strict_slashes=False)
+@token_required
+@validate_body(DriverRateRiderSchema)
+def rate_rider(trip_id):
+    """rate a rider from a trip this driver completed"""
+    driver_id = request.user_id
+    rider_id = request.validated.rider_id
+
+    trip = storage.get("Trip", id=trip_id)
+    if not trip or trip.driver_id != driver_id:
+        logger.warning("trip not found for this driver")
+        abort(404)
+
+    triprider = storage.get("TripRider", trip_id=trip_id, rider_id=rider_id)
+    if not triprider or triprider.status != "completed":
+        logger.warning("trip not completed for this rider")
+        return jsonify({"error": "you can only rate a completed trip"}), 400
+
+    rating, error = submit_rating(
+        trip_id=trip_id,
+        rater_type="Driver",
+        rater_id=driver_id,
+        ratee_type="Rider",
+        ratee_id=rider_id,
+        score=request.validated.score,
+        comment=request.validated.comment,
+    )
+    if error:
+        message, status = error
+        logger.warning(message)
+        return jsonify({"error": message}), status
+
+    return jsonify({"rating": clean(rating.to_dict())}), 201
+
+
+@driver_bp.route("/ratings", methods=["GET"], strict_slashes=False)
+@token_required
+def get_driver_ratings():
+    """get all ratings this driver has received from riders"""
+    driver_id = request.user_id
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(Rating, "Rating", order_by)
+
+    ratings = [
+        clean(rating.to_dict())
+        for rating in paginate(
+            storage.get_objs("Rating", ratee_type="Driver", ratee_id=driver_id),
+            column.type,
+            column,
+        )
+    ]
+    return jsonify({"ratings": ratings}), 200
 
 
 # Notifications
