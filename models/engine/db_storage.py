@@ -132,9 +132,9 @@ class DBStorage:
                 inst = self.__session.query(classes[cls]).filter_by(id=arg).first()
                 self.__session.delete(inst)
                 self.save()
-            except:
+            except Exception:
                 self.__session.rollback()
-                raise (MemoryError)
+                raise
 
     def update(self, cls, id, **kwargs):
         cols = classes[cls].__table__.columns.keys()
@@ -143,17 +143,16 @@ class DBStorage:
                 print("** key not found **")
                 return False
         if "username" in kwargs:
-            user = self.get(classes[cls], username=kwargs["username"])
+            user = self.get(cls, username=kwargs["username"])
             if user:
                 print("** username already exist **")
                 return False
 
-        for k, v in kwargs.items():
-            self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
-                {k: v},
-                synchronize_session=False,
-            )
-            self.save()
+        self.__session.query(classes[cls]).filter(classes[cls].id == id).update(
+            kwargs,
+            synchronize_session=False,
+        )
+        self.save()
 
     def count(self, arg):
         """returns the number of instances in a given class"""

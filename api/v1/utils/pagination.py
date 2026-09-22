@@ -9,6 +9,29 @@ import sys
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
+# Columns callers are allowed to sort on, per model. Anything else is
+# rejected with a clean 400 instead of being passed straight to getattr().
+ALLOWED_SORT_COLUMNS = {
+    "Trip": {"created_at", "updated_at", "fare", "distance", "status", "pickup_time"},
+    "TripRider": {"created_at", "updated_at", "status", "is_past"},
+    "Payment": {"created_at", "updated_at", "amount", "payment_status"},
+    "Notification": {"created_at", "updated_at", "is_read"},
+    "Rider": {"created_at", "updated_at", "username", "first_name", "last_name"},
+    "Driver": {"created_at", "updated_at", "username", "first_name", "last_name"},
+    "Admin": {"created_at", "updated_at", "username", "first_name", "last_name"},
+    "Location": {"created_at", "updated_at", "address"},
+}
+
+
+def get_sort_column(model_cls, model_name, order_by):
+    """Resolve a query-string `order_by` value against an explicit
+    allowlist, aborting with 400 instead of doing an unguarded getattr()."""
+    allowed = ALLOWED_SORT_COLUMNS.get(model_name, set())
+    if order_by not in allowed:
+        logger.warning("order_by '%s' not allowed for %s", order_by, model_name)
+        abort(400, description=f"cannot sort {model_name} by '{order_by}'")
+    return getattr(model_cls, order_by)
+
 
 def paginate(cls, column_type, column):
     page_size = request.args.get("page_size", default=15, type=int)
