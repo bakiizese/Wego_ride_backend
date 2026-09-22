@@ -16,9 +16,18 @@ ALLOWED_SORT_COLUMNS = {
     "TripRider": {"created_at", "updated_at", "status", "is_past"},
     "Payment": {"created_at", "updated_at", "amount", "payment_status"},
     "Notification": {"created_at", "updated_at", "is_read"},
-    "Rider": {"created_at", "updated_at", "username", "first_name", "last_name"},
-    "Driver": {"created_at", "updated_at", "username", "first_name", "last_name"},
-    "Admin": {"created_at", "updated_at", "username", "first_name", "last_name"},
+    "Rider": {
+        "created_at", "updated_at", "username", "first_name", "last_name",
+        "email", "phone_number",
+    },
+    "Driver": {
+        "created_at", "updated_at", "username", "first_name", "last_name",
+        "email", "phone_number",
+    },
+    "Admin": {
+        "created_at", "updated_at", "username", "first_name", "last_name",
+        "email", "phone_number",
+    },
     "Location": {"created_at", "updated_at", "address"},
 }
 
