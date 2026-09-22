@@ -38,6 +38,8 @@ def create_app():
     app.config["RATELIMIT_STORAGE_URI"] = (
         f"{redis_scheme}://{redis_auth}{settings.redis_host}:{settings.redis_port}"
     )
+    # must be set before init_app() - Limiter caches "enabled" at init time
+    app.config["RATELIMIT_ENABLED"] = settings.flask_env != "testing"
     limiter.init_app(app)
 
     from api.v1.views import admin_bp, rider_bp, driver_bp
@@ -47,6 +49,16 @@ def create_app():
     app.register_blueprint(rider_bp, url_prefix="/api/v1/rider")
 
     register_error_handlers(app)
+
+    @app.teardown_appcontext
+    def _release_db_session(exception=None):
+        # DBStorage's session is never explicitly committed/closed after
+        # read-only queries, so a request that only does SELECTs leaves an
+        # open transaction sitting on the pooled connection indefinitely.
+        # Roll it back at the end of every request to release it.
+        from models import storage
+
+        storage.rollback()
 
     @app.route("/health")
     def health():
