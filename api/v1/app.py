@@ -48,6 +48,10 @@ def create_app():
 
     register_error_handlers(app)
 
+    @app.route("/health")
+    def health():
+        return jsonify({"status": "ok"}), 200
+
     return app
 
 
