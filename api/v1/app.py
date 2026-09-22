@@ -6,6 +6,7 @@ from flask_cors import CORS
 import redis
 
 from config import settings
+from api.v1.extensions import limiter
 
 logging.basicConfig(
     # filename="./logs/error.log",
@@ -31,6 +32,13 @@ def create_app():
         decode_responses=True,
     )
     app.extensions["redis"] = redis_instance
+
+    redis_scheme = "rediss" if settings.redis_ssl else "redis"
+    redis_auth = f":{settings.redis_password}@" if settings.redis_password else ""
+    app.config["RATELIMIT_STORAGE_URI"] = (
+        f"{redis_scheme}://{redis_auth}{settings.redis_host}:{settings.redis_port}"
+    )
+    limiter.init_app(app)
 
     from api.v1.views import admin_bp, rider_bp, driver_bp
 

@@ -15,7 +15,13 @@ from models.notification import Notification
 from models.total_payment import TotalPayment
 from models.payment import Payment
 import logging
-from api.v1.utils.pagination import paginate
+from api.v1.utils.pagination import paginate, get_sort_column
+from api.v1.utils.validation import (
+    validate_body,
+    LoginSchema,
+    SetRideSchema,
+)
+from api.v1.extensions import limiter
 from ..utils.redis import Redis
 from collections import OrderedDict
 
@@ -37,6 +43,19 @@ admin_key = [
 classes = {"Driver": Driver, "Rider": Rider, "Admin": Admin}
 
 
+def _require_superadmin_for_admin_target(target_cls):
+    """Moderation actions (block/unblock/delete/revalidate) targeting an
+    Admin require the caller to be a superadmin. Returns an error response
+    tuple if not allowed, otherwise None."""
+    if target_cls != "Admin":
+        return None
+    admin = storage.get("Admin", id=request.user_id)
+    if not admin or admin.admin_level != "superadmin":
+        logger.warning("only superadmin allowed")
+        return jsonify({"Error": "only superadmin allowed"}), 403
+    return None
+
+
 # Admin Authentication
 @admin_bp.route("/admin-register", methods=["POST"], strict_slashes=False)
 @superadmin_required
@@ -54,13 +73,13 @@ def register():
             return jsonify({"error": f"{k} missing"}), 400
     try:
         int(user_data["phone_number"])
-    except:
+    except Exception:
         logger.warning("phone_number must be integer")
         return jsonify({"error": "phone_number must be integer"}), 400
     try:
         user = Auth.register_user(cls, **user_data)
         message, status = user
-    except:
+    except Exception:
         logger.exception("An internal errro")
         abort(500)
     if status:
@@ -70,33 +89,25 @@ def register():
 
 
 @admin_bp.route("/login", methods=["POST"], strict_slashes=False)
+@limiter.limit("5 per minute")
+@validate_body(LoginSchema)
 def login():
     """login as admin by provided credentials"""
-    try:
-        user_data = request.get_json()
-    except Exception as e:
-        logger.warning(e)
-        abort(415)
+    user_data = request.validated
 
-    find_with = ""
-    if "email" in user_data:
-        find_with = "email"
-    elif "phone_number" in user_data:
-        find_with = "phone_number"
+    if user_data.email:
+        find_with, find = "email", user_data.email
+    elif user_data.phone_number:
+        find_with, find = "phone_number", user_data.phone_number
     else:
         logger.warning("email or phone_number missing")
-        return jsonify({"error": "email or phone_number missing"})
+        return jsonify({"error": "email or phone_number missing"}), 400
 
-    if "password_hash" not in user_data:
-        logger.warning("password missing")
-        return jsonify({"error": "password missing"}), 400
     try:
-        user = Auth.verify_login(
-            cls, find_with, user_data[find_with], user_data["password_hash"]
-        )
+        user = Auth.verify_login(cls, find_with, find, user_data.password_hash)
         message, status = user
-    except:
-        logger.warning("an internal error")
+    except Exception:
+        logger.exception("an internal error")
         abort(500)
 
     if status:
@@ -112,7 +123,7 @@ def logout():
     try:
         jwt_token = request.jwt_token
         jwt_exp = request.jwt_exp
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     redis = Redis()
@@ -126,15 +137,8 @@ def logout():
 @admin_required
 def get_riders():
     """get all rider-users that are not deleted and blocked"""
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(classes["Rider"], order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{classes['Rider']}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(classes["Rider"], "Rider", order_by)
     riders = [
         clean(v.to_dict())
         for v in paginate(storage.get_objs("Rider"), column.type, column)
@@ -148,15 +152,8 @@ def get_riders():
 @admin_required
 def get_drivers():
     """get all driver-users that are not deleted and blocked"""
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(classes["Driver"], order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{classes['Driver']}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(classes["Driver"], "Driver", order_by)
     drivers = [
         clean(v.to_dict())
         for v in paginate(storage.get_objs("Driver"), column.type, column)
@@ -170,164 +167,96 @@ def get_drivers():
 @admin_required
 def block_user(user_id):
     """block a user by provided user-id"""
-    cls_ = ""
-    for cls in ["Driver", "Rider", "Admin"]:
-        if not storage.get(cls, id=user_id):
+    for target_cls in ["Driver", "Rider", "Admin"]:
+        target = storage.get(target_cls, id=user_id)
+        if not target:
             continue
-        if not storage.get(cls, id=user_id).blocked:
-            try:
-                if cls == "Admin":
-
-                    @superadmin_required
-                    def unblock_admin():
-                        try:
-                            storage.update(cls, user_id, blocked=True)
-                        except:
-                            logger.exception("an internal error")
-                            abort(500)
-
-                    unblock_admin()
-                else:
-                    try:
-                        storage.update(cls, user_id, blocked=True)
-                    except:
-                        logger.exception("an internal erro")
-                        abort(500)
-                cls_ = cls
-                break
-            except:
-                logger.warning(f"unable to block {cls}")
-                return jsonify({"error": f"Unable to block {cls}"}), 400
-        else:
-            logger.warning(f"{cls} already blocked")
-            return jsonify({"user": f"{cls} already blocked"}), 200
-    if not cls_:
-        logger.warning("user not found")
-        return jsonify({"user": "user not found"}), 404
-    return jsonify({"user": f"{cls_} blocked"}), 200
+        if target.blocked:
+            logger.warning(f"{target_cls} already blocked")
+            return jsonify({"user": f"{target_cls} already blocked"}), 200
+        error = _require_superadmin_for_admin_target(target_cls)
+        if error:
+            return error
+        try:
+            storage.update(target_cls, user_id, blocked=True)
+        except Exception:
+            logger.exception("an internal error")
+            return jsonify({"error": f"Unable to block {target_cls}"}), 500
+        return jsonify({"user": f"{target_cls} blocked"}), 200
+    logger.warning("user not found")
+    return jsonify({"user": "user not found"}), 404
 
 
 @admin_bp.route("/unblock-user/<user_id>", methods=["PUT"], strict_slashes=False)
 @admin_required
 def unblock_user(user_id):
     """unblock a user by provided user id"""
-    cls_ = ""
-    for cls in ["Driver", "Rider", "Admin"]:
-        if not storage.get(cls, id=user_id):
+    for target_cls in ["Driver", "Rider", "Admin"]:
+        target = storage.get(target_cls, id=user_id)
+        if not target:
             continue
-        if storage.get(cls, id=user_id).blocked:
-            try:
-                if cls == "Admin":
-
-                    @superadmin_required
-                    def unblock_admin():
-                        try:
-                            storage.update(cls, user_id, blocked=False)
-                        except:
-                            logger.exception("An internal error")
-                            abort(500)
-
-                    unblock_admin()
-                else:
-                    try:
-                        storage.update(cls, user_id, blocked=False)
-                    except:
-                        logger.exception("An internal error")
-                        abort(500)
-                cls_ = cls
-                break
-            except:
-                logger.warning(f"unable to unblock {cls}")
-                return jsonify({"error": f"Unable to unblock {cls}"}), 400
-        else:
-            logger.warning(f"{cls} already unblocked")
-            return jsonify({"user": f"{cls} already unblocked"}), 200
-    if not cls_:
-        logger.warning("user not found")
-        return jsonify({"user": "user not found"}), 404
-    return jsonify({"user": f"{cls_} unblocked"}), 200
+        if not target.blocked:
+            logger.warning(f"{target_cls} already unblocked")
+            return jsonify({"user": f"{target_cls} already unblocked"}), 200
+        error = _require_superadmin_for_admin_target(target_cls)
+        if error:
+            return error
+        try:
+            storage.update(target_cls, user_id, blocked=False)
+        except Exception:
+            logger.exception("An internal error")
+            return jsonify({"error": f"Unable to unblock {target_cls}"}), 500
+        return jsonify({"user": f"{target_cls} unblocked"}), 200
+    logger.warning("user not found")
+    return jsonify({"user": "user not found"}), 404
 
 
 @admin_bp.route("/delete-user/<user_id>", methods=["PUT"], strict_slashes=False)
 @admin_required
 def delete_user(user_id):
     """delete a user by provided user-id"""
-    cls_ = ""
-    for cls in ["Driver", "Rider", "Admin"]:
-        if not storage.get(cls, id=user_id):
+    for target_cls in ["Driver", "Rider", "Admin"]:
+        target = storage.get(target_cls, id=user_id)
+        if not target:
             continue
-        if not storage.get(cls, id=user_id).blocked:
-            try:
-                if cls == "admin":
-
-                    @superadmin_required
-                    def delete_admin():
-                        try:
-                            storage.update(cls, user_id, deleted=True)
-                        except:
-                            logger.exception("An internal error")
-                            abort(500)
-
-                    delete_admin()
-                else:
-                    try:
-                        storage.update(cls, user_id, deleted=True)
-                    except:
-                        logger.exception("An internal error")
-                        abort(500)
-                cls_ = cls
-                break
-            except:
-                logger.warning(f"unable to delete {cls}")
-                return jsonify({"error": f"Unable to delete {cls}"}), 400
-        else:
-            logger.warning(f"{cls} already deleted")
-            return jsonify({"user": f"{cls} already deleted"}), 200
-    if not cls_:
-        logger.warning("user not found")
-        return jsonify({"user": "user not found"}), 404
-    return jsonify({"user": f"{cls_} deleted"}), 200
+        if target.deleted:
+            logger.warning(f"{target_cls} already deleted")
+            return jsonify({"user": f"{target_cls} already deleted"}), 200
+        error = _require_superadmin_for_admin_target(target_cls)
+        if error:
+            return error
+        try:
+            storage.update(target_cls, user_id, deleted=True)
+        except Exception:
+            logger.exception("An internal error")
+            return jsonify({"error": f"Unable to delete {target_cls}"}), 500
+        return jsonify({"user": f"{target_cls} deleted"}), 200
+    logger.warning("user not found")
+    return jsonify({"user": "user not found"}), 404
 
 
 @admin_bp.route("/revalidate-user/<user_id>", methods=["PUT"], strict_slashes=False)
 @admin_required
 def revalidate_user(user_id):
-    """revalidate a user by provided user-id"""
-    cls_ = ""
-    for cls in ["Driver", "Rider", "Admin"]:
-        if not storage.get(cls, id=user_id):
+    """revalidate (un-delete) a user by provided user-id"""
+    for target_cls in ["Driver", "Rider", "Admin"]:
+        target = storage.get(target_cls, id=user_id)
+        if not target:
             continue
-        if not storage.get(cls, id=user_id).blocked:
-            try:
-                if cls == "admin":
-
-                    @superadmin_required
-                    def delete_admin():
-                        try:
-                            storage.update(cls, user_id, deleted=False)
-                        except:
-                            logger.exception("An internal error")
-                            abort(500)
-
-                    delete_admin()
-                else:
-                    try:
-                        storage.update(cls, user_id, deleted=False)
-                    except:
-                        logger.exception("An internal error")
-                        abort(500)
-                cls_ = cls
-                break
-            except:
-                logger.warning(f"unable to revalidate {cls}")
-                return jsonify({"error": f"Unable to revalidate {cls}"}), 400
-        else:
-            logger.warning(f"{cls} already revalidated")
-            return jsonify({"user": f"{cls} already revalidated"}), 200
-    if not cls_:
-        logger.warning("user not found")
-        return jsonify({"user": "user not found"}), 404
-    return jsonify({"user": f"{cls_} revalidated"}), 200
+        if not target.deleted:
+            logger.warning(f"{target_cls} already revalidated")
+            return jsonify({"user": f"{target_cls} already revalidated"}), 200
+        error = _require_superadmin_for_admin_target(target_cls)
+        if error:
+            return error
+        try:
+            storage.update(target_cls, user_id, deleted=False)
+        except Exception:
+            logger.exception("An internal error")
+            return jsonify({"error": f"Unable to revalidate {target_cls}"}), 500
+        return jsonify({"user": f"{target_cls} revalidated"}), 200
+    logger.warning("user not found")
+    return jsonify({"user": "user not found"}), 404
 
 
 @admin_bp.route("/deleted-users/<user_type>", methods=["GET"], strict_slashes=False)
@@ -338,15 +267,8 @@ def deleted_users(user_type):
         logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(classes[user_type], order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{classes[user_type]}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(classes[user_type], user_type, order_by)
 
     users = [
         clean(v.to_dict())
@@ -364,15 +286,8 @@ def blocked_users(user_type):
         logger.warning("incorrect user_type")
         return jsonify({"error": "incorrect user_type"}), 400
 
-    try:
-        order_by = request.args.get("order_by", default="updated_at")
-        if order_by:
-            column = getattr(classes[user_type], order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{classes[user_type]}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at")
+    column = get_sort_column(classes[user_type], user_type, order_by)
 
     users = [
         clean(v.to_dict())
@@ -410,11 +325,7 @@ def filter_user(user_type, search_type, search_by):
     if user_type not in ["Admin", "Driver", "Rider"]:
         logger.warning("user_type doesnt exist")
         abort(400)
-    try:
-        column = getattr(classes[user_type], search_type)
-    except Exception as e:
-        logger.warning(e)
-        return abort(400)
+    column = get_sort_column(classes[user_type], user_type, search_type)
 
     users = [
         clean(user.to_dict())
@@ -439,21 +350,16 @@ def get_rides():
         return jsonify({"error": "trip not found"}), 404
 
     trips_dict = OrderedDict()
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Trip, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify({"error": f"type object '{Trip}' has no attribute {order_by}"})
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Trip, "Trip", order_by)
 
     trips = [trip for trip in paginate(trips, column.type, column)]
     try:
         for trip in trips:
             try:
                 vehicle = storage.get("Driver", id=trip.driver_id).vehicle
-            except:
-                logger.exception
+            except Exception:
+                logger.exception("An internal error")
                 abort(500)
             riders = [
                 rider.rider
@@ -484,7 +390,7 @@ def get_rides():
             trips_dict["Trip." + trip.id]["vehicle"] = clean(
                 storage.get("Vehicle", driver_id=trip.driver_id).to_dict()
             )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     return jsonify({"trips": trips_dict}), 200
@@ -510,7 +416,7 @@ def get_ride(ride_id):
                 for rider in storage.get_objs("TripRider", trip_id=ride_id)
                 if rider.status == "booked"
             ]
-        except:
+        except Exception:
             booked_riders = None
         try:
             canceled_riders = [
@@ -518,13 +424,13 @@ def get_ride(ride_id):
                 for rider in storage.get_objs("TripRider", trip_id=ride_id)
                 if rider.status == "Canceled"
             ]
-        except:
+        except Exception:
             canceled_riders = None
         try:
             payment = clean(storage.get("Payment", trip_id=ride_id).to_dict())
-        except:
+        except Exception:
             payment = None
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     ride["riders"] = {"booked": booked_riders, "canceled": canceled_riders}
@@ -539,7 +445,7 @@ def delete_ride(ride_id):
     """delete a ride by provided ride-id"""
     try:
         storage.update("Trip", ride_id, is_available=False)
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     return jsonify({"admin": "Ride deleted"}), 200
@@ -566,7 +472,7 @@ def set_location():
     try:
         location = Location(**kwargs)
         location.save()
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
     return jsonify({"location": "location created"}), 200
@@ -576,15 +482,8 @@ def set_location():
 @admin_required
 def get_locations():
     """get all locations"""
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Location, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{Location}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Location, "Location", order_by)
 
     locations = [
         clean(location.to_dict())
@@ -620,6 +519,19 @@ def set_ride():
         if i not in ride_data:
             logger.warning(f"{i} missing")
             return jsonify({"error": f"{i} missing"}), 400
+    try:
+        SetRideSchema(
+            driver_id=ride_data["driver_id"],
+            pickup_location_id=ride_data["pickup_location_id"],
+            dropoff_location_id=ride_data["dropoff_location_id"],
+            fare=ride_data["fare"],
+            distance=ride_data["distance"],
+            driver_commission=ride_data["driver_commission"],
+        )
+    except Exception as e:
+        logger.warning(e)
+        return jsonify({"error": "validation failed", "details": str(e)}), 400
+
     availability = True
     if "is_available" in ride_data:
         availability = ride_data["is_available"]
@@ -638,7 +550,7 @@ def set_ride():
     try:
         trip = Trip(**kwargs)
         trip.save()
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -651,7 +563,7 @@ def set_ride():
     try:
         totalpayment = TotalPayment(**kwargs)
         totalpayment.save()
-    except Exception as e:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -663,15 +575,8 @@ def set_ride():
 @admin_required
 def get_transactions():
     """get all transactions(payments)"""
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Payment, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{Payment}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Payment, "Payment", order_by)
 
     transactions = [
         clean(transaction.to_dict())
@@ -685,7 +590,7 @@ def get_transactions():
     return jsonify({"admin": "Transactions not found"}), 404
 
 
-@admin_bp.route("payment/<ride_id>", methods=["GET"], strict_slashes=False)
+@admin_bp.route("/payment/<ride_id>", methods=["GET"], strict_slashes=False)
 @admin_required
 def payment_detail(ride_id):
     """get a payment by provided ride-id"""
@@ -710,7 +615,7 @@ def get_payment_detail(ride_id):
     total_amount = 0
     try:
         riders = [rider.rider for rider in storage.get("Trip", id=ride_id).riders]
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -730,7 +635,7 @@ def get_payment_detail(ride_id):
         number_of_riders = len(
             [rider for rider in storage.get("Trip", id=ride_id).riders]
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -846,7 +751,7 @@ def get_earnings(date):
             last_month_total_earning - last_month_drivers_earning
         )
         this_year_platform_earning = this_year_total_earning - this_year_drivers_earning
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     earnings = {
@@ -930,7 +835,7 @@ def get_ride_activity():
         driver_dict = {}
         for driver in drivers:
             driver_dict[driver] = drivers.count(driver)
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     ride_activity = {
@@ -958,18 +863,11 @@ def get_announcement():
     """get all reported isssues"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Notification, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{Notification}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Notification, "Notification", order_by)
 
     announcement = [
         dict(clean(announ.to_dict()), sent_at=announ.created_at)
@@ -991,18 +889,11 @@ def get_issues():
     """get all reported isssues"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("an internal error")
         abort(500)
-    try:
-        order_by = request.args.get("order_by", default="updated_at", type=str)
-        if order_by:
-            column = getattr(Notification, order_by)
-    except Exception as e:
-        logger.warning(e)
-        return jsonify(
-            {"error": f"type object '{Notification}' has no attribute {order_by}"}
-        )
+    order_by = request.args.get("order_by", default="updated_at", type=str)
+    column = get_sort_column(Notification, "Notification", order_by)
 
     issues = [
         dict(clean(issue.to_dict()), sent_at=issue.created_at)
@@ -1031,7 +922,7 @@ def get_issue(issue_id):
         storage.update(
             "Notification", id=issue_id, is_read=True, read_at=datetime.utcnow()
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -1042,7 +933,7 @@ def get_issue(issue_id):
         issue["sender_id"] = clean(
             storage.get(issue["sender_type"], id=issue["sender_id"]).to_dict()
         )
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
     issue = clean(issue)
@@ -1055,7 +946,7 @@ def notification():
     """set a notification by provided information"""
     try:
         user_id = request.user_id
-    except:
+    except Exception:
         logger.exception("An internal error")
         abort(500)
 
@@ -1065,9 +956,9 @@ def notification():
         logger.warning(e)
         abort(415)
 
-    if "massage" not in data:
+    if "message" not in data:
         logger.warning("message missing")
-        return jsonify({"error": "massage missing"}), 400
+        return jsonify({"error": "message missing"}), 400
     if "notification_type" not in data:
         logger.warning("notification_type missing")
         return jsonify({"error": "notification_type missing"}), 400
@@ -1109,7 +1000,7 @@ def notification():
         try:
             notification = Notification(**kwargs)
             notification.save()
-        except:
+        except Exception:
             logger.exception("An internal error")
             abort(500)
     return jsonify({"admin": "sent"}), 200

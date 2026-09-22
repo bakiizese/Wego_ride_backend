@@ -50,21 +50,14 @@ class Auth:
 
     def verify_login(self, cls, find_with, find, password):
         """verify login if email and password are correct"""
-        used = ""
         if find_with == "email":
-            used = "email"
             user = storage.get(cls, email=find)
         else:
-            used = "phone_number"
             user = storage.get(cls, phone_number=find)
-        if user:
-            if self.verify_password(password, user):
-                jwt_token = _generate_jwt(user)
-                return "** login verified **", jwt_token
-            else:
-                return "** incorrect password **", False
-        else:
-            return f"** {used} doesn't exist **", False
+        if user and self.verify_password(password, user):
+            jwt_token = _generate_jwt(user)
+            return "** login verified **", jwt_token
+        return "** invalid credentials **", False
 
     def verify_password(self, login_password, saved_password):
         """check if the login password is the same with saved_password"""
@@ -89,8 +82,8 @@ class Auth:
 
 
 def _hash_password(password):
-    """encrypt string password to binary using bcrypt"""
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    """hash a plaintext password with bcrypt, stored as str (not bytes)"""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def _generate_uuid():
