@@ -13,4 +13,4 @@ class Notification(BaseModel, Base):
     message = Column(VARCHAR(1024))
     notification_type = Column(VARCHAR(128))
     is_read = Column(Boolean, default=False)
-    read_at = Column(DateTime(128))
+    read_at = Column(DateTime())
