@@ -1,8 +1,7 @@
 #!/usr/bin/python
-import models
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import String, Column, Integer, VARCHAR, Boolean
+from sqlalchemy import String, Column, VARCHAR, Boolean
 
 
 class Driver(BaseModel, Base):

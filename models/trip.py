@@ -1,9 +1,7 @@
 #!/usr/bin/python
-import models
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, VARCHAR, String, DateTime, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from models.trip_rider import TripRider
 
 
 class Trip(BaseModel, Base):

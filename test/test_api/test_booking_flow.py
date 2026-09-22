@@ -7,6 +7,7 @@ see models/vehicle.py's own TODO comment) so the driver's vehicle is
 seeded directly through the ORM here, same as the app's own console.py
 would do it.
 """
+
 from datetime import datetime, timedelta
 
 import pytest
@@ -22,7 +23,10 @@ def ride_setup(client, make_admin, make_user, auth_header):
     driver_id, driver_token, _ = make_user("Driver")
 
     Vehicle(
-        driver_id=driver_id, type="sedan", model="corolla", color="white",
+        driver_id=driver_id,
+        type="sedan",
+        model="corolla",
+        color="white",
         seating_capacity=4,
     ).save()
 
@@ -36,9 +40,7 @@ def ride_setup(client, make_admin, make_user, auth_header):
     # set-location doesn't return the id, so look it up
     from models import storage
 
-    pickup = next(
-        v for v in storage.get_objs("Location").all() if v.address == "Bole"
-    )
+    pickup = next(v for v in storage.get_objs("Location").all() if v.address == "Bole")
 
     r = client.post(
         "/api/v1/admin/set-location",
@@ -46,9 +48,7 @@ def ride_setup(client, make_admin, make_user, auth_header):
         headers=headers,
     )
     assert r.status_code == 200
-    dropoff = next(
-        v for v in storage.get_objs("Location").all() if v.address == "Adama"
-    )
+    dropoff = next(v for v in storage.get_objs("Location").all() if v.address == "Adama")
 
     now = datetime.utcnow()
     r = client.post(
@@ -156,15 +156,15 @@ def test_driver_cannot_end_ride_with_unpaid_riders(
     assert "unpaid" in r.get_json()
 
 
-def test_double_booking_the_same_ride_is_a_noop(client, ride_setup, make_user, auth_header):
+def test_double_booking_the_same_ride_is_a_noop(
+    client, ride_setup, make_user, auth_header
+):
     trip_id, _, _ = ride_setup
     _, rider_token, _ = make_user("Rider")
     headers = auth_header(rider_token)
     client.post("/api/v1/rider/book-ride", json={"trip_id": trip_id}, headers=headers)
 
-    r = client.post(
-        "/api/v1/rider/book-ride", json={"trip_id": trip_id}, headers=headers
-    )
+    r = client.post("/api/v1/rider/book-ride", json={"trip_id": trip_id}, headers=headers)
 
     assert r.status_code == 200
     assert "already booked" in r.get_json()["error"]

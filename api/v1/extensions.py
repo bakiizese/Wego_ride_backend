@@ -2,6 +2,7 @@
 """Flask extension instances shared across blueprints. Created here
 (uninitialized) so view modules can import + decorate with them, then
 wired to the app inside create_app()."""
+
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 

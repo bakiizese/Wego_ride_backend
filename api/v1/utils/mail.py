@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """Minimal transactional email sender (Resend API) for password-reset codes.
 No SDK dependency - just a plain HTTPS POST via the stdlib."""
+
 import json
 import logging
 import urllib.error
