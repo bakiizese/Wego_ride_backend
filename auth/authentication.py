@@ -76,7 +76,7 @@ class Auth:
             reset_token = _generate_uuid()
         try:
             storage.update(cls, user.id, reset_token=reset_token)
-        except:
+        except Exception:
             abort(500)
         return reset_token
 

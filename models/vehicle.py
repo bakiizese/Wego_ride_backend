@@ -1,8 +1,7 @@
 #!/usr/bin/python
-from models.base_model import BaseModel, Base
+from models.base_model import BaseModel
 from sqlalchemy import Column, VARCHAR, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-import models
 
 
 class Vehicle(BaseModel):

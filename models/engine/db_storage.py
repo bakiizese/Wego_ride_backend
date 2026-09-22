@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import models
 from models.base_model import Base
 from models.availability import Availability
 from models.driver import Driver
@@ -29,6 +28,7 @@ def _default_db_url():
         settings.db_port,
         settings.db_name,
     )
+
 
 classes = {
     "Notification": Notification,
@@ -80,7 +80,7 @@ class DBStorage:
         """saves the new added obj or instance"""
         try:
             self.__session.commit()
-        except:
+        except Exception:
             self.__session.rollback()
             raise
 

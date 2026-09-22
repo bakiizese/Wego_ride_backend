@@ -71,7 +71,9 @@ def test_superadmin_can_delete_a_moderator(client, make_admin, auth_header):
     assert storage.get("Admin", id=moderator_id).deleted is True
 
 
-def test_moderator_can_still_delete_a_rider_or_driver(client, make_admin, make_user, auth_header):
+def test_moderator_can_still_delete_a_rider_or_driver(
+    client, make_admin, make_user, auth_header
+):
     from models import storage
 
     _, moderator_token = make_admin(admin_level="moderator")

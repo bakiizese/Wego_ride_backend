@@ -78,7 +78,9 @@ def token_required(f):
             real_user = (
                 "Rider"
                 if (real_user == "rider")
-                else "Driver" if (real_user == "driver") else "Admin"
+                else "Driver"
+                if (real_user == "driver")
+                else "Admin"
             )
             if real_user != data["role"]:
                 logger.warning("Incorrect token")

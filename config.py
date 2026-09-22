@@ -1,12 +1,15 @@
 #!/usr/bin/python
 """Centralized app configuration, loaded from environment variables / .env."""
+
 from typing import List, Optional, Union
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     flask_env: str = "development"
 
@@ -48,7 +51,9 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> Union[str, List[str]]:
         if self.cors_origins.strip() == "*":
             return "*"
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        return [
+            origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
+        ]
 
 
 settings = Settings()

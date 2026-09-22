@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """Coverage for the register/login/logout HTTP flows across all three
 roles - previously zero of the 75 HTTP routes had any test coverage."""
+
 import pytest
 
 
@@ -31,7 +32,9 @@ def test_register_then_login_then_get_profile(client, role):
     assert r.status_code == 200
     token = r.get_json()["user"]
 
-    r = client.get(f"/api/v1/{role}/profile", headers={"Authorization": f"Bearer {token}"})
+    r = client.get(
+        f"/api/v1/{role}/profile", headers={"Authorization": f"Bearer {token}"}
+    )
     assert r.status_code == 200
     assert r.get_json()["user"]["email"] == data["email"]
     # password hash must never be returned

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """Shared request-body parsing/validation helpers."""
+
 from functools import wraps
 from typing import Optional
 

@@ -4,6 +4,7 @@ getattr() straight from the query string - a client could sort by any
 column, including password_hash, or a relationship attribute that would
 blow up deeper in SQLAlchemy. Now it's checked against an explicit
 per-model allowlist."""
+
 import pytest
 
 
@@ -18,7 +19,9 @@ def test_sorting_riders_by_password_hash_is_rejected(client, make_admin, auth_he
     assert r.status_code == 400
 
 
-def test_sorting_riders_by_a_nonexistent_column_is_rejected(client, make_admin, auth_header):
+def test_sorting_riders_by_a_nonexistent_column_is_rejected(
+    client, make_admin, auth_header
+):
     _, admin_token = make_admin(admin_level="moderator")
 
     r = client.get(

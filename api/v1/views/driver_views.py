@@ -228,8 +228,13 @@ def upload_image():
         return jsonify({"error": "no file selected"}), 400
 
     ext = os.path.splitext(image.filename)[1].lower()
-    if ext not in ALLOWED_IMAGE_EXTENSIONS or image.mimetype not in ALLOWED_IMAGE_MIMETYPES:
-        logger.warning("rejected upload with extension %s / mimetype %s", ext, image.mimetype)
+    if (
+        ext not in ALLOWED_IMAGE_EXTENSIONS
+        or image.mimetype not in ALLOWED_IMAGE_MIMETYPES
+    ):
+        logger.warning(
+            "rejected upload with extension %s / mimetype %s", ext, image.mimetype
+        )
         return jsonify({"error": "only png/jpg/jpeg images are allowed"}), 400
 
     new_name = str(uuid.uuid4()) + ext
@@ -530,9 +535,7 @@ def end_ride():
     if len(riders_not_paid) != 0:
         logger.warning("unfinished riders payment")
         return jsonify({"unpaid": riders_not_paid}), 409
-    totalpayment = storage.get(
-        "TotalPayment", trip_id=trip_id, driver_id=request.user_id
-    )
+    totalpayment = storage.get("TotalPayment", trip_id=trip_id, driver_id=request.user_id)
     driver_earning = totalpayment.total_revenue * (totalpayment.driver_commission / 100)
     try:
         storage.update("Trip", trip_id, status="completed", is_available=False)
@@ -692,9 +695,9 @@ def earnings(date):
         "total_earning": total_earning,
         "today_earning": today_earning,
         "yesterday_earning": yesterday_earning,
-        f"this_month_earning": this_month_earning,
-        f"last_month_earning": last_month_earning,
-        f"this_year_earning": this_year_earning,
+        "this_month_earning": this_month_earning,
+        "last_month_earning": last_month_earning,
+        "this_year_earning": this_year_earning,
     }
     return jsonify({"earning": earnings}), 200
 
@@ -761,9 +764,7 @@ def get_issues():
     return jsonify({"notifications": notification}), 200
 
 
-@driver_bp.route(
-    "/notification/<notification_id>", methods=["GET"], strict_slashes=False
-)
+@driver_bp.route("/notification/<notification_id>", methods=["GET"], strict_slashes=False)
 @token_required
 def get_notification(notification_id):
     """get notification by notification_id"""

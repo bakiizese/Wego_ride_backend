@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
-import sqlalchemy
 import models
 
 
@@ -40,9 +39,7 @@ class BaseModel(Base):
             self.updated_at = self.created_at
 
     def __str__(self) -> str:
-        return "[{:s}] ({:s}) {}".format(
-            self.__class__.__name__, self.id, self.__dict__
-        )
+        return "[{:s}] ({:s}) {}".format(self.__class__.__name__, self.id, self.__dict__)
 
     def save(self):
         self.updated_at = datetime.utcnow()

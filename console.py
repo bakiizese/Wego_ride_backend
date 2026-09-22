@@ -1,13 +1,10 @@
 #!/usr/bin/python
 import cmd
 import shlex
-import models
-import importlib
 from models.availability import Availability
 from models.driver import Driver
 from models.location import Location
 from models.rider import Rider
-from models.driver import Driver
 from models.payment import Payment
 from models.trip import Trip
 from models.notification import Notification
@@ -18,9 +15,7 @@ from models.total_payment import TotalPayment
 from models.image import Image
 from auth.authentication import _hash_password
 import os
-import sys
 from models import storage
-from sqlalchemy.exc import IntegrityError
 
 classes = {
     "Notification": Notification,
@@ -73,16 +68,16 @@ class WegoCommand(cmd.Cmd):
                 else:
                     try:
                         value = int(value)
-                    except:
+                    except Exception:
                         try:
                             value = float(value)
-                        except:
+                        except Exception:
                             try:
                                 if "True" == value:
                                     value = True
                                 elif "False" == value:
                                     value = False
-                            except:
+                            except Exception:
                                 continue
                 new_dict[key] = value
         return new_dict
@@ -109,7 +104,7 @@ class WegoCommand(cmd.Cmd):
                 if args[0] in ["Rider", "Admin", "Driver"]:
                     try:
                         int(new_dict["phone_number"])
-                    except:
+                    except Exception:
                         print("** phone_number must be a number **")
                         return False
                     email = new_dict["email"]
@@ -126,9 +121,7 @@ class WegoCommand(cmd.Cmd):
                     if user_phone:
                         print("** phone_number already exists **")
                         return False
-                    new_dict["password_hash"] = _hash_password(
-                        new_dict["password_hash"]
-                    )
+                    new_dict["password_hash"] = _hash_password(new_dict["password_hash"])
 
                 instance = classes[args[0]](**new_dict)
                 instance.save()

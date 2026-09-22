@@ -1,7 +1,6 @@
 #!/usr/bin/python
-import models
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Integer, VARCHAR, Boolean, ForeignKey
+from sqlalchemy import Column, String, VARCHAR, Boolean
 from sqlalchemy.orm import relationship
 
 
