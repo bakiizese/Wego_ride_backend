@@ -20,11 +20,13 @@ from api.v1.utils.validation import (
     BookRideSchema,
     NotificationSchema,
     RatingSchema,
+    PayRideSchema,
 )
 from api.v1.utils.mail import send_reset_token_email
 from api.v1.utils.ratings import submit_rating
 from api.v1.extensions import limiter
 from models.rating import Rating
+from payments.factory import get_gateway
 from datetime import datetime
 from ..utils.redis import Redis
 import logging
@@ -730,53 +732,66 @@ def cancel_ride():
 # Payment
 @rider_bp.route("/pay-ride", methods=["POST"], strict_slashes=False)
 @token_required
+@validate_body(PayRideSchema)
 def pay_ride():
-    """set payment tabe for a completed trip by provide informations"""
-    data = parse_json_body()
-
-    try:
-        user_id = request.user_id
-    except Exception:
-        logger.exception("An internal error")
-        abort(500)
-
-    for i in ["amount", "status", "trip_id", "payment_method"]:
-        if i not in data:
-            logger.warning(f"{i} missing")
-            return jsonify({"error": f"{i} missing"}), 400
-
-    amount = data["amount"]
-    trip_id = data["trip_id"]
+    """initiate a Chapa payment for a booked ride. The charge is always
+    computed server-side from the trip's fare, never taken from the
+    client - the payment only becomes "paid" once the Chapa webhook
+    confirms it (see webhook_views.chapa_webhook), not here."""
+    user_id = request.user_id
+    trip_id = request.validated.trip_id
 
     trip = storage.get("Trip", id=trip_id)
     if not trip:
         logger.warning("trip missing")
         abort(404)
-    if amount < trip.fare:
-        logger.warning("not the right amount")
-        return jsonify({"error": "not the right amount"}), 400
 
-    trip_rider = storage.get("TripRider", trip_id=trip_id, rider_id=request.user_id)
+    trip_rider = storage.get("TripRider", trip_id=trip_id, rider_id=user_id)
     if not trip_rider:
         logger.warning("you haven't booked a ride")
         return jsonify({"error": "you haven't booked a ride"}), 200
-    if storage.get("Payment", trip_id=trip_id, rider_id=user_id):
-        logger.warning("you haven already paid for this ride")
-        return jsonify({"error": "you haven already paid for this ride"}), 200
-    kwargs = {
-        "trip_id": trip_id,
-        "rider_id": user_id,
-        "payment_method": data["payment_method"],
-        "payment_time": datetime.utcnow(),
-        "amount": amount,
-        "payment_status": data["status"],
-    }
+    if storage.get("Payment", trip_id=trip_id, rider_id=user_id, payment_status="paid"):
+        logger.warning("you have already paid for this ride")
+        return jsonify({"error": "you have already paid for this ride"}), 200
 
     totalpayment = storage.get("TotalPayment", trip_id=trip_id)
     if not totalpayment:
         logger.warning("totalpayment not found")
         abort(404)
 
+    rider = storage.get("Rider", id=user_id)
+    tx_ref = f"wego-{trip_id[:8]}-{user_id[:8]}-{uuid.uuid4().hex[:8]}"
+    callback_url = f"{request.host_url.rstrip('/')}/api/v1/webhooks/chapa"
+    return_url = request.validated.return_url or f"{request.host_url.rstrip('/')}/health"
+
+    try:
+        gateway = get_gateway()
+        result = gateway.initialize_payment(
+            amount=trip.fare,
+            currency="ETB",
+            customer={
+                "email": rider.email,
+                "first_name": rider.first_name,
+                "last_name": rider.last_name,
+            },
+            tx_ref=tx_ref,
+            callback_url=callback_url,
+            return_url=return_url,
+        )
+    except Exception:
+        logger.exception("failed to initialize chapa payment")
+        abort(502)
+
+    kwargs = {
+        "trip_id": trip_id,
+        "rider_id": user_id,
+        "payment_method": "chapa",
+        "payment_time": datetime.utcnow(),
+        "amount": trip.fare,
+        "payment_status": "pending",
+        "provider": "chapa",
+        "provider_tx_ref": result.tx_ref,
+    }
     try:
         rider_payment = Payment(**kwargs)
         rider_payment.save()
@@ -784,19 +799,7 @@ def pay_ride():
         logger.exception("An internal error")
         abort(500)
 
-    try:
-        storage.update(
-            "TotalPayment",
-            totalpayment.id,
-            number_of_riders_paid=totalpayment.number_of_riders_paid + 1,
-            number_of_riders_not_paid=totalpayment.number_of_riders_not_paid - 1,
-            total_revenue=totalpayment.total_revenue + amount,
-        )
-    except Exception:
-        logger.exception("An internal error")
-        abort(500)
-
-    return jsonify({"payment": "paid"}), 201
+    return jsonify({"checkout_url": result.checkout_url, "tx_ref": result.tx_ref}), 201
 
 
 @rider_bp.route("/transactions", methods=["GET"], strict_slashes=False)

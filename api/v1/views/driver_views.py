@@ -593,7 +593,12 @@ def end_ride():
     riders_paid = []
     for triprider in tripriders:
         try:
-            if storage.get("Payment", trip_id=trip_id, rider_id=triprider.rider.id):
+            if storage.get(
+                "Payment",
+                trip_id=trip_id,
+                rider_id=triprider.rider.id,
+                payment_status="paid",
+            ):
                 riders_paid.append(triprider.rider.id)
             else:
                 riders_not_paid.append(triprider.rider.id)

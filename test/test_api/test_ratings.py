@@ -11,7 +11,7 @@ from models import storage
 
 
 @pytest.fixture
-def completed_ride(client, make_admin, make_user, auth_header):
+def completed_ride(client, make_admin, make_user, auth_header, confirm_chapa_payment):
     """Drives a full booking through to completion: book -> start -> pay
     -> end. Returns (trip_id, driver_token, rider_id, rider_token)."""
     _, admin_token = make_admin(admin_level="superadmin")
@@ -77,16 +77,13 @@ def completed_ride(client, make_admin, make_user, auth_header):
     assert r.status_code == 200, r.get_json()
 
     r = client.post(
-        "/api/v1/rider/pay-ride",
-        json={
-            "amount": 250.0,
-            "status": "paid",
-            "trip_id": trip.id,
-            "payment_method": "cash",
-        },
-        headers=rider_headers,
+        "/api/v1/rider/pay-ride", json={"trip_id": trip.id}, headers=rider_headers
     )
     assert r.status_code == 201, r.get_json()
+    tx_ref = r.get_json()["tx_ref"]
+
+    r = confirm_chapa_payment(tx_ref)
+    assert r.status_code == 200, r.get_json()
 
     r = client.post(
         "/api/v1/driver/end-ride", json={"trip_id": trip.id}, headers=driver_headers
