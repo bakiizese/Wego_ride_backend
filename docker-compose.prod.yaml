@@ -1,10 +1,14 @@
+# Standalone (not merged with docker-compose.yaml) prod-like stack for
+# testing the built image locally - no bind mount, runs the Dockerfile's
+# real gunicorn CMD instead of the Flask dev server.
+# Usage: docker compose -f docker-compose.prod.yaml up --build
 services:
   backend:
     build: .
-    container_name: wego_backend
+    container_name: wego_backend_prod
     env_file: .env
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
       - DB_HOST=mysql_db
       - REDIS_HOST=redis
     depends_on:
@@ -14,22 +18,18 @@ services:
         condition: service_healthy
     ports:
       - "5000:5000"
-    volumes:
-      - .:/app
-    command: python3 -m api.v1.app
+    restart: unless-stopped
 
   mysql_db:
     image: mysql:8.0
-    container_name: wego_mysql
+    container_name: wego_mysql_prod
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data_prod:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 5s
@@ -38,9 +38,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: wego_redis
-    ports:
-      - "6379:6379"
+    container_name: wego_redis_prod
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -48,4 +46,4 @@ services:
       retries: 10
 
 volumes:
-  mysql_data:
+  mysql_data_prod:
