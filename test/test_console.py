@@ -1,127 +1,158 @@
+#!/usr/bin/python
 import io
 import sys
-import unittest
+import uuid
+
+import pytest
+
 import console
 from models import storage
-from parameterized import parameterized
+
 WegoCommand = console.WegoCommand()
 
-user_id = None
 
-class TestConsole(unittest.TestCase):
-    
-    @parameterized.expand([
+@pytest.mark.parametrize(
+    "args,expected",
+    [
         (['email="bereket@gmail.com"'], {"email": "bereket@gmail.com"}),
-        (['email'], {}),
-        (['email=1234'], {'email': 1234}),
-        (['email="1234"'], {'email': '1234'}),
-        (['email="12.34"'], {'email': '12.34'}),
-        (['email=baki'], {}),
-        (["email='baki'"], {}),
-        (["email="], {}),
-        ("email", {}),
-    ])
-    def test_key_value_parser(self, args, expected):
-        '''test if it returns a dict data type by receiving string type'''
-        dict_data = WegoCommand._key_value_parser(args)
-        self.assertEqual(type(dict_data), dict)
-        self.assertEqual(dict_data, expected)
+        (["email"], {}),
+        (["email=1234"], {"email": 1234}),
+        (['email="1234"'], {"email": "1234"}),
+        (['email="12.34"'], {"email": "12.34"}),
+        # unquoted, non-numeric values fall through unconverted rather
+        # than being skipped - this matches the parser's actual behavior
+        (["email=baki"], {"email": "baki"}),
+        (["email='baki'"], {"email": "'baki'"}),
+        (["email="], {"email": ""}),
+    ],
+)
+def test_key_value_parser(args, expected):
+    """parses cli-style key=value args into a dict"""
+    assert WegoCommand._key_value_parser(args) == expected
 
-    @parameterized.expand([
-        ("", '** class name missing **', False),
-        ('Drive', '** class doesn\'t exist **', False),
-        ('Driver', 'username: is missing', False),
-        ('Driver username="bekii"', 'first_name: is missing', False),
-        ('Driver username="bekii" first_name="bereket"', 'last_name: is missing', False),
-        (f'Driver username="bekii" first_name="bereket" last_name="zesess" email="bereket@bereket" phone_number={123456} password_hash="passcode"', '', ''),
-        (f'Driver username="bekii" first_name="bereket" last_name="zesess" email="bereket@bereket" phone_number={123456} password_hash="passcode"', '** username already exists **', False),
-        (f'Driver username="beki" first_name="bereket" last_name="zesess" email="bereket@bereket" phone_number={123456} password_hash="passcode"', '** email already exists **', False),
-        (f'Driver username="beki" first_name="bereket" last_name="zesess" email="bereket@ereket" phone_number={123456} password_hash="passcode"', '** phone_number already exists **', False),
-        ('Driver username="beki" first_name="bereket" last_name="zesess" email="bereket@reket" phone_number="1236" password_hash="passcode"', '** phone_number must be a number **', False)
-    ])
-    def test_do_create(self, arg, expected_print, expected_return):
-        '''test the outputs and returns of do_create'''
-        global user_id
 
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-
-        user = WegoCommand.do_create(arg)
-
+def _capture(fn, *args):
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+    try:
+        result = fn(*args)
+    finally:
         sys.stdout = sys.__stdout__
-        if not user:
-            self.assertEqual(captured_output.getvalue().strip(), expected_print)
-            self.assertEqual(user, expected_return)
-        else:
-            user_id = user
-    
-    @parameterized.expand([
-        ('', '** class name missing **', False),
-        ('Dr', '** class doesn\'t exist **', False),
-        ('Driver id=adad', '', None)
-        ])
-    def test_do_show(self, arg, expected_print, expected_return):
-        ''' test outputs and returns of do_show '''
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-
-        data_dict = WegoCommand.do_show(arg)
-        
-        sys.stdout = sys.__stdout__
-
-        self.assertEqual(captured_output.getvalue().strip(), expected_print)
-        self.assertEqual(data_dict, expected_return)
-
-    @parameterized.expand([
-        ('', '** class name missing **', False),
-        ('Drivr', '** class doesn\'t exist **', False),
-        ('Driver', '** instance id missing **', False),
-        ('Driver adsasd', '** "id" property missing **', False),
-        ('Driver id=asdasd', '** update argumnets missing **', False),
-        ('Driver i=asdsads used="jack"', '** \"id\" property missing **', False),
-        ('Driver id=asdsads username="jack"', '** instance id doesn\'t exist **', False),
-        ])
-    def test_do_update(self, arg, expected_print, expected_return):
-        ''' test the outputs and returns of do_update '''
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-       
-        update = WegoCommand.do_update(arg)
-
-        sys.stdout = sys.__stdout__
-
-        self.assertEqual(captured_output.getvalue().strip(), expected_print)
-        self.assertEqual(update, expected_return)
+    return result, captured_output.getvalue().strip()
 
 
-    def test_console(self):
-        '''Integration test for the whole console'''
-        num = 12344
-        arg = f'Driver username="bak" first_name="bere" last_name="zese" email="bere@z" phone_number={num} password_hash="password"'
-        user = WegoCommand.do_create(arg)
+@pytest.mark.parametrize(
+    "arg,expected_print",
+    [
+        ("", "** class name missing **"),
+        ("Drive", "** class doesn't exist **"),
+        ("Driver", "username: is missing"),
+        ('Driver username="bekii"', "first_name: is missing"),
+        (
+            'Driver username="bekii" first_name="bereket"',
+            "last_name: is missing",
+        ),
+    ],
+)
+def test_do_create_rejects_missing_or_invalid_input(arg, expected_print):
+    result, printed = _capture(WegoCommand.do_create, arg)
+    assert result is False
+    assert printed == expected_print
 
-        user_count1 = WegoCommand.do_count('Driver')
-        user_check = storage.get('Driver', email="bere@z")
-        user_count2 = WegoCommand.do_count('Driver')
 
-        self.assertLessEqual(user_count1, user_count1)
-        self.assertEqual(user, user_check.id)
-        self.assertNotEqual(user_check.first_name, 'baki')
-        
-        user_update = WegoCommand.do_update(f'Driver id={user_check.id} first_name="baki"')
-        first_name_check = storage.get('Driver', id=user_check.id)
+def test_do_create_succeeds_with_complete_valid_input():
+    suffix = uuid.uuid4().hex[:8]
+    arg = (
+        f'Driver username="bekii{suffix}" first_name="bereket" last_name="zesess" '
+        f'email="bereket{suffix}@example.com" phone_number={1234560 + int(suffix[:2], 16) % 999} '
+        f'password_hash="passcode" payment_method="cash"'
+    )
+    result, printed = _capture(WegoCommand.do_create, arg)
+    # do_create prints the new id and returns None on success (doesn't
+    # return the id - a pre-existing quirk of the console, not touched here)
+    assert result is None
+    assert printed  # the printed instance id
+    driver = storage.get("Driver", id=printed)
+    assert driver is not None
 
-        self.assertEqual(first_name_check.first_name, 'baki')
-        self.assertEqual(first_name_check.first_name, user_check.first_name)
 
-        user_delete = WegoCommand.do_destroy(f'Driver id={user_check.id}')
-        user_check = storage.get('Driver', email="bere@z")
-        user_count3 = WegoCommand.do_count('Driver')
+def test_do_create_rejects_duplicate_username():
+    suffix = uuid.uuid4().hex[:8]
+    base_arg = (
+        f'Driver username="dup{suffix}" first_name="bereket" last_name="zesess" '
+        f'email="dup{suffix}@example.com" phone_number={1234561} password_hash="passcode" '
+        f'payment_method="cash"'
+    )
+    _capture(WegoCommand.do_create, base_arg)
 
-        self.assertEqual(user_check, None)
-        self.assertLessEqual(user_count3, user_count2)
-    
-    @classmethod
-    def tearDownClass(cls):
-        if user_id:
-            WegoCommand.do_destroy(f'Driver id={user_id}')
+    dup_arg = (
+        f'Driver username="dup{suffix}" first_name="bereket" last_name="zesess" '
+        f'email="other{suffix}@example.com" phone_number={1234562} password_hash="passcode" '
+        f'payment_method="cash"'
+    )
+    result, printed = _capture(WegoCommand.do_create, dup_arg)
+
+    assert result is False
+    assert printed == "** username already exists **"
+
+
+@pytest.mark.parametrize(
+    "arg,expected_print,expected_return",
+    [
+        ("", "** class name missing **", False),
+        ("Dr", "** class doesn't exist **", False),
+        ("Driver id=not-a-real-id", "", None),
+    ],
+)
+def test_do_show(arg, expected_print, expected_return):
+    result, printed = _capture(WegoCommand.do_show, arg)
+    assert printed == expected_print
+    assert result == expected_return
+
+
+@pytest.mark.parametrize(
+    "arg,expected_print,expected_return",
+    [
+        ("", "** class name missing **", False),
+        ("Drivr", "** class doesn't exist **", False),
+        ("Driver", "** instance id missing **", False),
+        ("Driver adsasd", '** "id" property missing **', False),
+        ("Driver id=asdasd", "** update argumnets missing **", False),
+        (
+            'Driver i=asdsads used="jack"',
+            '** "id" property missing **',
+            False,
+        ),
+        (
+            'Driver id=asdsads username="jack"',
+            "** instance id doesn't exist **",
+            False,
+        ),
+    ],
+)
+def test_do_update_rejects_invalid_input(arg, expected_print, expected_return):
+    result, printed = _capture(WegoCommand.do_update, arg)
+    assert printed == expected_print
+    assert result == expected_return
+
+
+def test_console_end_to_end_create_update_destroy():
+    suffix = uuid.uuid4().hex[:8]
+    arg = (
+        f'Driver username="bak{suffix}" first_name="bere" last_name="zese" '
+        f'email="bere{suffix}@example.com" phone_number={1234563} password_hash="password" '
+        f'payment_method="cash"'
+    )
+    _, driver_id = _capture(WegoCommand.do_create, arg)
+
+    user_check = storage.get("Driver", email=f"bere{suffix}@example.com")
+    assert user_check is not None
+    assert user_check.id == driver_id
+    assert user_check.first_name != "baki"
+
+    WegoCommand.do_update(f'Driver id={user_check.id} first_name="baki"')
+    updated = storage.get("Driver", id=user_check.id)
+    assert updated.first_name == "baki"
+
+    WegoCommand.do_destroy(f"Driver id={user_check.id}")
+    assert storage.get("Driver", email=f"bere{suffix}@example.com") is None

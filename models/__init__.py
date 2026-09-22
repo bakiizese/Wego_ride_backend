@@ -1,5 +1,4 @@
 #!/usr/bin/python
 from models.engine.db_storage import DBStorage
 
-storage = DBStorage()
-storage.reload()
+storage = DBStorage()  # connects + (optionally) creates tables in __init__
