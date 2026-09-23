@@ -26,7 +26,21 @@ def create_app():
     app.config["SECRET_KEY"] = settings.secret_key
     CORS(app, origins=settings.cors_origin_list)
 
-    Swagger(app, template_file="./swagger/main.yaml")
+    # without an explicit openapi version in config, flasgger's own
+    # DEFAULT_CONFIG injects "swagger": "2.0" into the served spec before
+    # merging in the template - since dict.update() doesn't drop keys the
+    # template doesn't mention, that stray key survives alongside our
+    # template's "openapi": "3.0.3" and swagger-ui refuses to render the
+    # result ("swagger and openapi fields cannot be present together").
+    # merge=True is required too - passing `config` without it replaces
+    # flasgger's whole DEFAULT_CONFIG (losing "specs"/"specs_route"/etc)
+    # instead of layering our one override on top of it.
+    Swagger(
+        app,
+        template_file="./swagger/main.yaml",
+        config={"openapi": "3.0.3"},
+        merge=True,
+    )
 
     redis_instance = redis.StrictRedis(
         host=settings.redis_host,
