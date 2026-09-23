@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template, render_template_string
 from flasgger import Swagger
 import logging
 from flask_cors import CORS
@@ -81,6 +81,10 @@ def create_app():
     @app.route("/apidocs/")
     def apidocs():
         return render_template_string(_APIDOCS_HTML)
+
+    @app.route("/")
+    def landing():
+        return render_template("landing.html")
 
     redis_instance = redis.StrictRedis(
         host=settings.redis_host,
