@@ -35,7 +35,12 @@ paths:
   /api/v1/admin/admin-register:
     post:
       summary: Register a new admin
-      description: Registers a new admin with the required user data.
+      description: Registers a new admin. If no Admin exists yet in the database, this bootstraps the
+        very first superadmin **without requiring authentication** - admin_level is forced to "superadmin"
+        regardless of what's sent, and the response includes a ready-to-use JWT so you don't need a separate
+        login call. The moment one Admin exists, this goes back to requiring a valid superadmin Bearer
+        token like any other admin-management endpoint, and the response no longer includes a token -
+        use POST /api/v1/admin/login instead.
       requestBody:
         required: true
         content:
@@ -58,7 +63,7 @@ paths:
                   example: admin@example.com
                 phone_number:
                   type: string
-                  example: '+251934567890'
+                  example: '251934567890'
                 password_hash:
                   type: string
                   example: secure_password_hash
@@ -77,6 +82,10 @@ paths:
                   user:
                     type: string
                     example: Admin Id
+                  token:
+                    type: string
+                    description: Only present on the bootstrap call (the very first admin ever created).
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           description: Missing required user data
           content:
@@ -391,7 +400,7 @@ paths:
                   example: driver@example.com
                 phone_number:
                   type: string
-                  example: '+251934567890'
+                  example: '251934567890'
                 password_hash:
                   type: string
                   example: secure_password_hash
@@ -673,7 +682,7 @@ paths:
                   example: rider@example.com
                 phone_number:
                   type: string
-                  example: '+251934567890'
+                  example: '251934567890'
                 password_hash:
                   type: string
                   example: secure_password_hash

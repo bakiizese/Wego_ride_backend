@@ -152,12 +152,11 @@ def register_error_handlers(app):
 
     @app.errorhandler(400)
     def bad_request(error):
-        return (
-            jsonify(
-                {"error": "Requirement missing, incorrect format or incorrect attribute"}
-            ),
-            400,
-        )
+        # error.description carries whatever abort(400, description=...)
+        # actually said (e.g. "Authorization header missing") - showing a
+        # single generic message for every 400 regardless of cause made
+        # real problems impossible to diagnose from the response alone
+        return jsonify({"error": error.description}), 400
 
     @app.errorhandler(405)
     def method_error(error):

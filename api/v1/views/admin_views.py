@@ -1,10 +1,19 @@
 #!/usr/bin/python
+import jwt
+
 from models import storage
-from api.v1.middleware import admin_required, superadmin_required
+from api.v1.middleware import (
+    admin_required,
+    decode_token,
+    _extract_bearer_token,
+    TokenBlacklisted,
+    TokenUserDeleted,
+    TokenUserMissing,
+)
 from api.v1.views import admin_bp
 from flask import jsonify, request, abort
 from auth import authentication
-from auth.authentication import clean
+from auth.authentication import clean, _generate_jwt
 from models.rider import Rider
 from models.driver import Driver
 from models.admin import Admin
@@ -59,9 +68,43 @@ def _require_superadmin_for_admin_target(target_cls):
 
 # Admin Authentication
 @admin_bp.route("/admin-register", methods=["POST"], strict_slashes=False)
-@superadmin_required
 def register():
-    """register a new admin by providing necessary informations"""
+    """register a new admin by providing necessary informations.
+
+    Bootstraps the very first superadmin without requiring
+    authentication when no Admin exists yet in the database - the
+    moment one does, this goes back to requiring a valid superadmin
+    token like any other admin-management endpoint (checked here
+    manually instead of via @superadmin_required, since the decorator
+    can't be applied conditionally). The bootstrap response includes a
+    ready-to-use JWT so the first admin doesn't need a separate login
+    call just to start using the API.
+    """
+    is_bootstrap = storage.count("Admin") == 0
+
+    if not is_bootstrap:
+        token = _extract_bearer_token()
+        try:
+            caller, role, _ = decode_token(token)
+        except TokenBlacklisted:
+            logger.warning("Token blacklisted")
+            return jsonify({"error": "token blacklisted"}), 401
+        except TokenUserMissing:
+            logger.warning("user not found")
+            abort(404)
+        except TokenUserDeleted:
+            logger.warning("access not allowed")
+            abort(403)
+        except jwt.ExpiredSignatureError:
+            logger.warning("Token has expired")
+            return jsonify({"error": "Token has expired"}), 401
+        except jwt.InvalidTokenError:
+            logger.warning("Invalid token")
+            return jsonify({"error": "Invalid token"}), 401
+        if role != "Admin" or caller.admin_level != "superadmin":
+            logger.warning("only superadmin allowed")
+            return jsonify({"Error": "only superadmin allowed"}), 403
+
     try:
         user_data = request.get_json()
     except Exception as e:
@@ -77,16 +120,28 @@ def register():
     except Exception:
         logger.warning("phone_number must be integer")
         return jsonify({"error": "phone_number must be integer"}), 400
+
+    if is_bootstrap:
+        # this path only ever runs once, to create the very first admin -
+        # force superadmin regardless of what was requested
+        user_data["admin_level"] = "superadmin"
+
     try:
         user = Auth.register_user(cls, **user_data)
         message, status = user
     except Exception:
         logger.exception("An internal errro")
         abort(500)
-    if status:
-        return jsonify({"user": message}), 201
-    logger.warning(message)
-    return jsonify({"error": message}), 400
+    if not status:
+        logger.warning(message)
+        return jsonify({"error": message}), 400
+
+    if is_bootstrap:
+        new_admin = storage.get("Admin", id=message)
+        token = _generate_jwt(new_admin)
+        return jsonify({"user": message, "token": token}), 201
+
+    return jsonify({"user": message}), 201
 
 
 @admin_bp.route("/login", methods=["POST"], strict_slashes=False)
