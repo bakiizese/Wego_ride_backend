@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template_string
 from flasgger import Swagger
 import logging
 from flask_cors import CORS
@@ -13,6 +13,40 @@ logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
 )
+
+# flasgger's own bundled /apidocs/ page is a legacy Swagger UI 2.x build
+# (jQuery/Backbone, no dark mode, no CDN override hook that actually
+# works) - swagger_ui=False below turns that off, and this is served in
+# its place: a minimal page pulling swagger-ui-dist 5.x from a CDN,
+# which has real dark-mode support built in and reads the same spec
+# flasgger still generates at /apispec_1.json.
+_APIDOCS_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wego Ride API</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+  <style>body { margin: 0; }</style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function () {
+      window.ui = SwaggerUIBundle({
+        url: "/apispec_1.json",
+        dom_id: "#swagger-ui",
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+        layout: "StandaloneLayout",
+        docExpansion: "list",
+      });
+    };
+  </script>
+</body>
+</html>
+"""
 
 
 def create_app():
@@ -38,9 +72,15 @@ def create_app():
     Swagger(
         app,
         template_file="./swagger/main.yaml",
-        config={"openapi": "3.0.3"},
+        # swagger_ui=False: keep flasgger for generating /apispec_1.json,
+        # skip its own legacy UI - see _APIDOCS_HTML below
+        config={"openapi": "3.0.3", "swagger_ui": False},
         merge=True,
     )
+
+    @app.route("/apidocs/")
+    def apidocs():
+        return render_template_string(_APIDOCS_HTML)
 
     redis_instance = redis.StrictRedis(
         host=settings.redis_host,
