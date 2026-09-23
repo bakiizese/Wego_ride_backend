@@ -10,6 +10,9 @@ venv/
 
 # env / secrets
 .env
+.env.*
+!.env.example
+certs/
 
 # editors / tooling
 .vscode/
