@@ -92,6 +92,10 @@ def create_app():
     def landing():
         return send_from_directory(_LANDING_DIR, "index.html")
 
+    @app.route("/favicon.svg")
+    def favicon():
+        return send_from_directory(_LANDING_DIR, "favicon.svg")
+
     redis_instance = redis.StrictRedis(
         host=settings.redis_host,
         port=settings.redis_port,

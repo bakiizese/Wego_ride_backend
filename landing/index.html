@@ -3,414 +3,581 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wego Ride &mdash; Scheduled Ride-Sharing API</title>
+<title>Wego Ride | Scheduled Ride-Sharing API</title>
 <meta name="description" content="Production backend for a scheduled ride-sharing platform: JWT auth, live WebSocket trip status, Chapa payments behind a swappable gateway, ratings, and an admin console.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0c10;
-    --bg-raised:#101319;
-    --bg-card:#12151c;
-    --border:#20242e;
-    --border-soft:#1a1d25;
-    --text:#e9ebf0;
-    --text-dim:#9298a6;
-    --text-faint:#5b6070;
-    --accent:#00e6a8;
-    --accent-dim:#00b386;
-    --accent-soft:rgba(0,230,168,0.1);
-    --warn:#ff8a4c;
-    --warn-soft:rgba(255,138,76,0.1);
+    --ink:#04120e;
+    --ink-2:#08201a;
+    --ink-3:#0e2d24;
+    --green:#19d38a;
+    --green-deep:#0c9f66;
+    --green-tint:#e6f7ef;
+    --amber:#f5a524;
+    --paper:#f5f9f7;
+    --white:#ffffff;
+    --text:#0c1f18;
+    --muted:#586a62;
+    --line:#dfe9e4;
+    --on-dark:#e8f1ed;
+    --on-dark-dim:#8fa69c;
+    --sans:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
     --mono:'JetBrains Mono',ui-monospace,monospace;
-    --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--sans);
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
-  body::before{
-    content:"";
-    position:fixed;inset:0;
-    background-image:
-      linear-gradient(var(--border-soft) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
-    background-size:64px 64px;
-    mask-image:radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
-    -webkit-mask-image:radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
-    pointer-events:none;
-    z-index:0;
-    opacity:.5;
-  }
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  body{font-family:var(--sans);color:var(--text);background:var(--white);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px;position:relative}
+  code{font-family:var(--mono);font-size:.88em}
 
-  /* nav */
-  nav{
-    position:sticky;top:0;z-index:50;
-    border-bottom:1px solid var(--border-soft);
-    backdrop-filter:blur(10px);
-    background:rgba(10,12,16,0.75);
-  }
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:-0.01em}
-  .brand .dot{width:9px;height:9px;border-radius:2px;background:var(--accent);box-shadow:0 0 12px var(--accent)}
-  .brand .tag{
-    font-family:var(--mono);font-size:10px;color:var(--accent);
-    border:1px solid var(--accent-dim);border-radius:4px;padding:2px 6px;
-    background:var(--accent-soft);letter-spacing:.04em;
-  }
-  .navlinks{display:flex;align-items:center;gap:28px;font-size:13.5px;color:var(--text-dim)}
-  .navlinks a{transition:color .15s}
-  .navlinks a:hover{color:var(--text)}
-  .navlinks .cta{
-    color:#04140f;background:var(--accent);padding:8px 16px;border-radius:6px;
-    font-weight:600;transition:filter .15s;
-  }
-  .navlinks .cta:hover{filter:brightness(1.1)}
-  .status-pill{
-    display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text-dim);
-  }
-  .status-pill .led{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  /* ---------- announcement + nav ---------- */
+  .strip{background:var(--ink);color:var(--on-dark-dim);font-size:13px;text-align:center;padding:9px 16px;border-bottom:1px solid var(--ink-3)}
+  .strip a{color:var(--green);font-weight:600;margin-left:6px}
+  .strip .led{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{50%{opacity:.35}}
 
-  /* hero */
-  header.hero{padding:96px 0 72px;position:relative}
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;
-    color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:22px;
-    border:1px solid var(--border);padding:6px 12px;border-radius:20px;background:var(--bg-raised);
+  .hero-shell{background:var(--ink);position:relative;overflow:hidden;color:var(--on-dark);padding-bottom:80px}
+  .hero-shell::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(60% 55% at 50% 0%, rgba(25,211,138,.16), transparent 70%),
+      radial-gradient(40% 40% at 90% 90%, rgba(245,165,36,.07), transparent 70%);
+    pointer-events:none;
   }
-  h1{
-    font-size:56px;line-height:1.05;font-weight:800;letter-spacing:-0.03em;
-    max-width:780px;margin-bottom:22px;
-  }
-  h1 em{font-style:normal;color:var(--accent)}
-  .lede{font-size:18px;color:var(--text-dim);max-width:600px;margin-bottom:36px;line-height:1.6}
-  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:56px}
-  .btn{
-    display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:7px;
-    font-weight:600;font-size:14.5px;transition:all .15s;border:1px solid transparent;
-  }
-  .btn-primary{background:var(--accent);color:#04140f}
-  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
-  .btn-ghost{border-color:var(--border);color:var(--text)}
-  .btn-ghost:hover{border-color:var(--text-faint);background:var(--bg-raised)}
+  nav{position:relative;z-index:5;padding:22px 0}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;color:#fff}
+  .brand img{width:34px;height:34px;border-radius:9px}
+  .brand span em{font-style:normal;color:var(--green)}
+  .navpill{display:flex;gap:4px;padding:5px;border:1px solid var(--ink-3);border-radius:999px;background:rgba(255,255,255,.03)}
+  .navpill a{font-size:13.5px;font-weight:500;color:var(--on-dark-dim);padding:8px 16px;border-radius:999px;transition:.15s}
+  .navpill a:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .navcta{background:var(--green);color:#03150f;font-weight:700;font-size:14px;padding:11px 20px;border-radius:999px;transition:.15s;box-shadow:0 6px 24px -6px rgba(25,211,138,.6)}
+  .navcta:hover{transform:translateY(-1px);filter:brightness(1.06)}
 
-  .term{
-    background:var(--bg-card);border:1px solid var(--border);border-radius:10px;
-    max-width:640px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
-  }
-  .term-bar{
-    display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border-soft);
-    background:var(--bg-raised);
-  }
-  .term-bar span{width:10px;height:10px;border-radius:50%;background:var(--border)}
-  .term-bar .label{margin-left:8px;font-family:var(--mono);font-size:11.5px;color:var(--text-faint)}
-  .term-body{padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.85}
-  .term-body .c1{color:var(--text-faint)}
-  .term-body .c2{color:var(--accent)}
-  .term-body .c3{color:#f5c97b}
-  .term-body .c4{color:var(--text-dim)}
+  /* ---------- hero ---------- */
+  .hero{position:relative;z-index:2;text-align:center;padding:64px 0 0}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(25,211,138,.35);background:rgba(25,211,138,.08);color:var(--green);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:999px;margin-bottom:26px}
+  h1{font-size:58px;line-height:1.06;font-weight:800;letter-spacing:-.035em;color:#fff;max-width:820px;margin:0 auto 22px}
+  h1 em{font-style:normal;color:var(--green)}
+  .lede{max-width:600px;margin:0 auto 34px;font-size:17.5px;color:var(--on-dark-dim);line-height:1.65}
+  .hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:999px;font-weight:700;font-size:15px;transition:.18s;border:1.5px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-green{background:var(--green);color:#03150f;box-shadow:0 10px 30px -10px rgba(25,211,138,.7)}
+  .btn-green:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .btn-line{border-color:rgba(255,255,255,.2);color:#fff;background:rgba(255,255,255,.03)}
+  .btn-line:hover{border-color:var(--green);color:var(--green)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{transform:translateY(-2px);background:var(--ink-3)}
+  .btn-outline{border-color:var(--line);color:var(--text);background:#fff}
+  .btn-outline:hover{border-color:var(--green-deep);color:var(--green-deep)}
 
-  /* stats */
-  .stats{
-    display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border-soft);
-    border-bottom:1px solid var(--border-soft);
-  }
-  .stat{padding:32px 24px;border-right:1px solid var(--border-soft)}
+  .scene{position:relative;max-width:1060px;margin:44px auto 0;height:330px}
+  .scene svg{position:absolute;inset:0;width:100%;height:100%}
+  .road{stroke:rgba(255,255,255,.06);stroke-width:1.5;fill:none}
+  .route-glow{fill:none;stroke:var(--amber);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(245,165,36,.75));stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 3.2s .5s ease-out forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .pin-pulse{transform-origin:center;transform-box:fill-box;animation:ring 2.4s infinite}
+  @keyframes ring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+  .float{position:absolute;background:rgba(10,32,26,.85);border:1px solid var(--ink-3);backdrop-filter:blur(8px);border-radius:14px;padding:12px 15px;text-align:left;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);animation:bob 6s ease-in-out infinite}
+  .float small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--on-dark-dim);margin-bottom:3px;letter-spacing:.03em}
+  .float b{font-size:13.5px;color:#fff;font-weight:600}
+  .float b i{font-style:normal;color:var(--green)}
+  .f1{left:5%;top:20px}
+  .f2{left:38%;top:0;animation-delay:-2s}
+  .f3{right:4%;top:56px;animation-delay:-4s}
+  @keyframes bob{50%{transform:translateY(-8px)}}
+
+  /* ---------- stats overlap ---------- */
+  .stats-wrap{position:relative;z-index:6;margin-top:-56px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:22px;box-shadow:0 30px 60px -30px rgba(4,18,14,.35);border:1px solid var(--line)}
+  .stat{padding:28px 24px;text-align:center;border-right:1px solid var(--line)}
   .stat:last-child{border-right:none}
-  .stat .n{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--accent);letter-spacing:-0.02em}
-  .stat .l{font-size:13px;color:var(--text-dim);margin-top:4px}
+  .stat .n{font-size:36px;font-weight:800;letter-spacing:-.03em;color:var(--green-deep)}
+  .stat .l{font-size:13px;color:var(--muted);margin-top:2px}
+  
 
-  /* sections */
-  section{padding:88px 0}
-  .section-head{max-width:600px;margin-bottom:48px}
-  .kicker{font-family:var(--mono);font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
-  h2{font-size:32px;font-weight:800;letter-spacing:-0.02em;margin-bottom:14px}
-  .section-head p{color:var(--text-dim);font-size:15.5px;line-height:1.65}
+  /* ---------- generic section ---------- */
+  section{padding:96px 0}
+  .head{text-align:center;max-width:640px;margin:0 auto 54px}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--green-deep);margin-bottom:12px}
+  h2{font-size:38px;line-height:1.15;font-weight:800;letter-spacing:-.03em;margin-bottom:14px}
+  h2 em{font-style:normal;color:var(--green-deep)}
+  .head p{color:var(--muted);font-size:16.5px}
+  .bar{width:44px;height:3px;background:var(--green);border-radius:2px;margin:0 auto 18px}
+  [data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  [data-reveal].in{opacity:1;transform:none}
 
-  /* capability grid */
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border-soft);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden}
-  .card{background:var(--bg-card);padding:26px 22px;transition:background .15s}
-  .card:hover{background:var(--bg-raised)}
-  .card .icon{width:34px;height:34px;color:var(--accent);margin-bottom:16px}
-  .card h3{font-size:15px;font-weight:600;margin-bottom:8px}
-  .card p{font-size:13px;color:var(--text-dim);line-height:1.55}
+  /* ---------- how it works ---------- */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+  .step{text-align:center;padding:0 8px}
+  .ico{position:relative;width:64px;height:64px;border-radius:18px;background:var(--green-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green-deep);transition:.25s}
+  .step:hover .ico{background:var(--green);color:#03150f;transform:translateY(-4px) rotate(-3deg)}
+  .ico svg{width:28px;height:28px}
+  .ico .num{position:absolute;right:-7px;bottom:-7px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #fff}
+  .step h3{font-size:17px;font-weight:700;margin-bottom:8px}
+  .step p{font-size:14px;color:var(--muted)}
 
-  /* swagger walkthrough */
-  .steps{display:flex;flex-direction:column;border:1px solid var(--border-soft);border-radius:12px;overflow:hidden}
-  .step{display:flex;gap:20px;padding:22px 26px;border-bottom:1px solid var(--border-soft);align-items:flex-start}
-  .step:last-child{border-bottom:none}
-  .step .num{
-    font-family:var(--mono);font-size:13px;color:var(--accent);border:1px solid var(--border);
-    background:var(--bg-card);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;
-  }
-  .step h4{font-size:14.5px;font-weight:600;margin-bottom:4px}
-  .step p{font-size:13.5px;color:var(--text-dim);line-height:1.6}
-  .step code{font-family:var(--mono);font-size:12.5px;background:var(--bg-raised);border:1px solid var(--border-soft);padding:1px 6px;border-radius:4px;color:var(--warn)}
+  /* ---------- tabs ---------- */
+  .platform{background:var(--paper)}
+  .tabs-grid{display:grid;grid-template-columns:230px 1fr;gap:26px;max-width:1040px;margin:0 auto}
+  .tablist{background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:6px;align-self:start;box-shadow:0 20px 40px -30px rgba(4,18,14,.25)}
+  .tab{all:unset;cursor:pointer;font-family:var(--sans);font-size:14.5px;font-weight:600;color:var(--muted);padding:13px 16px;border-radius:12px;transition:.15s;border-left:3px solid transparent}
+  .tab:hover{background:var(--paper);color:var(--text)}
+  .tab[aria-selected="true"]{background:var(--green-tint);color:var(--green-deep);border-left-color:var(--green)}
+  .tab:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;display:grid;grid-template-columns:1fr 1.05fr;gap:32px;box-shadow:0 20px 40px -30px rgba(4,18,14,.25);min-height:380px}
+  .panel[hidden]{display:none}
+  .panel h3{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+  .panel .desc{font-size:14.5px;color:var(--muted);margin-bottom:18px}
+  .panel ul{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+  .panel li{font-size:14px;padding-left:24px;position:relative;color:#26382f}
+  .panel li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border-radius:50%;background:var(--green-tint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c9f66' stroke-width='4'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/9px no-repeat}
+  .console{background:var(--ink);border-radius:16px;overflow:hidden;align-self:start;box-shadow:0 24px 44px -24px rgba(4,18,14,.7)}
+  .console-bar{display:flex;gap:6px;padding:11px 14px;border-bottom:1px solid var(--ink-3);align-items:center}
+  .console-bar i{width:9px;height:9px;border-radius:50%;background:#1d3d33}
+  .console-bar span{margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--on-dark-dim)}
+  .rows{padding:10px 12px}
+  .row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--on-dark)}
+  .row:hover{background:rgba(255,255,255,.04)}
+  .m{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;min-width:44px;text-align:center}
+  .m.get{background:rgba(25,211,138,.15);color:var(--green)}
+  .m.post{background:rgba(245,165,36,.15);color:var(--amber)}
+  .m.put{background:rgba(96,165,250,.15);color:#7db8fb}
+  .json{margin:4px 12px 14px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.04);font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--on-dark-dim)}
+  .json b{color:var(--green);font-weight:500}
+  .json s{text-decoration:none;color:var(--amber)}
 
-  /* stack strip */
-  .stackrow{display:flex;flex-wrap:wrap;gap:10px}
-  .chip{
-    font-family:var(--mono);font-size:12.5px;color:var(--text-dim);border:1px solid var(--border);
-    padding:8px 14px;border-radius:20px;background:var(--bg-card);
-  }
+  /* ---------- try it ---------- */
+  .try{background:var(--ink);color:var(--on-dark);position:relative;overflow:hidden}
+  .try::before{content:"";position:absolute;inset:0;background:radial-gradient(50% 60% at 15% 20%, rgba(25,211,138,.12), transparent 70%);pointer-events:none}
+  .try h2{color:#fff}
+  .try h2 em{color:var(--green)}
+  .try .kicker{color:var(--green)}
+  .try .head p{color:var(--on-dark-dim)}
+  .try-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:44px;align-items:start;position:relative}
+  .tl{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:22px}
+  .tl li{counter-increment:s;position:relative;padding-left:52px}
+  .tl li::before{content:counter(s);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--green);color:var(--green);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;background:rgba(25,211,138,.08)}
+  .tl li:not(:last-child)::after{content:"";position:absolute;left:16.5px;top:40px;bottom:-18px;width:1.5px;background:linear-gradient(var(--green),transparent);opacity:.35}
+  .tl h4{font-size:16px;font-weight:700;color:#fff;margin-bottom:3px}
+  .tl p{font-size:14px;color:var(--on-dark-dim)}
+  .tl code{background:rgba(255,255,255,.08);color:var(--amber);padding:1px 6px;border-radius:5px;font-size:12px}
+  .term{background:#020b08;border:1px solid var(--ink-3);border-radius:16px;overflow:hidden;position:sticky;top:24px}
+  .term-bar{display:flex;align-items:center;gap:7px;padding:12px 15px;border-bottom:1px solid var(--ink-3);background:var(--ink-2)}
+  .term-bar i{width:10px;height:10px;border-radius:50%;background:#1d3d33}
+  .term-bar span{margin-left:8px;font-family:var(--mono);font-size:11.5px;color:var(--on-dark-dim);flex:1}
+  .copy{all:unset;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--green);border:1px solid rgba(25,211,138,.4);padding:4px 11px;border-radius:6px}
+  .copy:hover{background:rgba(25,211,138,.12)}
+  pre{padding:20px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--on-dark);white-space:pre-wrap;word-break:break-all}
+  pre .d{color:#5c7a6e}
+  pre .g{color:var(--green)}
+  pre .a{color:var(--amber)}
+  .note{padding:0 20px 18px;font-size:12px;color:var(--on-dark-dim)}
 
-  /* security */
-  .seclist{display:grid;grid-template-columns:1fr 1fr;gap:14px 40px}
-  .secitem{display:flex;gap:12px;align-items:flex-start;padding:4px 0}
-  .secitem svg{width:16px;height:16px;color:var(--accent);flex-shrink:0;margin-top:3px}
-  .secitem span{font-size:14px;color:var(--text-dim)}
-  .secitem b{color:var(--text);font-weight:600}
+  /* ---------- security ---------- */
+  .sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .sec{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;transition:.25s}
+  .sec:hover{transform:translateY(-4px);box-shadow:0 24px 40px -28px rgba(4,18,14,.35);border-color:rgba(25,211,138,.5)}
+  .sec .ico{width:46px;height:46px;border-radius:13px;margin:0 0 16px}
+  .sec .ico svg{width:22px;height:22px}
+  .sec:hover .ico{transform:none;background:var(--green);color:#03150f}
+  .sec h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .sec p{font-size:13.5px;color:var(--muted)}
 
-  /* footer */
-  footer{border-top:1px solid var(--border-soft);padding:48px 0}
-  footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
-  footer .fbrand{font-size:13px;color:var(--text-faint)}
-  footer .flinks{display:flex;gap:24px;font-size:13px;color:var(--text-dim)}
-  footer .flinks a:hover{color:var(--text)}
+  /* ---------- stack + cta ---------- */
+  .stack{background:var(--paper);padding:72px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:820px;margin:0 auto}
+  .tag{font-family:var(--mono);font-size:12.5px;font-weight:500;background:#fff;border:1px solid var(--line);padding:9px 16px;border-radius:999px;color:#2c4137;transition:.15s}
+  .tag:hover{border-color:var(--green);color:var(--green-deep);transform:translateY(-2px)}
+  .cta{padding:0 0 96px;background:var(--paper)}
+  .cta-card{background:linear-gradient(135deg,var(--ink) 0%,var(--ink-3) 100%);border-radius:28px;padding:64px 32px;text-align:center;position:relative;overflow:hidden;color:#fff}
+  .cta-card::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(25,211,138,.35),transparent 70%)}
+  .cta-card h2{color:#fff;position:relative}
+  .cta-card p{color:var(--on-dark-dim);max-width:520px;margin:0 auto 30px;position:relative}
+  .cta-card .hero-actions{position:relative}
 
-  @media (max-width:860px){
-    h1{font-size:38px}
-    .grid{grid-template-columns:1fr 1fr}
+  footer{background:var(--ink);color:var(--on-dark-dim);padding:44px 0;font-size:13.5px}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px}
+  footer .brand{font-size:16px}
+  footer .brand img{width:26px;height:26px;border-radius:7px}
+  .flinks{display:flex;gap:26px}
+  .flinks a:hover{color:var(--green)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    h1{font-size:40px}
+    h2{font-size:30px}
+    .navpill{display:none}
     .stats{grid-template-columns:1fr 1fr}
-    .stat{border-bottom:1px solid var(--border-soft)}
-    .seclist{grid-template-columns:1fr}
-    .navlinks{display:none}
+    .stat:nth-child(2){border-right:none}
+    .stat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+    .steps{grid-template-columns:1fr 1fr}
+    .tabs-grid{grid-template-columns:1fr}
+    .tablist{flex-direction:row;overflow-x:auto}
+    .tab{white-space:nowrap}
+    .panel{grid-template-columns:1fr}
+    .try-grid{grid-template-columns:1fr}
+    .term{position:static}
+    .sec-grid{grid-template-columns:1fr 1fr}
+    .scene{height:300px}
+    .f2{display:none}
   }
-  @media (max-width:520px){
-    .grid{grid-template-columns:1fr}
-    .stats{grid-template-columns:1fr 1fr}
-    h1{font-size:32px}
+  @media (max-width:560px){
+    h1{font-size:33px}
+    .lede{font-size:16px}
+    .steps,.sec-grid{grid-template-columns:1fr}
+    .float{display:none}
+    .scene{height:210px}
+    section{padding:72px 0}
+    .panel{padding:24px}
+    .navcta{padding:10px 16px;font-size:13px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .route-glow{stroke-dashoffset:0}
+    [data-reveal]{opacity:1;transform:none}
   }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="wrap">
-    <div class="brand"><span class="dot"></span>WEGO RIDE<span class="tag">API v1</span></div>
-    <div class="navlinks">
-      <a href="#capabilities">Capabilities</a>
-      <a href="#test-it">Test it</a>
-      <a href="#stack">Stack</a>
-      <a href="#security">Security</a>
-      <a class="cta" href="https://wego-ride-backend.onrender.com/apidocs/">API Docs</a>
-    </div>
-  </div>
-</nav>
+<div class="strip"><span class="led"></span>Live demo running on Render &middot; 84 endpoints ready to call<a href="https://wego-ride-backend.onrender.com/apidocs/">Open the docs &rarr;</a></div>
 
-<header class="hero">
-  <div class="wrap">
-    <div class="eyebrow">Scheduled ride-sharing &middot; backend service</div>
-    <h1>The backend behind<br>a <em>shuttle &amp; carpool</em><br>booking platform.</h1>
-    <p class="lede">
-      An admin schedules trips, riders reserve seats, drivers run the route &mdash;
-      with JWT-secured roles, Chapa payments, live WebSocket status, and ratings
-      wired through a documented REST API you can try right now.
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="https://wego-ride-backend.onrender.com/apidocs/">
-        Explore the API docs &rarr;
-      </a>
-      <a class="btn btn-ghost" href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">
-        View source on GitHub
-      </a>
-      <a class="btn btn-ghost" href="https://wego-ride-backend.onrender.com/health">
-        /health
-      </a>
-    </div>
-
-    <div class="term">
-      <div class="term-bar">
-        <span></span><span></span><span></span>
-        <span class="label">bootstrap the first admin &mdash; no auth required</span>
+<div class="hero-shell">
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="#"><img src="favicon.svg" alt=""><span>Wego<em>Ride</em></span></a>
+      <div class="navpill">
+        <a href="#how">How it works</a>
+        <a href="#platform">Platform</a>
+        <a href="#try">Try it</a>
+        <a href="#security">Security</a>
+        <a href="#stack">Stack</a>
       </div>
-      <div class="term-body">
-<div><span class="c1">$</span> <span class="c2">curl</span> <span class="c4">-X POST</span> https://wego-ride-backend.onrender.com<span class="c3">/api/v1/admin/admin-register</span> \</div>
-<div>&nbsp;&nbsp;<span class="c4">-H</span> "Content-Type: application/json" -d '{"username": "root", ...}'</div>
-<div class="c1">&rarr; {"user": "...", "token": "eyJhbGciOi..."}  <span class="c2"># ready to use, instantly</span></div>
+      <a class="navcta" href="https://wego-ride-backend.onrender.com/apidocs/">API Docs</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="chip">Backend API &middot; scheduled shuttle &amp; carpool</div>
+      <h1>The engine behind <em>scheduled <span style="white-space:nowrap">ride-sharing</span></em></h1>
+      <p class="lede">Admins schedule trips, riders reserve seats, drivers run the route. Secure roles, live trip status over WebSockets, Chapa payments and ratings, all behind one documented REST API you can try right now.</p>
+      <div class="hero-actions">
+        <a class="btn btn-green" href="https://wego-ride-backend.onrender.com/apidocs/">Explore the API &rarr;</a>
+        <a class="btn btn-line" href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+
+      <div class="scene" aria-hidden="true">
+        <svg viewBox="0 0 1060 330" preserveAspectRatio="xMidYMid meet">
+          <g class="road">
+            <path d="M0 250 H1060"/><path d="M0 120 H1060"/><path d="M180 0 V330"/><path d="M420 0 V330"/>
+            <path d="M700 0 V330"/><path d="M920 0 V330"/><path d="M0 60 L300 330"/><path d="M1060 40 L760 330"/>
+          </g>
+          <path id="route" class="route-glow" d="M90 270 H300 V190 H560 V270 H830 V190 H960"/>
+          <circle r="7" fill="#fff">
+            <animateMotion dur="7s" begin="3s" repeatCount="indefinite"><mpath href="#route"/></animateMotion>
+          </circle>
+          <g transform="translate(90 270)">
+            <circle r="9" fill="#fff"/><circle class="pin-pulse" r="9" fill="none" stroke="#fff" stroke-width="2"/>
+          </g>
+          <g transform="translate(300 190)"><circle r="6" fill="#19d38a"/></g>
+          <g transform="translate(560 270)"><circle r="6" fill="#19d38a"/></g>
+          <g transform="translate(830 190)"><circle r="6" fill="#19d38a"/></g>
+          <g transform="translate(960 190)">
+            <circle class="pin-pulse" r="10" fill="#19d38a" opacity=".55"/>
+            <path d="M0 0C-14 -16 -21 -26 -21 -35A21 21 0 1 1 21 -35C21 -26 14 -16 0 0z" fill="#19d38a"/>
+            <circle cy="-35" r="8" fill="#04120e"/>
+          </g>
+        </svg>
+        <div class="float f1"><small>TRIP &middot; SCHEDULED</small><b>Bole <i>&rarr;</i> Piassa &middot; 3 seats left</b></div>
+        <div class="float f2"><small>SOCKET.IO &middot; /rides</small><b>ride_status_update: <i>ongoing</i></b></div>
+        <div class="float f3"><small>PAYMENT</small><b>Confirmed by signed webhook <i>&#10003;</i></b></div>
       </div>
     </div>
-  </div>
-</header>
-
-<div class="stats">
-  <div class="stat"><div class="n">84</div><div class="l">API endpoints</div></div>
-  <div class="stat"><div class="n">3</div><div class="l">user roles &mdash; rider, driver, admin</div></div>
-  <div class="stat"><div class="n">85</div><div class="l">automated tests</div></div>
-  <div class="stat"><div class="n">10</div><div class="l">functional modules</div></div>
+  </header>
 </div>
 
-<section id="capabilities">
+<div class="stats-wrap">
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat"><div class="n">84</div><div class="l">API endpoints</div></div>
+        <div class="stat"><div class="n">3</div><div class="l">roles: rider, driver, admin</div></div>
+        <div class="stat"><div class="n">100+</div><div class="l">automated tests</div></div>
+        <div class="stat"><div class="n">10</div><div class="l">functional modules</div></div>
+      </div>
+    </div>
+</div>
+
+<section id="how">
   <div class="wrap">
-    <div class="section-head">
-      <div class="kicker">Capabilities</div>
-      <h2>Not a CRUD demo.</h2>
-      <p>Every module below is live, documented, and callable &mdash; including the parts that usually get mocked out: real payment webhooks, real-time sockets, and a self-bootstrapping admin.</p>
+    <div class="head" data-reveal>
+      <div class="kicker">How it works</div>
+      <div class="bar"></div>
+      <h2>A trip, from schedule to <em>five stars</em></h2>
+      <p>Every step below is a real endpoint you can call from the docs, in this order.</p>
     </div>
-    <div class="grid">
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
-        <h3>JWT auth &amp; blacklist</h3>
-        <p>Role-scoped tokens for riders, drivers and admins. Logout actually invalidates a token via a Redis blacklist &mdash; not just client-side deletion.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
-        <h3>Scheduled trips</h3>
-        <p>Admins set routes and departure times; riders reserve seats against live capacity; drivers move a trip through its full status lifecycle.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M3 12h18M7 8V6a2 2 0 012-2h6a2 2 0 012 2v2"/></svg>
-        <h3>Chapa payments</h3>
-        <p>Charges are server-computed from the trip fare, never trusted from the client, and confirmed only after a signature-verified webhook &mdash; behind a swappable <code style="font-family:var(--mono);color:var(--warn)">PaymentGateway</code> interface.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 17.3l-5.4 3 1-6-4.3-4.2 6-.9L12 3l2.7 5.2 6 .9-4.3 4.2 1 6z"/></svg>
-        <h3>Ratings &amp; reviews</h3>
-        <p>Riders and drivers rate each other after a completed trip; aggregate scores are recomputed atomically and surfaced on profiles.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12.5a7 7 0 0114 0M2 9a11 11 0 0120 0M8.5 16a3.5 3.5 0 017 0"/><circle cx="12" cy="19.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-        <h3>Live WebSocket status</h3>
-        <p>A <code style="font-family:var(--mono);color:var(--warn)">/rides</code> namespace pushes ride-status updates the instant a driver starts, ends or cancels a trip &mdash; backed by Redis pub/sub so it scales horizontally.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"/><path d="M2.5 19c0-3 3-5 6.5-5s6.5 2 6.5 5"/><circle cx="17" cy="8" r="2.5"/><path d="M16 13.2c2.6.4 4.5 2.1 4.5 4.3"/></svg>
-        <h3>Admin console</h3>
-        <p>Block/unblock users, review reports, inspect earnings and transaction history &mdash; gated by a first-admin bootstrap so the console is reachable from a fresh database.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20l4-11 4 7 3-5 5 9"/><path d="M3 20h18"/></svg>
-        <h3>Rate limiting</h3>
-        <p>Auth and registration endpoints are throttled through the same Redis instance backing the token blacklist &mdash; brute-force attempts get a 429, not a timing oracle.</p>
-      </div>
-
-      <div class="card">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-9 9"/></svg>
-        <h3>Profile &amp; vehicle media</h3>
-        <p>Profile photos and driver vehicle records, validated and stored with an explicit MIME/extension allowlist &mdash; not trusted from a client-supplied filename.</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section id="test-it" style="border-top:1px solid var(--border-soft)">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="kicker">Try it yourself</div>
-      <h2>Everything below runs from Swagger.</h2>
-      <p>No seed data, no separate signup flow &mdash; the interactive docs at <code style="font-family:var(--mono);color:var(--warn)">/apidocs/</code> are the actual client. This is the fastest path from a cold database to a completed, rated, paid trip.</p>
-    </div>
-
     <div class="steps">
-      <div class="step">
-        <div class="num">1</div>
-        <div><h4>Open the API docs and bootstrap an admin</h4>
-        <p>Expand <code>Admin &rarr; POST /admin-register</code> and send it with no Authorization header. On an empty database this creates the first superadmin and hands back a ready-to-use JWT &mdash; click <b>Authorize</b> and paste it in.</p></div>
+      <div class="step" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="num">1</span></div>
+        <h3>Schedule</h3>
+        <p>An admin sets the route, time, fare and seat capacity for a trip.</p>
       </div>
-      <div class="step">
-        <div class="num">2</div>
-        <div><h4>Register a rider and a driver</h4>
-        <p>Under <code>Auth</code>, register one of each. The driver then registers a vehicle via <code>Vehicle &rarr; POST /vehicle</code> before it can be assigned to a trip.</p></div>
+      <div class="step" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11V8a3 3 0 013-3h8a3 3 0 013 3v3"/><path d="M3 17v-3a3 3 0 013-3h12a3 3 0 013 3v3M6 17v2M18 17v2"/></svg><span class="num">2</span></div>
+        <h3>Book a seat</h3>
+        <p>A rider browses available rides and reserves a seat, with capacity enforced server-side.</p>
       </div>
-      <div class="step">
-        <div class="num">3</div>
-        <div><h4>Schedule and book a trip</h4>
-        <p>As the admin, create a trip under <code>Ride Management</code>. As the rider, book a seat on it &mdash; capacity is enforced server-side.</p></div>
+      <div class="step" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a7 7 0 0114 0M2 9a11 11 0 0120 0M8.5 16a3.5 3.5 0 017 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg><span class="num">3</span></div>
+        <h3>Ride, live</h3>
+        <p>The driver starts and ends the trip, and every status change is pushed over a WebSocket.</p>
       </div>
-      <div class="step">
-        <div class="num">4</div>
-        <div><h4>Watch status change in real time</h4>
-        <p>Open a Socket.IO client against the <code>/rides</code> namespace (JWT passed in the connection <code>auth</code> payload) and join the trip's room. Start and end the ride as the driver &mdash; the update arrives over the socket, not a poll.</p></div>
-      </div>
-      <div class="step">
-        <div class="num">5</div>
-        <div><h4>Pay and rate</h4>
-        <p>The rider calls <code>Payments &rarr; POST /pay-ride</code> for a Chapa checkout URL, and once a trip is completed, both sides call their respective <code>Ratings</code> endpoint.</p></div>
+      <div class="step" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.4 6 .9-4.3 4.2 1 6L12 16.7 6.6 19.5l1-6L3.3 9.3l6-.9z"/></svg><span class="num">4</span></div>
+        <h3>Pay &amp; rate</h3>
+        <p>Chapa checkout settles the fare, then rider and driver rate each other.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="stack">
+<section class="platform" id="platform">
   <div class="wrap">
-    <div class="section-head">
-      <div class="kicker">Under the hood</div>
-      <h2>Stack &amp; deployment</h2>
-      <p>Dockerized, migrated with Alembic, linted and tested in CI, deployed straight from <code style="font-family:var(--mono);color:var(--warn)">main</code>.</p>
+    <div class="head" data-reveal>
+      <div class="kicker">The platform</div>
+      <div class="bar"></div>
+      <h2>An all-in-one <em style="white-space:nowrap">ride-sharing</em> backend</h2>
+      <p>One API, three roles, and the real-time and payment plumbing that usually gets mocked out.</p>
     </div>
-    <div class="stackrow">
-      <span class="chip">Flask</span>
-      <span class="chip">SQLAlchemy</span>
-      <span class="chip">MySQL &middot; Aiven</span>
-      <span class="chip">Redis &middot; Upstash</span>
-      <span class="chip">Flask-SocketIO &middot; eventlet</span>
-      <span class="chip">Chapa</span>
-      <span class="chip">Alembic</span>
-      <span class="chip">Docker</span>
-      <span class="chip">GitHub Actions CI/CD</span>
-      <span class="chip">Gunicorn</span>
-      <span class="chip">Render</span>
+
+    <div class="tabs-grid" data-reveal>
+      <div class="tablist" role="tablist" aria-label="Platform modules">
+        <button class="tab" role="tab" aria-selected="true" aria-controls="p-rider" id="t-rider">Rider</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-driver" id="t-driver" tabindex="-1">Driver</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-admin" id="t-admin" tabindex="-1">Admin</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-rt" id="t-rt" tabindex="-1">Payments &amp; realtime</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-rider" aria-labelledby="t-rider">
+        <div>
+          <h3>Rider</h3>
+          <p class="desc">Everything a passenger needs, from finding a trip to rating the driver.</p>
+          <ul>
+            <li>Register, log in and reset a password by email</li>
+            <li>Browse available rides and get fare estimates</li>
+            <li>Book or cancel a seat, follow ride status</li>
+            <li>Pay through a Chapa checkout, then rate the driver</li>
+          </ul>
+          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try rider endpoints</a>
+        </div>
+        <div class="console">
+          <div class="console-bar"><i></i><i></i><i></i><span>rider</span></div>
+          <div class="rows">
+            <div class="row"><span class="m get">GET</span>/api/v1/rider/available-rides</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/rider/book-ride</div>
+            <div class="row"><span class="m get">GET</span>/api/v1/rider/ride-status/{id}</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/rider/pay-ride</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/rider/rate-driver/{trip_id}</div>
+          </div>
+          <div class="json">{ <b>"checkout_url"</b>: <s>"https://checkout.chapa.co/..."</s>,<br>&nbsp;&nbsp;<b>"payment_status"</b>: <s>"pending"</s> }</div>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-driver" aria-labelledby="t-driver" hidden>
+        <div>
+          <h3>Driver</h3>
+          <p class="desc">Register a vehicle, run assigned trips and see what you earned.</p>
+          <ul>
+            <li>Register and manage a vehicle record</li>
+            <li>See assigned ride plans and incoming requests</li>
+            <li>Start, end or cancel a ride</li>
+            <li>Track earnings and rate riders after the trip</li>
+          </ul>
+          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try driver endpoints</a>
+        </div>
+        <div class="console">
+          <div class="console-bar"><i></i><i></i><i></i><span>driver</span></div>
+          <div class="rows">
+            <div class="row"><span class="m post">POST</span>/api/v1/driver/vehicle</div>
+            <div class="row"><span class="m get">GET</span>/api/v1/driver/ride-plans</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/driver/start-ride</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/driver/end-ride</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/driver/rate-rider/{trip_id}</div>
+          </div>
+          <div class="json">{ <b>"trip_status"</b>: <s>"ongoing"</s>,<br>&nbsp;&nbsp;<b>"event"</b>: <s>"pushed to /rides room"</s> }</div>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-admin" aria-labelledby="t-admin" hidden>
+        <div>
+          <h3>Admin</h3>
+          <p class="desc">The console that runs the service, gated by moderator and superadmin levels.</p>
+          <ul>
+            <li>Bootstrap the first superadmin with no setup step</li>
+            <li>Schedule trips and manage locations</li>
+            <li>Block, unblock, delete or restore users</li>
+            <li>Earnings and activity reports, plus announcements</li>
+          </ul>
+          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try admin endpoints</a>
+        </div>
+        <div class="console">
+          <div class="console-bar"><i></i><i></i><i></i><span>admin</span></div>
+          <div class="rows">
+            <div class="row"><span class="m post">POST</span>/api/v1/admin/admin-register</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/admin/set-ride</div>
+            <div class="row"><span class="m put">PUT</span>/api/v1/admin/block-user/{user_id}</div>
+            <div class="row"><span class="m get">GET</span>/api/v1/admin/reports/earnings</div>
+            <div class="row"><span class="m post">POST</span>/api/v1/admin/notification</div>
+          </div>
+          <div class="json">{ <b>"user"</b>: <s>"&lt;admin id&gt;"</s>,<br>&nbsp;&nbsp;<b>"token"</b>: <s>"eyJhbGciOi..."</s> }</div>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-rt" aria-labelledby="t-rt" hidden>
+        <div>
+          <h3>Payments &amp; realtime</h3>
+          <p class="desc">The two pieces that make it more than a CRUD demo.</p>
+          <ul>
+            <li>Charges computed server-side from the trip fare</li>
+            <li>Signed Chapa webhook, then re-verified before marking paid</li>
+            <li>Swappable <code>PaymentGateway</code> interface</li>
+            <li>Socket.IO <code>/rides</code> namespace, one room per trip</li>
+          </ul>
+          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">See the webhook docs</a>
+        </div>
+        <div class="console">
+          <div class="console-bar"><i></i><i></i><i></i><span>realtime + webhook</span></div>
+          <div class="rows">
+            <div class="row"><span class="m post">POST</span>/api/v1/webhooks/chapa</div>
+            <div class="row"><span class="m get">WS</span>/rides &middot; join(trip_id)</div>
+          </div>
+          <div class="json">&lt;&lt; <b>ride_status_update</b><br>{ <b>"trip_id"</b>: <s>"..."</s>, <b>"event"</b>: <s>"ended"</s> }</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="security" style="border-top:1px solid var(--border-soft)">
+<section class="try" id="try">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head" data-reveal>
+      <div class="kicker">Test it yourself</div>
+      <div class="bar"></div>
+      <h2>From empty database to a <em>paid, rated trip</em></h2>
+      <p>No seed data and no signup flow. The interactive docs are the client.</p>
+    </div>
+    <div class="try-grid">
+      <ol class="tl" data-reveal>
+        <li><h4>Bootstrap an admin</h4><p>In the docs, open <code>POST /admin-register</code> and send it with no auth. On an empty database it creates the first superadmin and returns a JWT. Paste it into <b>Authorize</b>.</p></li>
+        <li><h4>Register a rider and a driver</h4><p>Under <code>Auth</code>, register one of each. The driver then adds a vehicle with <code>POST /vehicle</code>.</p></li>
+        <li><h4>Schedule and book a trip</h4><p>As the admin create a trip, then as the rider book a seat on it.</p></li>
+        <li><h4>Watch it change live</h4><p>Connect a Socket.IO client to <code>/rides</code> with your JWT, join the trip room, and start and end the ride as the driver.</p></li>
+        <li><h4>Pay and rate</h4><p>The rider calls <code>POST /pay-ride</code> for a Chapa checkout URL, and once the trip is done both sides submit ratings.</p></li>
+      </ol>
+      <div class="term" data-reveal>
+        <div class="term-bar"><i></i><i></i><i></i><span>step 1: bootstrap the first admin</span><button class="copy" id="copy" type="button">copy</button></div>
+<pre id="curl"><span class="d">$</span> <span class="g">curl</span> -X POST https://wego-ride-backend.onrender.com<span class="a">/api/v1/admin/admin-register</span> \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "root",
+    "first_name": "Ada",
+    "last_name": "Admin",
+    "email": "ada@example.com",
+    "phone_number": "251911000000",
+    "password_hash": "changeme123",
+    "admin_level": "superadmin"
+  }'
+
+<span class="d"># 201</span>
+{"user": "&lt;id&gt;", "token": "eyJhbGciOi..."}</pre>
+        <div class="note">Only works while no admin exists. Once one does, log in with <code>POST /admin/login</code> instead.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="wrap">
+    <div class="head" data-reveal>
       <div class="kicker">Built to hold up</div>
-      <h2>Security &amp; production hygiene</h2>
+      <div class="bar"></div>
+      <h2>Security and <em>production hygiene</em></h2>
+      <p>The unglamorous parts that decide whether a backend survives real users.</p>
     </div>
-    <div class="seclist">
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>TLS everywhere.</b> Aiven MySQL and Upstash Redis connections are both certificate-verified, not opportunistic.</span>
+    <div class="sec-grid">
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.500-3 7.500-7 9-4-1.500-7-4.500-7-9V6z"/></svg></div>
+        <h3>TLS to every service</h3>
+        <p>Aiven MySQL and Upstash Redis connections are certificate-verified, not opportunistic.</p>
       </div>
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>Real logout.</b> Tokens are blacklisted in Redis on logout, checked on every authenticated request.</span>
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+        <h3>Real logout</h3>
+        <p>Tokens are blacklisted in Redis on logout and checked on every authenticated request.</p>
       </div>
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>Role &amp; level checks are server-side.</b> Admin-management actions are gated by superadmin level, verified from the decoded token &mdash; never trusted from the request body.</span>
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.500 3-5.500 6-5.500s6 2 6 5.500"/><path d="M17 11l2 2 3-4"/></svg></div>
+        <h3>Server-side role checks</h3>
+        <p>Admin actions are gated by level, read from the verified token and never from the request body.</p>
       </div>
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>Server-computed charges.</b> Payment amounts come from the trip's fare on file, never from client input.</span>
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg></div>
+        <h3>Trusted amounts only</h3>
+        <p>Payments are charged from the fare on file, so a client can't underpay by editing a request.</p>
       </div>
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>Validated input.</b> Request bodies are parsed and typed before they touch a query &mdash; malformed input gets a clean 400 with the actual reason.</span>
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-11 4 7 3-5 5 9M3 20h18"/></svg></div>
+        <h3>Rate limiting</h3>
+        <p>Login, register and reset endpoints are throttled through Redis, so brute force gets a 429.</p>
       </div>
-      <div class="secitem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span><b>CI on every push.</b> Lint, the full test suite, and a Docker build all gate merges to <code style="font-family:var(--mono);color:var(--warn)">main</code>.</span>
+      <div class="sec" data-reveal>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+        <h3>CI on every push</h3>
+        <p>Lint, the full test suite and a Docker build gate every merge, then Render deploys <code>main</code>.</p>
       </div>
     </div>
   </div>
 </section>
+
+<section class="stack" id="stack">
+  <div class="wrap">
+    <div class="head" data-reveal style="margin-bottom:32px">
+      <div class="kicker">Under the hood</div>
+      <div class="bar"></div>
+      <h2>Stack and <em>deployment</em></h2>
+    </div>
+    <div class="chips" data-reveal>
+      <span class="tag">Flask</span><span class="tag">SQLAlchemy</span><span class="tag">MySQL &middot; Aiven</span>
+      <span class="tag">Redis &middot; Upstash</span><span class="tag">Flask-SocketIO</span><span class="tag">Chapa</span>
+      <span class="tag">Alembic</span><span class="tag">Docker</span><span class="tag">GitHub Actions</span>
+      <span class="tag">Gunicorn</span><span class="tag">Render</span><span class="tag">OpenAPI 3</span>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap">
+    <div class="cta-card" data-reveal>
+      <h2>Go poke at it</h2>
+      <p>Every endpoint is documented and callable. Break something, then tell me how.</p>
+      <div class="hero-actions">
+        <a class="btn btn-green" href="https://wego-ride-backend.onrender.com/apidocs/">Open the API docs &rarr;</a>
+        <a class="btn btn-line" href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">Read the source</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <footer>
   <div class="wrap">
-    <div class="fbrand">Wego Ride &middot; scheduled ride-sharing backend</div>
+    <a class="brand" href="#"><img src="favicon.svg" alt=""><span>Wego<em>Ride</em></span></a>
     <div class="flinks">
       <a href="https://wego-ride-backend.onrender.com/apidocs/">API Docs</a>
       <a href="https://wego-ride-backend.onrender.com/health">Status</a>
@@ -419,5 +586,42 @@
   </div>
 </footer>
 
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    function select(tab) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on);
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t); });
+      t.addEventListener('keydown', function (e) {
+        var n = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
+        if (n) { e.preventDefault(); var nx = tabs[(i + n + tabs.length) % tabs.length]; nx.focus(); select(nx); }
+      });
+    });
+
+    var els = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      els.forEach(function (el, i) { el.style.transitionDelay = (i % 4) * 70 + 'ms'; io.observe(el); });
+    } else {
+      els.forEach(function (el) { el.classList.add('in'); });
+    }
+
+    var btn = document.getElementById('copy');
+    btn.addEventListener('click', function () {
+      var text = document.getElementById('curl').innerText.split('\n\n')[0].replace(/^\$ /, '');
+      var done = function () { btn.textContent = 'copied'; setTimeout(function () { btn.textContent = 'copy'; }, 1600); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); }
+    });
+  })();
+</script>
 </body>
 </html>
