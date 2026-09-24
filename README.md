@@ -1,212 +1,138 @@
-# Wego_ride_backend
-# --Wego Ride--
+# Wego Ride
 
-Welcome to **Wego Ride**, a ride-hailing service platform that allows users to request rides, track drivers, manage payments, and more. The platform provides essential features such as authentication, ride management, and secure data handling. Built with **Flask**, this backend service supports multiple user roles, real-time ride updates, and integrates with various modules for a seamless experience.
+[![CI](https://github.com/bakiizese/Wego_ride_backend/actions/workflows/ci.yml/badge.svg)](https://github.com/bakiizese/Wego_ride_backend/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
 
-## Table of Contents
+Backend for a scheduled ride-sharing service (shuttle / carpool style). An admin schedules trips, riders book seats on them, and drivers run the route. Built with Flask, SQLAlchemy, MySQL and Redis.
 
-- [Project Overview](#project-overview)
-- [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
-- [Setup & Installation](#setup-installation)
-- [API Documentation](#api-documentation)
+**Live:** https://wego-ride-backend.onrender.com
+**API docs (Swagger):** https://wego-ride-backend.onrender.com/apidocs/
 
-## Project Overview
+The live instance runs on free tiers (Render, Aiven MySQL, Upstash Redis). Render spins the app down after 15 minutes idle, so the first request after a quiet stretch can take about a minute. A scheduled workflow pings `/health` to keep that rare.
 
---Wego Ride-- provides a platform for riders, drivers, and admins to interact. Key features include:
+## Try it
 
-- **User Authentication**: Secure registration and login for riders, drivers, and admins.
-- **Role-Based Access**: Differentiated access control based on user roles (Driver, Rider, Admin).
-- **Password Management**: Users can securely reset their passwords using a reset token.
-- **Real-Time Notifications**: Ride updates and status notifications.
-- **Ride Management**: Booking, updating, and tracking rides.
-- **Payment Processing**: Riders make payments, and drivers receive payouts for completed rides.
-- **Location Tracking**: Real-time location updates for drivers and riders.
+You can go from an empty database to a completed, paid and rated trip entirely from Swagger:
 
-## Technologies Used
+1. Open `/apidocs/`, expand `POST /api/v1/admin/admin-register` and send it with no auth. While no admin exists this creates the first superadmin and returns a JWT. Paste it into **Authorize**.
+2. Register a rider and a driver. The driver adds a vehicle with `POST /api/v1/driver/vehicle`.
+3. As the admin, create a location and schedule a trip. As the rider, book a seat.
+4. Connect a Socket.IO client to the `/rides` namespace (JWT in the `auth` payload), join the trip room, then start and end the ride as the driver and watch the status updates arrive.
+5. The rider calls `POST /api/v1/rider/pay-ride` to get a Chapa checkout URL. After the trip completes, both sides can rate each other.
 
-- **Backend**: Flask, SQLAlchemy
-- **Authentication**: JWT, bcrypt for password hashing
-- **Database**: MySQL, Redis
-- **Utilities**: UUID for token generation
-- **Other**: Python, DateTime
+Once a first admin exists, `admin-register` requires a superadmin token like every other admin endpoint.
 
-## Project Structure
-   ````markdown
-   /Wego_ride_backend
-   │
-   ├── api/                        # Contains the core logic of the Flask API
-   │   ├── __init__.py             # Initializes the api package
-   │   └── v1/                     # API versioning directory
-   │       ├── swagger/            # API documentation (Swagger definition)
-   │       │   └── main.yaml       # API definition in YAML format (Swagger)
-   │       ├── views/              # Views (Controllers) for Admin, Driver, and Rider
-   │       │   ├── __init__.py     # Initializes the views package
-   │       │   ├── admin_views.py  # Routes for Admin functionalities
-   │       │   ├── driver_views.py # Routes for Driver functionalities
-   │       │   ├── rider_views.py  # Routes for Rider functionalities
-   │       ├── __init__.py         # Initializes the api/v1 package
-   │       ├── app.py              # Main Flask app entry point
-   │       └── middleware.py       # Middleware for authentication, error handling
-   │
-   ├── auth/                       # Authentication module
-   │   ├── __init__.py             # Initializes the auth package
-   │   └── authentication.py       # Logic for user authentication and JWT handling
-   │
-   ├── models/                     # Database models (SQLAlchemy models)
-   │   ├── engine/                 # Contains database engine and storage logic
-   │   │   ├── db_storage.py       # Logic for managing DB operations (CRUD)
-   │   │   └── __init__.py         # Initializes the engine package
-   │   ├── __init__.py             # Initializes the models package
-   │   ├── admin.py                # Admin model
-   │   ├── availability.py         # Availability model
-   │   ├── base_model.py           # Base model for shared functionality
-   │   ├── driver.py               # Driver model
-   │   ├── location.py             # Location model
-   │   ├── notification.py         # Notification model
-   │   ├── payment.py              # Payment model
-   │   ├── rider.py                # Rider model
-   │   ├── total_payment.py        # Total Payment model
-   │   ├── trip_rider.py           # Trip Rider model
-   │   ├── trip.py                 # Trip model
-   │   └── vehicle.py              # Vehicle model
-   │
-   ├── test/                       # Unit tests for the project
-   │   ├── __init__.py             # Initializes the test package
-   │   ├── test_api/...            # Tests for Flask api
-   │   ├── test_auth/...           # Tests for authentication
-   │   ├── test_models/...         # Tests for engine and models (e.g., CRUD operations)
-   │   └── ...                     # Other test files
-   │
-   ├── console.py                  # Command-line interface for interacting with the app
-   ├── README.md                   # Project documentation (this file)
-   ├── requirements.txt            # Python dependencies for the project
-   ├── setup_mysql_dev.sql         # MySQL setup script for development environment
-   └── wego_dump.sql               # SQL dump for initializing the database
-   ````
+## What's in it
 
+- **Three roles**: rider, driver, admin (moderator / superadmin levels), each with their own JWT-protected endpoints. 84 endpoints total, all documented in an OpenAPI 3 spec.
+- **Payments through a gateway interface**: `payments/base.py` defines a small `PaymentGateway` ABC and `payments/chapa.py` implements it against Chapa's API. The charge amount is computed server-side from the trip fare, the payment stays `pending` until Chapa's webhook arrives, the webhook signature is verified, and the transaction is re-verified with Chapa before anything is marked paid. Adding another provider means implementing the interface and changing `PAYMENT_PROVIDER`.
+- **Live ride status**: Flask-SocketIO with a `/rides` namespace and one room per trip. Status changes (start, end, cancel, payment success) are pushed to the room. It uses a Redis message queue so it works across more than one app instance. The plain polling endpoints still exist.
+- **Ratings**: riders and drivers rate each other once a trip is completed. Averages and counts are updated in the same transaction as the rating and show up on profiles.
+- **Auth**: bcrypt password hashing, JWTs, and a Redis blacklist so logout really invalidates a token. Login endpoints return one generic error whether the account or the password is wrong.
+- **Abuse protection**: rate limits on login, register and password-reset endpoints (Redis backed), request body size limit, image upload extension/MIME allowlist.
+- **Password reset by email** (Resend) instead of returning the token in the response.
 
-## Setup & Installation
+## Security fixes worth knowing about
 
-### Prerequisites
+This started as a bootcamp project and got a proper pass before being hosted:
 
-Before you begin, ensure you have the following software installed:
+- Any admin could delete or revalidate another admin, including a superadmin, because of a case-sensitivity bug in the role check. Fixed, with a regression test.
+- `superadmin_required` used to decode the token on its own and skip the Redis blacklist. It now goes through the same path as every other protected route.
+- Payments used to trust the amount sent by the client. They no longer do.
+- Sort parameters are checked against a per-model allowlist instead of going straight to `getattr`.
 
-- **Python 3.7+**: The backend service is built with Python.
-- **MySQL**: Used for storing user and ride data.
-- **pip**: For installing Python dependencies.
+## Architecture
 
-### Install Dependencies
+```mermaid
+flowchart LR
+    Client["Client / Swagger UI"] -->|REST + JWT| Flask["Flask app<br/>(admin / driver / rider / webhook blueprints)"]
+    Client <-->|Socket.IO /rides| Flask
+    Flask --> ORM["SQLAlchemy"] --> MySQL[("MySQL")]
+    Flask -->|JWT blacklist, rate limits,<br/>Socket.IO queue| Redis[("Redis")]
+    Flask --> Gateway["PaymentGateway"] --> Chapa["Chapa"]
+    Chapa -->|signed webhook| Flask
+    Flask -->|reset codes| Resend["Resend (email)"]
+```
 
-1. **Clone the repository**:
-   Clone the `Wego Ride` repository to your local machine:
+CI runs on every push and PR: ruff lint and format check, the pytest suite against real MySQL and Redis service containers, then a Docker build. Render deploys `main` automatically.
 
-   ```bash
-   git clone https://github.com/bakiizese/Wego_ride_backend.git
-   cd Wego_ride_backend
+## Running it locally
 
-2. **Install the required  Python Packages**
-   ```bash
-   pip install -r requirements.txt
+### With Docker (easiest)
 
-3. **Set up the MySQL database**
-   ```bash
-   cat setup_mysql_dev.sql | mysql -u root -p 
-   mysql -u username -p database_name < dump.sql
+```bash
+cp .env.example .env
+# fill in SECRET_KEY and DB_PASSWORD (generate a key with:
+#   python -c "import secrets; print(secrets.token_hex(32))")
+docker compose up --build
+```
 
-4. **Running the app**
-  **to run on localhost**
-   ```bash
-   python3 -m api.v1.app
+The app is at http://localhost:5000, the docs at http://localhost:5000/apidocs/. Compose overrides `DB_HOST` and `REDIS_HOST` to point at the containers. On the very first boot with a fresh volume the backend can start before MySQL is really ready and exit; if that happens just run `docker compose up` again.
 
-  **to run on docker**
-  ```bash
-  db_host="mysql_db" python3 -m api.v1.app
+`docker-compose.prod.yaml` runs the same image the way production does (gunicorn with the eventlet worker, no bind mount).
 
-The application will be running at http://localhost:5000
+### Without Docker
 
+You need Python 3.12, MySQL 8 and Redis.
 
-## API Documentation
+```bash
+pip install -r requirements.txt
+cp .env.example .env      # fill in real values, DB_HOST/REDIS_HOST as needed
+alembic upgrade head      # or set AUTO_CREATE_TABLES=true to skip migrations in dev
+python3 -m api.v1.app
+```
 
-### Wego Ride Backend Endpoints
+Schema changes go through Alembic (`migrations/`). In production `AUTO_CREATE_TABLES` is off and migrations are the only thing that touches the schema.
 
-# Admin Endpoints
-    Admin Authentication:
-        POST /admin/admin-register: Register admin
-        POST /admin/login: Admin login
-        POST /admin/logout: Admin logout
-    Rider  and Driver Management:
-        GET /admin/riders: Returns all riders
-        GET /admin/driver: Returns all drivers
-        PUT /admin/block-user/:user_id: Blocks user
-        PUT /admin/unblock-user/:user_id: Unblocks user
-        PUT /admin/delete-user/:user_id: Deletes user
-        PUT /admin/revalidate-user/user_id: Revalidate user
-        GET /admin/deleted-users/user_type: Returns deleted users by user_type
-        GET /admin/blocked-users/user_type: Returns blocked users by user_type
-        GET /admin/user-profile/:user_id: Returns user profile
-    Ride Management:
-        POST /admin/set-ride: Creates new ride
-        GET /admin/get-rides: Returns all rides
-        GET /admin/get-ride/:ride_id: Returns ride(trip) details 
-        PUT /admin/delete-ride/:ride_id: Deletes ride
-        POST /admin/set-location: Creates new location
-        GET /admin/get-location: Returns all locations
-    Payment Management:
-        GET /admin/transactions: Returns all transactions
-        GET /admin/payment/ride_id: Returns all payment by ride_id
-        GET /admin/payment-detail/:ride_id: Returns payment detail
-    Reports And Analytics
-        GET /admin/reports/earnings/date: Returns earnings report, by date(optional)
-        GET /admin/reports/ride-activity: Returns rides activity
-        GET /admin/reports/issues: Returns issues reported
-        GET /admin/reports/issues/issue_id: Returns reported issue
-    System Configuration
-        POST /admin/notification: Sends notification or an announcement 
+### Configuration
 
-# Driver Endpoints
-    Registration And Authentication
-        POST /driver/register: Registers Driver
-        POST /driver/login: Driver login
-        POST /driver/logout: Driver logout
-    Profile Management
-        POST /driver/reset-token: Generates reset-token
-        POST /driver/forget-password: Change password
-        GET /driver/profile: Returns profile
-        PUT /driver/profile: Updates profile
-    Ride Management
-        GET /driver/availability: Returns driver’s availability
-        GET /driver/ride-plans: Returns all ride plans assigned to this driver
-        GET /driver/current-ride: Returns current ride’s details
-        GET /driver/ride-requests: Returns all ride requests
-        POST /driver/start-ride: Marks start ride
-        POST /driver/end-ride: Marks end ride
-        POST /driver/cancel_ride: Cancel ride
-    Ride History And Earning
-        GET /driver/ride-history: Returns all driver’s ride history
-        GET /driver/earnings/date: Returns daily, monthly.. earnings, by date(optional)
+Everything comes from environment variables, loaded by `config.py`. `.env.example` lists all of them. The ones you'll actually need:
 
-# Rider Endpoints
-    Registration And Authentication
-        POST /rider/register: Register Rider
-        POST /rider/login: Rider login
-        POST /rider.logout: Rider logout
-    Profile Management
-        POST /rider/reset-token: Generates reset-token
-        POST /rider/forget-password: Change password
-        GET /rider/profile: Returns profile
-        PUT /rider/profile:  Updates profile
-    Ride Booking
-        GET /rider/available-rides: Returns available rides
-        POST /rider/book-ride:  Books a ride
-        GET rider//ride-estimate: Returns estimates of a ride
-        GET rider/booked-ride: Returns booked rides
-        GET rider/current-ride/:tripride_id: Returns ride details
-        GET rider/ride-status/:tripride_id: Returns status of ride
-    Ride History And Management
-        GET /rider/ride-history: Returns rider’s ride history
-        POST rider/cancel-ride: Cancels a ride
-    Payment
-        POST /rider/pay-ride: Make payment
-    Rating And Feedback
-        POST /rider/report-issue: Reports issue
+| Variable | Notes |
+| --- | --- |
+| `SECRET_KEY` | JWT signing key, required |
+| `DB_*` | MySQL connection; set `DB_SSL_CA` for providers that require TLS (Aiven) |
+| `REDIS_*` | Redis connection; `REDIS_SSL=true` for Upstash |
+| `CHAPA_SECRET_KEY`, `CHAPA_WEBHOOK_SECRET` | Chapa test-mode keys to try real checkouts |
+| `MAIL_API_KEY`, `MAIL_FROM_ADDRESS` | Resend, only needed for password-reset emails |
+
+To try payments locally, use Chapa's test keys and point the webhook at a tunnel to your machine (`/api/v1/webhooks/chapa`).
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+The suite runs against a real MySQL and Redis using the same env vars as the app, but a separate database (`wego_test_db` by default, override with `TEST_DB_NAME`). Create that database once and grant your DB user access to it before the first run. Covered: auth flows, the admin-escalation regression, booking state transitions, payments and webhook signatures, ratings, profile updates, pagination allowlist, the admin bootstrap, and the WebSocket flow over a real websocket transport.
+
+## Project layout
+
+```
+api/v1/
+  app.py            app factory, error handlers, /health, landing page, docs
+  middleware.py     JWT decoding and role decorators
+  sockets.py        Socket.IO /rides namespace
+  views/            admin, driver, rider and webhook blueprints
+  utils/            validation, pagination, ratings, redis, mail helpers
+  swagger/main.yaml OpenAPI 3 spec
+auth/               password hashing, login, JWT generation
+models/             SQLAlchemy models and the DB storage layer
+payments/           PaymentGateway interface, Chapa implementation, factory
+migrations/         Alembic migrations
+test/               pytest suite
+config.py           settings loaded from the environment
+console.py          small CLI for poking at the models
+```
+
+## License
+
+MIT, see [LICENSE](LICENSE).
+
+## Author
+
+Bereket Zeselassie - [@bakiizese](https://github.com/bakiizese)
+
+Thanks to ALX for the guidance early on.
