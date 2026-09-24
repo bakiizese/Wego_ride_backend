@@ -4,8 +4,8 @@ info:
   version: '1.0'
   description: API documentation for wego_ride
 servers:
-- url: https://wego-ride-backend.onrender.com
-  description: production
+- url: /
+  description: this server
 - url: http://localhost:5000
   description: local
 components:

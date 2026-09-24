@@ -6,10 +6,10 @@
 
 Backend for a scheduled ride-sharing service (shuttle / carpool style). An admin schedules trips, riders book seats on them, and drivers run the route. Built with Flask, SQLAlchemy, MySQL and Redis.
 
-**Live:** https://wego-ride-backend.onrender.com
-**API docs (Swagger):** https://wego-ride-backend.onrender.com/apidocs/
+**Live:** https://wego-ride-backend.bereketzeselassie.workers.dev
+**API docs (Swagger):** https://wego-ride-backend.bereketzeselassie.workers.dev/apidocs/
 
-The live instance runs on free tiers (Render, Aiven MySQL, Upstash Redis). Render spins the app down after 15 minutes idle, so the first request after a quiet stretch can take about a minute. A scheduled workflow pings `/health` to keep that rare.
+The live instance runs on free tiers. Cloudflare serves the landing page and passes everything else through to the Flask app on Render (`worker/index.js`), so there's a single public address. MySQL is on Aiven and Redis on Upstash. Render spins the app down after 15 minutes idle, so the first request after a quiet stretch can take about a minute. A scheduled workflow pings `/health` to keep that rare.
 
 ## Try it
 

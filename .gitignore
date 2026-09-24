@@ -22,3 +22,7 @@ certs/
 
 # logs
 *.log
+
+# wrangler local dev
+node_modules/
+.wrangler/

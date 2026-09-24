@@ -1,0 +1,8 @@
+{
+  "name": "wego-ride-backend",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./landing"
+  }
+}

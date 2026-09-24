@@ -22,8 +22,8 @@ logging.basicConfig(
 # its place: a minimal page pulling swagger-ui-dist 5.x from a CDN,
 # which has real dark-mode support built in and reads the same spec
 # flasgger still generates at /apispec_1.json.
-# shared with the Cloudflare Pages deploy (output dir: landing), which is why
-# the page uses absolute links rather than relative ones
+# also served as static assets by the Cloudflare Worker in front of this app
+# (wrangler.jsonc), so the page must not hardcode a host
 _LANDING_DIR = Path(__file__).resolve().parents[2] / "landing"
 
 _APIDOCS_HTML = """
