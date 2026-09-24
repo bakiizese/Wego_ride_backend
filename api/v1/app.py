@@ -1,5 +1,7 @@
 #!/usr/bin/python
-from flask import Flask, jsonify, render_template, render_template_string
+from pathlib import Path
+
+from flask import Flask, jsonify, render_template_string, send_from_directory
 from flasgger import Swagger
 import logging
 from flask_cors import CORS
@@ -20,6 +22,10 @@ logging.basicConfig(
 # its place: a minimal page pulling swagger-ui-dist 5.x from a CDN,
 # which has real dark-mode support built in and reads the same spec
 # flasgger still generates at /apispec_1.json.
+# shared with the Cloudflare Pages deploy (output dir: landing), which is why
+# the page uses absolute links rather than relative ones
+_LANDING_DIR = Path(__file__).resolve().parents[2] / "landing"
+
 _APIDOCS_HTML = """
 <!DOCTYPE html>
 <html>
@@ -84,7 +90,7 @@ def create_app():
 
     @app.route("/")
     def landing():
-        return render_template("landing.html")
+        return send_from_directory(_LANDING_DIR, "index.html")
 
     redis_instance = redis.StrictRedis(
         host=settings.redis_host,
