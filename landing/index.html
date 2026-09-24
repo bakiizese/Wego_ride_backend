@@ -247,7 +247,7 @@
 </head>
 <body>
 
-<div class="strip"><span class="led"></span>Live demo running on Render &middot; 84 endpoints ready to call<a href="https://wego-ride-backend.onrender.com/apidocs/">Open the docs &rarr;</a></div>
+<div class="strip"><span class="led"></span>Live demo running on Render &middot; 84 endpoints ready to call<a href="/apidocs/">Open the docs &rarr;</a></div>
 
 <div class="hero-shell">
   <nav>
@@ -260,7 +260,7 @@
         <a href="#security">Security</a>
         <a href="#stack">Stack</a>
       </div>
-      <a class="navcta" href="https://wego-ride-backend.onrender.com/apidocs/">API Docs</a>
+      <a class="navcta" href="/apidocs/">API Docs</a>
     </div>
   </nav>
 
@@ -270,7 +270,7 @@
       <h1>The engine behind <em>scheduled <span style="white-space:nowrap">ride-sharing</span></em></h1>
       <p class="lede">Admins schedule trips, riders reserve seats, drivers run the route. Secure roles, live trip status over WebSockets, Chapa payments and ratings, all behind one documented REST API you can try right now.</p>
       <div class="hero-actions">
-        <a class="btn btn-accent" href="https://wego-ride-backend.onrender.com/apidocs/">Explore the API &rarr;</a>
+        <a class="btn btn-accent" href="/apidocs/">Explore the API &rarr;</a>
         <a class="btn btn-line" href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">View on GitHub</a>
       </div>
 
@@ -375,7 +375,7 @@
             <li>Book or cancel a seat, follow ride status</li>
             <li>Pay through a Chapa checkout, then rate the driver</li>
           </ul>
-          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try rider endpoints</a>
+          <a class="btn btn-dark" href="/apidocs/">Try rider endpoints</a>
         </div>
         <div class="console">
           <div class="console-bar"><i></i><i></i><i></i><span>rider</span></div>
@@ -400,7 +400,7 @@
             <li>Start, end or cancel a ride</li>
             <li>Track earnings and rate riders after the trip</li>
           </ul>
-          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try driver endpoints</a>
+          <a class="btn btn-dark" href="/apidocs/">Try driver endpoints</a>
         </div>
         <div class="console">
           <div class="console-bar"><i></i><i></i><i></i><span>driver</span></div>
@@ -425,7 +425,7 @@
             <li>Block, unblock, delete or restore users</li>
             <li>Earnings and activity reports, plus announcements</li>
           </ul>
-          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">Try admin endpoints</a>
+          <a class="btn btn-dark" href="/apidocs/">Try admin endpoints</a>
         </div>
         <div class="console">
           <div class="console-bar"><i></i><i></i><i></i><span>admin</span></div>
@@ -450,7 +450,7 @@
             <li>Swappable <code>PaymentGateway</code> interface</li>
             <li>Socket.IO <code>/rides</code> namespace, one room per trip</li>
           </ul>
-          <a class="btn btn-dark" href="https://wego-ride-backend.onrender.com/apidocs/">See the webhook docs</a>
+          <a class="btn btn-dark" href="/apidocs/">See the webhook docs</a>
         </div>
         <div class="console">
           <div class="console-bar"><i></i><i></i><i></i><span>realtime + webhook</span></div>
@@ -483,7 +483,7 @@
       </ol>
       <div class="term" data-reveal>
         <div class="term-bar"><i></i><i></i><i></i><span>step 1: bootstrap the first admin</span><button class="copy" id="copy" type="button">copy</button></div>
-<pre id="curl"><span class="d">$</span> <span class="g">curl</span> -X POST https://wego-ride-backend.onrender.com<span class="a">/api/v1/admin/admin-register</span> \
+<pre id="curl"><span class="d">$</span> <span class="g">curl</span> -X POST <span id="origin">https://wego-ride-backend.onrender.com</span><span class="a">/api/v1/admin/admin-register</span> \
   -H "Content-Type: application/json" \
   -d '{
     "username": "root",
@@ -568,7 +568,7 @@
       <h2>Go poke at it</h2>
       <p>Every endpoint is documented and callable. Break something, then tell me how.</p>
       <div class="hero-actions">
-        <a class="btn btn-accent" href="https://wego-ride-backend.onrender.com/apidocs/">Open the API docs &rarr;</a>
+        <a class="btn btn-accent" href="/apidocs/">Open the API docs &rarr;</a>
         <a class="btn btn-line" href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">Read the source</a>
       </div>
     </div>
@@ -579,8 +579,8 @@
   <div class="wrap">
     <a class="brand" href="#"><img src="favicon.svg" alt=""><span>Wego<em>Ride</em></span></a>
     <div class="flinks">
-      <a href="https://wego-ride-backend.onrender.com/apidocs/">API Docs</a>
-      <a href="https://wego-ride-backend.onrender.com/health">Status</a>
+      <a href="/apidocs/">API Docs</a>
+      <a href="/health">Status</a>
       <a href="https://github.com/bakiizese/Wego_ride_backend" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
@@ -614,6 +614,9 @@
     } else {
       els.forEach(function (el) { el.classList.add('in'); });
     }
+
+    var origin = document.getElementById('origin');
+    if (origin && location.protocol.indexOf('http') === 0) { origin.textContent = location.origin; }
 
     var btn = document.getElementById('copy');
     btn.addEventListener('click', function () {
